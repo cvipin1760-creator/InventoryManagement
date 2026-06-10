@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: spare-parts-shop-backend
+    env: java
+    plan: free
+    buildCommand: ./mvnw clean package -DskipTests
+    startCommand: java -jar target/spare-parts-shop-1.0.0.jar
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: spare-parts-shop-db
+          property: connectionString
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: spare-parts-shop-db
+          property: user
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: spare-parts-shop-db
+          property: password
+      - key: SPRING_JPA_HIBERNATE_DDL_AUTO
+        value: update
+      - key: APP_CORS_ALLOWED_ORIGINS
+        value: https://your-frontend-url.onrender.com,http://localhost:3000,http://localhost:5173
+
+databases:
+  - name: spare-parts-shop-db
+    databaseName: spare_parts_shop
+    user: spare_parts_shop_user
+    plan: free
+    postgresMajorVersion: 15

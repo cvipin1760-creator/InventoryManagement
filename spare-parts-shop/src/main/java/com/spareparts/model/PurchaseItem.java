@@ -1,0 +1,42 @@
+package com.spareparts.model;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+@Entity
+@Table(name = "purchase_items")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class PurchaseItem {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "purchase_id", nullable = false)
+    @JsonIgnore
+    private Purchase purchase;
+    
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
+    
+    @Column(nullable = false)
+    private Integer quantity;
+    
+    @Column(nullable = false)
+    private Double price;
+    
+    @Column(name = "gst_percent", nullable = false)
+    private Double gstPercent;
+    
+    @Column(name = "item_total", nullable = false)
+    private Double itemTotal;
+    
+    @Column(nullable = false)
+    private Double discount = 0.0;
+}

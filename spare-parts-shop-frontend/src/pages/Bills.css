@@ -1,0 +1,223 @@
+.bills-container {
+  padding: 2rem;
+  background-color: var(--bg-primary);
+  min-height: 100vh;
+}
+
+.bills-header {
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.bills-header h1 {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.bills-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.search-input {
+  padding: 0.625rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+  transition: all 0.2s;
+  min-width: 200px;
+}
+
+.search-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 10%, transparent);
+  outline: none;
+}
+
+.bills-table-container {
+  background: var(--bg-card);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.bills-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.bills-table th {
+  background-color: var(--bg-secondary);
+  padding: 1rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  border-bottom: 1px solid var(--border);
+}
+
+.bills-table td {
+  padding: 1rem;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.bills-table tr:hover {
+  background-color: color-mix(in srgb, var(--accent) 4%, transparent);
+}
+
+/* Modal Styling */
+.invoice-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.invoice-modal {
+  background-color: var(--bg-card);
+  padding: 0;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 850px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+}
+
+.invoice-modal-header {
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--bg-secondary);
+  border-radius: 16px 16px 0 0;
+}
+
+.invoice-modal-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: var(--text-primary);
+}
+
+.invoice-content {
+  padding: 2.5rem;
+  color: var(--text-primary);
+}
+
+.invoice-branding {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 3rem;
+}
+
+.shop-info h3 {
+  font-size: 1.5rem;
+  color: var(--accent);
+  margin: 0 0 0.5rem 0;
+}
+
+.shop-info p, .customer-info p {
+  margin: 0.25rem 0;
+  color: var(--text-muted);
+  font-size: 0.9375rem;
+}
+
+.invoice-meta {
+  text-align: right;
+}
+
+.invoice-meta h4 {
+  font-size: 1.25rem;
+  margin: 0 0 1rem 0;
+  color: var(--text-primary);
+}
+
+.customer-info-section {
+  background-color: var(--bg-secondary);
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 2.5rem;
+  border: 1px solid var(--border);
+}
+
+.invoice-items-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 2rem;
+}
+
+.invoice-items-table th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  border-bottom: 2px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.invoice-items-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.9375rem;
+  color: var(--text-primary);
+}
+
+.invoice-totals {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.75rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid var(--border);
+}
+
+.total-row {
+  display: flex;
+  width: 250px;
+  justify-content: space-between;
+  color: var(--text-muted);
+}
+
+.total-row.grand-total {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+  color: var(--text-primary);
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+.invoice-modal-footer {
+  padding: 1.5rem 2rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  background-color: var(--bg-secondary);
+  border-radius: 0 0 16px 16px;
+}
