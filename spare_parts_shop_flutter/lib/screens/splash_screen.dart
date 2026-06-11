@@ -151,7 +151,7 @@ class _SplashScreenState extends State<SplashScreen>
         borderRadius: BorderRadius.circular(40),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 40,
             spreadRadius: 5,
             offset: const Offset(0, 10),
@@ -205,7 +205,7 @@ class _SplashScreenState extends State<SplashScreen>
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w500,
-            color: Colors.white.withOpacity(0.9),
+            color: Colors.white.withValues(alpha: 0.9),
             letterSpacing: 0.5,
           ),
         ),
@@ -233,7 +233,7 @@ class _LoadingIndicator extends StatelessWidget {
         Text(
           'Initializing...',
           style: TextStyle(
-            color: Colors.white.withOpacity(0.8),
+            color: Colors.white.withValues(alpha: 0.8),
             fontSize: 14,
           ),
         ),

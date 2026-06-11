@@ -1,0 +1,17 @@
+
+package com.spareparts;
+
+import com.spareparts.service.AuthService;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
+
+@SpringBootApplication
+@EnableScheduling
+public class StockPilotApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(StockPilotApplication.class, args);
+	}
+}
