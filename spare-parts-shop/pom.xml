@@ -12,10 +12,10 @@
     </parent>
 
     <groupId>com.spareparts</groupId>
-    <artifactId>spare-parts-shop</artifactId>
+    <artifactId>stockpilot</artifactId>
     <version>1.0.0</version>
-    <name>Spare Parts Shop</name>
-    <description>Inventory and Billing Software for Spare Parts Shop</description>
+    <name>StockPilot</name>
+    <description>Smart Inventory and Billing Management System</description>
 
     <properties>
         <java.version>17</java.version>
