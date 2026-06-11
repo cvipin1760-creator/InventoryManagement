@@ -2,28 +2,29 @@
 # Stage 1: Build
 FROM maven:3.9.4-eclipse-temurin-17 AS build
 
-# Set the working directory
 WORKDIR /app
 
-# Copy pom.xml and download dependencies (caching layer)
-COPY pom.xml .
+# Copy only pom.xml first (cache dependencies)
+COPY spare-parts-shop/pom.xml .
 RUN mvn dependency:go-offline -B
 
-# Copy source code and build
-COPY src ./src
-RUN mvn clean package -DskipTests
+# Then copy source code
+COPY spare-parts-shop/src ./src
+RUN mvn clean package -DskipTests -Dmaven.test.skip=true
 
 # Stage 2: Run
 FROM eclipse-temurin:17-jre-alpine
 
-# Set the working directory
+# Add a non-root user for security
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+USER appuser
+
 WORKDIR /app
 
-# Copy the built jar from the build stage
+# Copy the built jar
 COPY --from=build /app/target/*.jar app.jar
 
-# Expose the port
 EXPOSE 8080
 
-# Run the jar
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Add JVM options for better performance in container
+ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75.0", "-jar", "app.jar"]
