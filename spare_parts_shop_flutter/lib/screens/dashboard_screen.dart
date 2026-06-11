@@ -1,6 +1,10 @@
+
 import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../services/api_service.dart';
 import '../models/dashboard_stats.dart';
+import '../constants/app_theme.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -42,71 +46,107 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _stats == null
-              ? const Center(child: Text('No data available'))
-              : SingleChildScrollView(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Dashboard',
-                        style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 24),
-                      GridView.count(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
-                        children: [
-                          _buildStatCard(
-                            'Today\'s Sales',
-                            '₹${_stats!.todaySales.toStringAsFixed(2)}',
-                            Icons.attach_money,
-                            Colors.green,
-                          ),
-                          _buildStatCard(
-                            'Weekly Sales',
-                            '₹${_stats!.weeklySales.toStringAsFixed(2)}',
-                            Icons.calendar_view_week,
-                            Colors.blue,
-                          ),
-                          _buildStatCard(
-                            'Monthly Sales',
-                            '₹${_stats!.monthlySales.toStringAsFixed(2)}',
-                            Icons.calendar_month,
-                            Colors.purple,
-                          ),
-                          _buildStatCard(
-                            'Today\'s Bills',
-                            _stats!.todayBillsCount.toString(),
-                            Icons.receipt_long,
-                            Colors.orange,
-                          ),
-                          _buildStatCard(
-                            'Low Stock Products',
-                            _stats!.lowStockCount.toString(),
-                            Icons.warning_amber,
-                            Colors.red,
-                          ),
-                        ],
-                      ),
-                    ],
+      body: SafeArea(
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : _stats == null
+                ? const Center(child: Text('No data available'))
+                : SingleChildScrollView(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _buildQuickActions(),
+                        const SizedBox(height: 24),
+                        _buildStatsGrid(),
+                        const SizedBox(height: 24),
+                        _buildChartsSection(),
+                      ],
+                    ),
                   ),
-                ),
+      ),
+    );
+  }
+
+  Widget _buildQuickActions() {
+    return Row(
+      children: [
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pushNamed(context, '/create-bill');
+            },
+            icon: const Icon(Icons.add),
+            label: const Text('New Bill'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primaryColor,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+            ),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: () {
+              Navigator.pushNamed(context, '/create-purchase');
+            },
+            icon: const Icon(Icons.shopping_bag_outlined),
+            label: const Text('New Purchase'),
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatsGrid() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final crossAxisCount = constraints.maxWidth > 1000
+            ? 4
+            : constraints.maxWidth > 600
+                ? 3
+                : 2;
+        return GridView.count(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisCount: crossAxisCount,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+          children: [
+            _buildStatCard(
+              'Today\'s Sales',
+              '₹${_stats!.todaySales.toStringAsFixed(2)}',
+              FontAwesomeIcons.indianRupeeSign,
+              AppTheme.secondaryColor,
+            ),
+            _buildStatCard(
+              'Today\'s Bills',
+              _stats!.todayBillsCount.toString(),
+              FontAwesomeIcons.receipt,
+              AppTheme.primaryColor,
+            ),
+            _buildStatCard(
+              'Low Stock',
+              _stats!.lowStockCount.toString(),
+              FontAwesomeIcons.triangleExclamation,
+              AppTheme.errorColor,
+            ),
+          ],
+        );
+      },
     );
   }
 
   Widget _buildStatCard(String title, String value, IconData icon, Color color) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(24.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
               padding: const EdgeInsets.all(12),
@@ -114,24 +154,81 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 color: color.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(icon, size: 40, color: color),
+              child: Icon(
+                icon,
+                size: 32,
+                color: color,
+              ),
             ),
             const SizedBox(height: 16),
             Text(
               title,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-                fontWeight: FontWeight.w500,
-              ),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.grey[600],
+                  ),
             ),
             const SizedBox(height: 8),
             Text(
               value,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChartsSection() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Recent Trends',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              height: 200,
+              child: LineChart(
+                LineChartData(
+                  gridData: FlGridData(
+                    show: true,
+                    drawVerticalLine: false,
+                  ),
+                  titlesData: FlTitlesData(
+                    show: true,
+                    topTitles: AxisTitles(),
+                    rightTitles: AxisTitles(),
+                  ),
+                  borderData: FlBorderData(show: false),
+                  lineBarsData: [
+                    LineChartBarData(
+                      spots: [
+                        const FlSpot(0, 100),
+                        const FlSpot(1, 150),
+                        const FlSpot(2, 120),
+                        const FlSpot(3, 180),
+                        const FlSpot(4, 140),
+                        const FlSpot(5, 200),
+                        const FlSpot(6, 170),
+                      ],
+                      isCurved: true,
+                      color: AppTheme.primaryColor,
+                      dotData: FlDotData(show: false),
+                      belowBarData: BarAreaData(
+                        show: true,
+                        color: AppTheme.primaryColor.withOpacity(0.1),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],

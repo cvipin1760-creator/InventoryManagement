@@ -1,17 +1,33 @@
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
+import 'providers/theme_provider.dart';
+import 'constants/app_theme.dart';
 import 'screens/login_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/customers_screen.dart';
 import 'screens/suppliers_screen.dart';
 import 'screens/products_screen.dart';
 import 'screens/bills_screen.dart';
+import 'screens/create_bill_screen.dart';
 import 'screens/purchases_screen.dart';
+import 'screens/create_purchase_screen.dart';
 import 'screens/payments_screen.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final themeProvider = ThemeProvider();
+  await themeProvider.loadTheme();
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => themeProvider),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -19,36 +35,24 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => AuthProvider(),
-      child: MaterialApp(
-        title: 'Spare Parts Shop',
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue, brightness: Brightness.light),
-          useMaterial3: true,
-          cardTheme: CardThemeData(
-            elevation: 2,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
-          inputDecorationTheme: InputDecorationTheme(
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-            filled: true,
-          ),
-          elevatedButtonTheme: ElevatedButtonThemeData(
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-          ),
-        ),
-        initialRoute: '/',
-        routes: {
-          '/': (context) => const AuthWrapper(),
-          '/login': (context) => const LoginScreen(),
-          '/dashboard': (context) => const MainScreen(),
-        },
-      ),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return MaterialApp(
+          title: 'Spare Parts Shop',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: themeProvider.themeMode,
+          initialRoute: '/',
+          routes: {
+            '/': (context) => const AuthWrapper(),
+            '/login': (context) => const LoginScreen(),
+            '/dashboard': (context) => const MainScreen(),
+            '/create-bill': (context) => const CreateBillScreen(),
+            '/create-purchase': (context) => const CreatePurchaseScreen(),
+          },
+        );
+      },
     );
   }
 }
@@ -100,12 +104,48 @@ class _MainScreenState extends State<MainScreen> {
     'Payments',
   ];
 
+  final List<IconData> _icons = const [
+    Icons.dashboard,
+    Icons.people,
+    Icons.local_shipping,
+    Icons.inventory,
+    Icons.receipt,
+    Icons.shopping_cart,
+    Icons.payment,
+  ];
+
   @override
   Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth > 1000) {
+          return _buildDesktopLayout();
+        } else if (constraints.maxWidth > 600) {
+          return _buildTabletLayout();
+        } else {
+          return _buildMobileLayout();
+        }
+      },
+    );
+  }
+
+  Widget _buildMobileLayout() {
     return Scaffold(
       appBar: AppBar(
         title: Text(_titles[_selectedIndex]),
         actions: [
+          Consumer<ThemeProvider>(
+            builder: (context, themeProvider, child) {
+              return IconButton(
+                icon: Icon(
+                  themeProvider.themeMode == ThemeMode.dark
+                      ? Icons.light_mode
+                      : Icons.dark_mode,
+                ),
+                onPressed: () => themeProvider.toggleTheme(),
+              );
+            },
+          ),
           Consumer<AuthProvider>(
             builder: (context, authProvider, child) {
               return IconButton(
@@ -122,42 +162,163 @@ class _MainScreenState extends State<MainScreen> {
         ],
       ),
       body: _screens[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: (index) {
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _selectedIndex,
+        onDestinationSelected: (index) {
           setState(() {
             _selectedIndex = index;
           });
         },
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard),
-            label: 'Dashboard',
+        destinations: _titles
+            .asMap()
+            .entries
+            .map((e) => NavigationDestination(
+                  icon: Icon(_icons[e.key]),
+                  label: e.value,
+                ))
+            .toList(),
+      ),
+    );
+  }
+
+  Widget _buildTabletLayout() {
+    return Scaffold(
+      body: Row(
+        children: [
+          NavigationRail(
+            selectedIndex: _selectedIndex,
+            onDestinationSelected: (index) {
+              setState(() {
+                _selectedIndex = index;
+              });
+            },
+            labelType: NavigationRailLabelType.all,
+            destinations: _titles
+                .asMap()
+                .entries
+                .map((e) => NavigationRailDestination(
+                      icon: Icon(_icons[e.key]),
+                      selectedIcon: Icon(_icons[e.key]),
+                      label: Text(e.value),
+                    ))
+                .toList(),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.people),
-            label: 'Customers',
+          Expanded(
+            child: Column(
+              children: [
+                AppBar(
+                  title: Text(_titles[_selectedIndex]),
+                  actions: [
+                    Consumer<ThemeProvider>(
+                      builder: (context, themeProvider, child) {
+                        return IconButton(
+                          icon: Icon(
+                            themeProvider.themeMode == ThemeMode.dark
+                                ? Icons.light_mode
+                                : Icons.dark_mode,
+                          ),
+                          onPressed: () => themeProvider.toggleTheme(),
+                        );
+                      },
+                    ),
+                    Consumer<AuthProvider>(
+                      builder: (context, authProvider, child) {
+                        return IconButton(
+                          icon: const Icon(Icons.logout),
+                          onPressed: () async {
+                            await authProvider.logout();
+                            if (mounted) {
+                              Navigator.pushReplacementNamed(context, '/login');
+                            }
+                          },
+                        );
+                      },
+                    ),
+                  ],
+                ),
+                Expanded(child: _screens[_selectedIndex]),
+              ],
+            ),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.local_shipping),
-            label: 'Suppliers',
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDesktopLayout() {
+    return Scaffold(
+      body: Row(
+        children: [
+          NavigationDrawer(
+            selectedIndex: _selectedIndex,
+            onDestinationSelected: (index) {
+              setState(() {
+                _selectedIndex = index;
+              });
+            },
+            children: [
+              DrawerHeader(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Spare Parts',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    Text(
+                      'Inventory Manager',
+                      style: Theme.of(context).textTheme.labelLarge,
+                    ),
+                  ],
+                ),
+              ),
+              ..._titles
+                  .asMap()
+                  .entries
+                  .map((e) => NavigationDrawerDestination(
+                        icon: Icon(_icons[e.key]),
+                        label: Text(e.value),
+                      ))
+                  .toList(),
+            ],
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.inventory),
-            label: 'Products',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.receipt),
-            label: 'Bills',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart),
-            label: 'Purchases',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.payment),
-            label: 'Payments',
+          Expanded(
+            child: Column(
+              children: [
+                AppBar(
+                  title: Text(_titles[_selectedIndex]),
+                  actions: [
+                    Consumer<ThemeProvider>(
+                      builder: (context, themeProvider, child) {
+                        return IconButton(
+                          icon: Icon(
+                            themeProvider.themeMode == ThemeMode.dark
+                                ? Icons.light_mode
+                                : Icons.dark_mode,
+                          ),
+                          onPressed: () => themeProvider.toggleTheme(),
+                        );
+                      },
+                    ),
+                    Consumer<AuthProvider>(
+                      builder: (context, authProvider, child) {
+                        return IconButton(
+                          icon: const Icon(Icons.logout),
+                          onPressed: () async {
+                            await authProvider.logout();
+                            if (mounted) {
+                              Navigator.pushReplacementNamed(context, '/login');
+                            }
+                          },
+                        );
+                      },
+                    ),
+                  ],
+                ),
+                Expanded(child: _screens[_selectedIndex]),
+              ],
+            ),
           ),
         ],
       ),

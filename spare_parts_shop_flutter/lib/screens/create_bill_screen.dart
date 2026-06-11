@@ -4,7 +4,6 @@ import '../services/api_service.dart';
 import '../models/customer.dart';
 import '../models/product.dart';
 import '../models/customer_balance.dart';
-import '../models/bill.dart';
 
 class CreateBillScreen extends StatefulWidget {
   const CreateBillScreen({super.key});
