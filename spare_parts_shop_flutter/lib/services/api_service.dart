@@ -11,7 +11,7 @@ import '../models/dashboard_stats.dart';
 import '../models/login_response.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://localhost:8080/api';
+  static const String baseUrl = 'https://inventorymanagement-afhl.onrender.com/api';
 
   Future<LoginResponse> login(String username, String password) async {
     final response = await http.post(
