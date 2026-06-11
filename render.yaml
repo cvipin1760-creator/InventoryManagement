@@ -1,3 +1,4 @@
+
 services:
   - type: web
     name: spare-parts-shop-backend
@@ -7,26 +8,37 @@ services:
     buildCommand: ./mvnw clean package -DskipTests
     startCommand: java -jar target/spare-parts-shop-1.0.0.jar
     envVars:
+      # Option 1: Use Render's PostgreSQL database (uncomment this section)
+      # - key: SPRING_DATASOURCE_URL
+      #   fromDatabase:
+      #     name: spare-parts-shop-db
+      #     property: connectionString
+      # - key: SPRING_DATASOURCE_USERNAME
+      #   fromDatabase:
+      #     name: spare-parts-shop-db
+      #     property: user
+      # - key: SPRING_DATASOURCE_PASSWORD
+      #   fromDatabase:
+      #     name: spare-parts-shop-db
+      #     property: password
+
+      # Option 2: Use Supabase PostgreSQL (comment out above and uncomment below)
       - key: SPRING_DATASOURCE_URL
-        fromDatabase:
-          name: spare-parts-shop-db
-          property: connectionString
+        value: jdbc:postgresql://your-supabase-host:5432/postgres
       - key: SPRING_DATASOURCE_USERNAME
-        fromDatabase:
-          name: spare-parts-shop-db
-          property: user
+        value: postgres
       - key: SPRING_DATASOURCE_PASSWORD
-        fromDatabase:
-          name: spare-parts-shop-db
-          property: password
+        value: your-supabase-password
+      
       - key: SPRING_JPA_HIBERNATE_DDL_AUTO
         value: update
       - key: APP_CORS_ALLOWED_ORIGINS
         value: https://your-frontend-url.onrender.com,http://localhost:3000,http://localhost:5173
 
-databases:
-  - name: spare-parts-shop-db
-    databaseName: spare_parts_shop
-    user: spare_parts_shop_user
-    plan: free
-    postgresMajorVersion: 15
+# Option 1: Use Render's PostgreSQL database (uncomment this section)
+# databases:
+#   - name: spare-parts-shop-db
+#     databaseName: spare_parts_shop
+#     user: spare_parts_shop_user
+#     plan: free
+#     postgresMajorVersion: 15
