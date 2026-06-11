@@ -7,30 +7,36 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+      includeAssets: ['favicon.png', 'Icon-192.png', 'Icon-512.png'],
       manifest: {
-        name: 'Jai Maa Sharda Spare Parts',
-        short_name: 'JMS Parts',
+        name: 'StockPilot',
+        short_name: 'StockPilot',
         description: 'Inventory and Billing management for Spare Parts Shop',
         theme_color: '#2563eb',
         background_color: '#f8fafc',
         display: 'standalone',
         icons: [
           {
-            src: 'pwa-192x192.png',
+            src: 'Icon-192.png',
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: 'pwa-512x512.png',
+            src: 'Icon-512.png',
             sizes: '512x512',
             type: 'image/png'
           },
           {
-            src: 'pwa-512x512.png',
+            src: 'Icon-maskable-192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'maskable'
+          },
+          {
+            src: 'Icon-maskable-512.png',
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'any maskable'
+            purpose: 'maskable'
           }
         ]
       }
@@ -49,13 +55,13 @@ export default defineConfig({
             proxyReq.setHeader('X-Forwarded-Proto', 'http')
           })
           proxy.on('proxyRes', (proxyRes) => {
-            const setCookie = proxyRes.headers['set-cookie']
+            const setCookie = proxyRes.headers['set-cookie'] as string | string[] | undefined
             if (Array.isArray(setCookie)) {
               proxyRes.headers['set-cookie'] = setCookie.map((cookie) =>
                 cookie.replace(/;\s*Domain=[^;]+/gi, '').replace(/;\s*$/g, '')
-              )
+              ) as any
             } else if (typeof setCookie === 'string') {
-              proxyRes.headers['set-cookie'] = setCookie.replace(/;\s*Domain=[^;]+/gi, '').replace(/;\s*$/g, '')
+              proxyRes.headers['set-cookie'] = setCookie.replace(/;\s*Domain=[^;]+/gi, '').replace(/;\s*$/g, '') as any
             }
           })
         },

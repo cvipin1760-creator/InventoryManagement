@@ -249,7 +249,7 @@ public class BillService {
             PdfDocument pdfDoc = new PdfDocument(writer);
             Document document = new Document(pdfDoc);
             
-            document.add(new Paragraph("Jai Maa Sharda Spare Parts")
+            document.add(new Paragraph("StockPilot")
                     .setFontSize(20)
                     .setBold()
                     .setTextAlignment(TextAlignment.CENTER));

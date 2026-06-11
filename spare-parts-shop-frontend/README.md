@@ -1,6 +1,6 @@
 # Spare Parts Shop - React Frontend
 
-React frontend for the Jai Maa Sharda Spare Parts Shop, connecting to the Spring Boot backend.
+React frontend for the StockPilot Spare Parts Shop, connecting to the Spring Boot backend.
 
 ## Features
 

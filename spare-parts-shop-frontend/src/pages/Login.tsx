@@ -184,7 +184,7 @@ export default function Login() {
   return (
     <div className="login-page">
       <div className="login-card">
-        <h1 className="login-title">Jai Maa Sharda Spare Parts</h1>
+        <h1 className="login-title">StockPilot</h1>
 
         <div style={{ 
           display: 'flex', 

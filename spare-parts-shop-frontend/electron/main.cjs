@@ -10,7 +10,7 @@ function createWindow() {
       nodeIntegration: true,
       contextIsolation: false,
     },
-    title: "Jai Maa Sharda Spare Parts"
+    title: "StockPilot"
   });
 
   win.loadURL(

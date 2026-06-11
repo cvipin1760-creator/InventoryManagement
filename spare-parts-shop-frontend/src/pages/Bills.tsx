@@ -220,9 +220,9 @@ export default function Bills() {
             <div className="invoice-content">
               <div className="invoice-branding">
                 <div className="shop-info">
-                  <h3>Jai Maa Sharda Spare Parts</h3>
+                  <h3>StockPilot</h3>
                   <p>Shop Address: Kalamboli</p>
-                  <p>Phone: +91-9967015781</p>
+                  <p>Phone: +91-9987654321</p>
                 </div>
                 <div className="invoice-meta">
                   <h4>INVOICE</h4>

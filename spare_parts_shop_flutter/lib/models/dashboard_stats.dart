@@ -4,6 +4,7 @@ class DashboardStats {
   final double monthlySales;
   final int todayBillsCount;
   final int lowStockCount;
+  final int totalProducts;
 
   DashboardStats({
     required this.todaySales,
@@ -11,6 +12,7 @@ class DashboardStats {
     required this.monthlySales,
     required this.todayBillsCount,
     required this.lowStockCount,
+    this.totalProducts = 0,
   });
 
   factory DashboardStats.fromJson(Map<String, dynamic> json) {
@@ -20,6 +22,7 @@ class DashboardStats {
       monthlySales: (json['monthlySales'] as num).toDouble(),
       todayBillsCount: json['todayBillsCount'],
       lowStockCount: json['lowStockCount'],
+      totalProducts: json['totalProducts'] ?? 0,
     );
   }
 
@@ -30,6 +33,7 @@ class DashboardStats {
       'monthlySales': monthlySales,
       'todayBillsCount': todayBillsCount,
       'lowStockCount': lowStockCount,
+      'totalProducts': totalProducts,
     };
   }
 }

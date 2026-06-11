@@ -193,22 +193,6 @@ class _MainScreenState extends State<MainScreen> {
         ),
       ),
       body: _screens[_selectedIndex],
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
-        destinations: _titles
-            .asMap()
-            .entries
-            .map((e) => NavigationDestination(
-                  icon: Icon(_icons[e.key]),
-                  label: e.value,
-                ))
-            .toList(),
-      ),
     );
   }
 
