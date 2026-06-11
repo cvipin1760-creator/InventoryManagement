@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../services/api_service.dart';
 import '../models/customer.dart';
 import '../models/product.dart';
 import '../models/customer_balance.dart';
+import '../models/bill.dart';
 
 class CreateBillScreen extends StatefulWidget {
   const CreateBillScreen({super.key});
@@ -60,6 +62,8 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
   double _discount = 0;
   double _paidAmount = 0;
   bool _isLoading = true;
+  bool _billCreated = false;
+  String? _invoiceNumber;
 
   @override
   void initState() {
@@ -204,10 +208,14 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
         'gstType': _gstType,
         'paidAmount': _paidAmount,
       };
-      await _apiService.createBill(billData);
-      if (mounted) {
-        Navigator.pop(context);
-      }
+      final bill = await _apiService.createBill(billData);
+      setState(() {
+        _billCreated = true;
+        _invoiceNumber = bill.invoiceNumber;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Bill created successfully!')),
+      );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -217,9 +225,53 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
     }
   }
 
+  Future<void> _sendBillToWhatsApp() async {
+    if (_selectedCustomer == null) return;
+
+    String message = "Hello ${_selectedCustomer!.name},\n\n";
+    message += "Your Bill: ${_invoiceNumber ?? 'INV-XXXX'}\n";
+    message += "------------------------\n";
+    for (var item in _items) {
+      message += "${item.product.name} x ${item.quantity} = ₹${(item.price * item.quantity).toStringAsFixed(2)}\n";
+    }
+    message += "------------------------\n";
+    message += "Gross Total: ₹${grossTotal.toStringAsFixed(2)}\n";
+    message += "Discount: -₹${lineDiscountTotal.toStringAsFixed(2)}\n";
+    message += "GST: ₹${gstAmount.toStringAsFixed(2)}\n";
+    message += "Grand Total: ₹${finalAmount.toStringAsFixed(2)}\n";
+    if (_customerBalance != null) {
+      message += "Previous Balance: ₹${_customerBalance!.remainingAmount.toStringAsFixed(2)}\n";
+      message += "Paid: -₹${_paidAmount.toStringAsFixed(2)}\n";
+      message += "Remaining Balance: ₹${(_customerBalance!.remainingAmount + finalAmount - _paidAmount).toStringAsFixed(2)}\n";
+    }
+    message += "\nThank you for your business!";
+
+    final phone = _selectedCustomer!.phone.replaceAll(RegExp(r'[^0-9]'), '');
+    final url = "https://wa.me/$phone?text=${Uri.encodeComponent(message)}";
+    if (await canLaunchUrl(Uri.parse(url))) {
+      await launchUrl(Uri.parse(url));
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not open WhatsApp')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // Focus on search field
+          // For now, just show a snackbar
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Search for products above to add!')),
+          );
+        },
+        child: const Icon(Icons.add),
+      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
@@ -529,14 +581,45 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: _createBill,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  if (_billCreated) ...[
+                    ElevatedButton.icon(
+                      onPressed: _sendBillToWhatsApp,
+                      icon: const Icon(Icons.send),
+                      label: const Text('Send Bill via WhatsApp'),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        backgroundColor: Colors.green,
+                      ),
                     ),
-                    child: const Text('Create Bill'),
-                  ),
+                    const SizedBox(height: 12),
+                    ElevatedButton(
+                      onPressed: () {
+                        // Reset form
+                        setState(() {
+                          _billCreated = false;
+                          _invoiceNumber = null;
+                          _items.clear();
+                          _discount = 0;
+                          _paidAmount = 0;
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      child: const Text('Create Another Bill'),
+                    ),
+                  ],
+                  if (!_billCreated)
+                    ElevatedButton(
+                      onPressed: _createBill,
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      child: const Text('Create Bill'),
+                    ),
                 ],
               ),
             ),
