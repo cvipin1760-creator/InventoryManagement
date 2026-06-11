@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../models/purchase.dart';
+import 'create_purchase_screen.dart';
 
 class PurchasesScreen extends StatefulWidget {
   const PurchasesScreen({super.key});
@@ -48,7 +49,10 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: () {
-              // Navigate to create purchase screen
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const CreatePurchaseScreen()),
+              ).then((_) => _loadPurchases());
             },
           ),
         ],

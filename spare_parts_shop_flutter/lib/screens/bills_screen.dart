@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../models/bill.dart';
+import 'create_bill_screen.dart';
 
 class BillsScreen extends StatefulWidget {
   const BillsScreen({super.key});
@@ -48,7 +49,10 @@ class _BillsScreenState extends State<BillsScreen> {
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: () {
-              // Navigate to create bill screen
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const CreateBillScreen()),
+              ).then((_) => _loadBills());
             },
           ),
         ],
