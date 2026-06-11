@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/theme_provider.dart';
+import 'constants/app_config.dart';
 import 'constants/app_theme.dart';
+import 'screens/splash_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/customers_screen.dart';
@@ -38,37 +40,20 @@ class MyApp extends StatelessWidget {
     return Consumer<ThemeProvider>(
       builder: (context, themeProvider, child) {
         return MaterialApp(
-          title: 'Spare Parts Shop',
+          title: '${AppConfig.appName} - ${AppConfig.tagline}',
           debugShowCheckedModeBanner: false,
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
           themeMode: themeProvider.themeMode,
           initialRoute: '/',
           routes: {
-            '/': (context) => const AuthWrapper(),
+            '/': (context) => const SplashScreen(),
             '/login': (context) => const LoginScreen(),
             '/dashboard': (context) => const MainScreen(),
             '/create-bill': (context) => const CreateBillScreen(),
             '/create-purchase': (context) => const CreatePurchaseScreen(),
           },
         );
-      },
-    );
-  }
-}
-
-class AuthWrapper extends StatelessWidget {
-  const AuthWrapper({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Consumer<AuthProvider>(
-      builder: (context, authProvider, child) {
-        if (authProvider.isAuthenticated) {
-          return const MainScreen();
-        } else {
-          return const LoginScreen();
-        }
       },
     );
   }
@@ -263,12 +248,16 @@ class _MainScreenState extends State<MainScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Spare Parts',
-                      style: Theme.of(context).textTheme.titleLarge,
+                      AppConfig.appName,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                     ),
                     Text(
-                      'Inventory Manager',
-                      style: Theme.of(context).textTheme.labelLarge,
+                      AppConfig.tagline,
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                            color: Colors.grey[600],
+                          ),
                     ),
                   ],
                 ),

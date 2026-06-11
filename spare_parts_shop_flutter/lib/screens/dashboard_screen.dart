@@ -4,6 +4,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../services/api_service.dart';
 import '../models/dashboard_stats.dart';
+import '../constants/app_config.dart';
 import '../constants/app_theme.dart';
 
 class DashboardScreen extends StatefulWidget {
