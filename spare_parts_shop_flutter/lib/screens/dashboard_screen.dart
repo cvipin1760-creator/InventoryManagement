@@ -42,49 +42,58 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Dashboard'),
-      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _stats == null
               ? const Center(child: Text('No data available'))
-              : Padding(
+              : SingleChildScrollView(
                   padding: const EdgeInsets.all(16.0),
-                  child: GridView.count(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildStatCard(
-                        'Today\'s Sales',
-                        '₹${_stats!.todaySales.toStringAsFixed(2)}',
-                        Icons.attach_money,
-                        Colors.green,
+                      const Text(
+                        'Dashboard',
+                        style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                       ),
-                      _buildStatCard(
-                        'Weekly Sales',
-                        '₹${_stats!.weeklySales.toStringAsFixed(2)}',
-                        Icons.calendar_view_week,
-                        Colors.blue,
-                      ),
-                      _buildStatCard(
-                        'Monthly Sales',
-                        '₹${_stats!.monthlySales.toStringAsFixed(2)}',
-                        Icons.calendar_month,
-                        Colors.purple,
-                      ),
-                      _buildStatCard(
-                        'Today\'s Bills',
-                        _stats!.todayBillsCount.toString(),
-                        Icons.receipt_long,
-                        Colors.orange,
-                      ),
-                      _buildStatCard(
-                        'Low Stock Products',
-                        _stats!.lowStockCount.toString(),
-                        Icons.warning,
-                        Colors.red,
+                      const SizedBox(height: 24),
+                      GridView.count(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
+                        children: [
+                          _buildStatCard(
+                            'Today\'s Sales',
+                            '₹${_stats!.todaySales.toStringAsFixed(2)}',
+                            Icons.attach_money,
+                            Colors.green,
+                          ),
+                          _buildStatCard(
+                            'Weekly Sales',
+                            '₹${_stats!.weeklySales.toStringAsFixed(2)}',
+                            Icons.calendar_view_week,
+                            Colors.blue,
+                          ),
+                          _buildStatCard(
+                            'Monthly Sales',
+                            '₹${_stats!.monthlySales.toStringAsFixed(2)}',
+                            Icons.calendar_month,
+                            Colors.purple,
+                          ),
+                          _buildStatCard(
+                            'Today\'s Bills',
+                            _stats!.todayBillsCount.toString(),
+                            Icons.receipt_long,
+                            Colors.orange,
+                          ),
+                          _buildStatCard(
+                            'Low Stock Products',
+                            _stats!.lowStockCount.toString(),
+                            Icons.warning_amber,
+                            Colors.red,
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -94,24 +103,34 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildStatCard(String title, String value, IconData icon, Color color) {
     return Card(
-      elevation: 4,
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 48, color: color),
-            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, size: 40, color: color),
+            ),
+            const SizedBox(height: 16),
             Text(
               title,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 14),
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[600],
+                fontWeight: FontWeight.w500,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
               value,
               style: const TextStyle(
-                fontSize: 20,
+                fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
             ),

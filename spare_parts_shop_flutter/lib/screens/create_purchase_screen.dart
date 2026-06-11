@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../models/supplier.dart';
@@ -13,11 +12,11 @@ class CreatePurchaseScreen extends StatefulWidget {
 
 class _CreatePurchaseScreenState extends State<CreatePurchaseScreen> {
   final ApiService _apiService = ApiService();
-  List<Supplier> _suppliers = [];
+  final List<Supplier> _suppliers = [];
   Supplier? _selectedSupplier;
   String _gstType = 'EXCLUDED';
   double _discount = 0;
-  List<PurchaseItem> _items = [];
+  final List<PurchaseItem> _items = [];
   bool _isLoading = true;
   String _error = '';
 
@@ -31,7 +30,8 @@ class _CreatePurchaseScreenState extends State<CreatePurchaseScreen> {
     try {
       final suppliers = await _apiService.getSuppliers();
       setState(() {
-        _suppliers = suppliers;
+        _suppliers.clear();
+        _suppliers.addAll(suppliers);
         _isLoading = false;
       });
     } catch (e) {
@@ -45,9 +45,7 @@ class _CreatePurchaseScreenState extends State<CreatePurchaseScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Create Purchase'),
-      ),
+      appBar: AppBar(title: const Text('Create Purchase')),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _error.isNotEmpty
@@ -57,13 +55,12 @@ class _CreatePurchaseScreenState extends State<CreatePurchaseScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Supplier Dropdown
                       DropdownButtonFormField<Supplier>(
+                        initialValue: _selectedSupplier,
                         decoration: const InputDecoration(
                           labelText: 'Select Supplier',
                           border: OutlineInputBorder(),
                         ),
-                        value: _selectedSupplier,
                         items: _suppliers.map((supplier) {
                           return DropdownMenuItem(
                             value: supplier,
@@ -78,13 +75,12 @@ class _CreatePurchaseScreenState extends State<CreatePurchaseScreen> {
                       ),
                       const SizedBox(height: 16),
 
-                      // GST Type
                       DropdownButtonFormField<String>(
+                        initialValue: _gstType,
                         decoration: const InputDecoration(
                           labelText: 'GST Type',
                           border: OutlineInputBorder(),
                         ),
-                        value: _gstType,
                         items: const [
                           DropdownMenuItem(value: 'INCLUDED', child: Text('GST Included')),
                           DropdownMenuItem(value: 'EXCLUDED', child: Text('GST Excluded')),
@@ -99,7 +95,6 @@ class _CreatePurchaseScreenState extends State<CreatePurchaseScreen> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Discount
                       TextFormField(
                         decoration: const InputDecoration(
                           labelText: 'Discount (₹)',
@@ -114,7 +109,6 @@ class _CreatePurchaseScreenState extends State<CreatePurchaseScreen> {
                         },
                       ),
 
-                      // Items List
                       if (_items.isNotEmpty) ...[
                         const SizedBox(height: 24),
                         const Text(
@@ -137,7 +131,7 @@ class _CreatePurchaseScreenState extends State<CreatePurchaseScreen> {
                               },
                             ),
                           );
-                        }).toList(),
+                        }),
                       ],
 
                       const SizedBox(height: 24),
