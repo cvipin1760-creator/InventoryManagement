@@ -146,6 +146,52 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ],
       ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: Theme.of(context).primaryColor,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    AppConfig.appName,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                  ),
+                  Text(
+                    AppConfig.tagline,
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          color: Colors.white70,
+                        ),
+                  ),
+                ],
+              ),
+            ),
+            ..._titles
+                .asMap()
+                .entries
+                .map((e) => ListTile(
+                      leading: Icon(_icons[e.key]),
+                      title: Text(e.value),
+                      selected: _selectedIndex == e.key,
+                      onTap: () {
+                        setState(() {
+                          _selectedIndex = e.key;
+                        });
+                        Navigator.pop(context);
+                      },
+                    ))
+                .toList(),
+          ],
+        ),
+      ),
       body: _screens[_selectedIndex],
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
