@@ -247,12 +247,21 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
 
     final phone = _selectedCustomer!.phone.replaceAll(RegExp(r'[^0-9]'), '');
     final url = "https://wa.me/$phone?text=${Uri.encodeComponent(message)}";
-    if (await canLaunchUrl(Uri.parse(url))) {
-      await launchUrl(Uri.parse(url));
-    } else {
+    try {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('WhatsApp not installed or cannot be opened')),
+          );
+        }
+      }
+    } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not open WhatsApp')),
+          SnackBar(content: Text('Error opening WhatsApp: $e')),
         );
       }
     }
@@ -631,20 +640,33 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontWeight: isTotal ? FontWeight.bold : FontWeight.w500,
-              fontSize: isTotal ? 18 : 15,
-              color: isTotal ? Colors.blue : Colors.grey[800],
+          Expanded(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontWeight: isTotal ? FontWeight.bold : FontWeight.w500,
+                  fontSize: isTotal ? 16 : 14,
+                  color: isTotal ? Colors.blue : Colors.grey[800],
+                ),
+              ),
             ),
           ),
-          Text(
-            value,
-            style: TextStyle(
-              fontWeight: isTotal ? FontWeight.bold : FontWeight.w500,
-              fontSize: isTotal ? 18 : 15,
-              color: isTotal ? Colors.blue : Colors.grey[800],
+          const SizedBox(width: 8),
+          Expanded(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerRight,
+              child: Text(
+                value,
+                style: TextStyle(
+                  fontWeight: isTotal ? FontWeight.bold : FontWeight.w500,
+                  fontSize: isTotal ? 16 : 14,
+                  color: isTotal ? Colors.blue : Colors.grey[800],
+                ),
+              ),
             ),
           ),
         ],

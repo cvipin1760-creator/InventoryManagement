@@ -11,6 +11,7 @@ class AppTheme {
   static const Color successColor = Color(0xFF10B981);
   static const Color warningColor = Color(0xFFF59E0B);
   static const Color errorColor = Color(0xFFEF4444);
+  static const Color inputBackgroundColor = Color(0xFFF1F5F9);
 
   static ThemeData get lightTheme {
     return ThemeData(
@@ -36,6 +37,7 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         filled: true,
+        fillColor: inputBackgroundColor,
       ),
     );
   }
@@ -57,6 +59,7 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         filled: true,
+        fillColor: inputBackgroundColor,
       ),
     );
   }

@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
 import '../models/customer.dart';
 import '../models/supplier.dart';
 import '../models/product.dart';
@@ -344,6 +346,27 @@ class ApiService {
 
   Future<void> downloadInvoicePdf(int id) async {
     // TODO: Implement PDF download
+  }
+
+  Future<String> uploadBillAttachment(dynamic file) async {
+    final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/bills/upload'));
+    
+    if (file is XFile) {
+      request.files.add(await http.MultipartFile.fromPath('file', file.path));
+    } else if (file is PlatformFile) {
+      if (file.path != null) {
+        request.files.add(await http.MultipartFile.fromPath('file', file.path!));
+      } else if (file.bytes != null) {
+        request.files.add(http.MultipartFile.fromBytes('file', file.bytes!, filename: file.name));
+      }
+    }
+    
+    final response = await request.send();
+    if (response.statusCode == 200) {
+      return await response.stream.bytesToString();
+    } else {
+      throw Exception('Failed to upload attachment');
+    }
   }
 
   Future<List<Purchase>> getPurchases() async {

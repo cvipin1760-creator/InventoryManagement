@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../models/bill.dart';
+import '../constants/app_theme.dart';
 import 'create_bill_screen.dart';
-
+import 'package:intl/intl.dart';
+import 'bill_detail_screen.dart';
 class BillsScreen extends StatefulWidget {
   const BillsScreen({super.key});
 
@@ -17,7 +19,19 @@ class _BillsScreenState extends State<BillsScreen> {
   bool _isLoading = true;
   final TextEditingController _searchController = TextEditingController();
   String _searchMode = 'customer'; // 'customer' or 'product'
-  DateTimeRange? _dateRange;
+  DateTime? _selectedDate;
+  bool _isGridView = false;
+
+  Map<String, List<Bill>> get _groupedBills {
+    Map<String, List<Bill>> grouped = {};
+    for (var bill in _filteredBills) {
+      if (!grouped.containsKey(bill.billDate)) {
+        grouped[bill.billDate] = [];
+      }
+      grouped[bill.billDate]!.add(bill);
+    }
+    return grouped;
+  }
 
   @override
   void initState() {
@@ -71,32 +85,133 @@ class _BillsScreenState extends State<BillsScreen> {
     }
   }
 
-  Future<void> _filterByDateRange() async {
-    final picked = await showDateRangePicker(
+  Future<void> _selectDate() async {
+    final picked = await showDatePicker(
       context: context,
+      initialDate: _selectedDate ?? DateTime.now(),
       firstDate: DateTime(2020),
       lastDate: DateTime.now(),
     );
     if (picked != null) {
+      final dateStr = DateFormat('yyyy-MM-dd').format(picked);
       setState(() {
-        _dateRange = picked;
+        _selectedDate = picked;
       });
-      try {
-        final results = await _apiService.getBillsByDateRange(
-          picked.start.toIso8601String().split('T')[0],
-          picked.end.toIso8601String().split('T')[0],
-        );
-        setState(() {
-          _filteredBills = results;
-        });
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to filter bills by date: $e')),
-          );
-        }
-      }
+      final filtered = _bills.where((bill) => bill.billDate == dateStr).toList();
+      setState(() {
+        _filteredBills = filtered;
+      });
     }
+  }
+
+  Widget _buildBillCard(Bill bill) {
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => BillDetailScreen(bill: bill)),
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              AppTheme.primaryColor.withOpacity(0.08),
+              Colors.white,
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      bill.invoiceNumber,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.primaryColor,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: AppTheme.successColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      '₹${bill.finalAmount.toStringAsFixed(0)}',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.successColor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Icon(Icons.person_outline, size: 16, color: Colors.grey),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      bill.customer.name,
+                      style: TextStyle(color: Colors.grey[700], fontSize: 12),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  const Icon(Icons.shopping_bag_outlined, size: 16, color: Colors.grey),
+                  const SizedBox(width: 6),
+                  Text(
+                    '${bill.items.length} items',
+                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.bottomRight,
+                child: IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  icon: const Icon(Icons.download, color: AppTheme.primaryColor, size: 20),
+                  onPressed: () {
+                    _apiService.downloadInvoicePdf(bill.id);
+                  },
+                  tooltip: 'Download Invoice',
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -105,6 +220,7 @@ class _BillsScreenState extends State<BillsScreen> {
       floatingActionButton: FloatingActionButton.extended(
         icon: const Icon(Icons.add),
         label: const Text('Create Bill'),
+        backgroundColor: AppTheme.primaryColor,
         onPressed: () {
           Navigator.push(
             context,
@@ -114,92 +230,138 @@ class _BillsScreenState extends State<BillsScreen> {
       ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
+          Container(
+            padding: const EdgeInsets.fromLTRB(16, 40, 16, 16),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [AppTheme.primaryColor, Color(0xFF1E40AF)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Bills',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Bills',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(_isGridView ? Icons.list : Icons.grid_view, color: Colors.white),
+                      onPressed: () {
+                        setState(() {
+                          _isGridView = !_isGridView;
+                        });
+                      },
+                      tooltip: _isGridView ? 'List View' : 'Grid View',
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    hintText: 'Search bills...',
+                    hintStyle: const TextStyle(color: Colors.white70),
+                    prefixIcon: const Icon(Icons.search, color: Colors.white70),
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.clear, color: Colors.white70),
+                      onPressed: () {
+                        _searchController.clear();
+                        setState(() {
+                          _selectedDate = null;
+                        });
+                        _loadBills();
+                      },
+                    ),
+                    filled: true,
+                    fillColor: Colors.white.withOpacity(0.2),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                  style: const TextStyle(color: Colors.white),
+                  onChanged: _searchBills,
+                ),
+                const SizedBox(height: 12),
                 Row(
                   children: [
                     Expanded(
-                      child: TextField(
-                        controller: _searchController,
-                        decoration: InputDecoration(
-                          hintText: 'Search...',
-                          prefixIcon: const Icon(Icons.search),
-                          suffixIcon: IconButton(
-                            icon: const Icon(Icons.clear),
-                            onPressed: () {
-                              _searchController.clear();
-                              _loadBills();
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            value: _searchMode,
+                            dropdownColor: AppTheme.primaryColor,
+                            style: const TextStyle(color: Colors.white),
+                            items: const [
+                              DropdownMenuItem(value: 'customer', child: Text('By Customer')),
+                              DropdownMenuItem(value: 'product', child: Text('By Product')),
+                            ],
+                            onChanged: (value) {
+                              if (value != null) {
+                                setState(() {
+                                  _searchMode = value;
+                                });
+                                _searchBills(_searchController.text);
+                              }
                             },
                           ),
                         ),
-                        onChanged: _searchBills,
                       ),
                     ),
                     const SizedBox(width: 12),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
                       decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey[300]!),
+                        color: Colors.white.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          value: _searchMode,
-                          items: const [
-                            DropdownMenuItem(value: 'customer', child: Text('Customer')),
-                            DropdownMenuItem(value: 'product', child: Text('Product')),
-                          ],
-                          onChanged: (value) {
-                            if (value != null) {
-                              setState(() {
-                                _searchMode = value;
-                              });
-                              _searchBills(_searchController.text);
-                            }
-                          },
-                        ),
+                      child: IconButton(
+                        icon: const Icon(Icons.calendar_today, color: Colors.white),
+                        onPressed: _selectDate,
+                        tooltip: 'Select Date',
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    IconButton.filled(
-                      icon: const Icon(Icons.filter_list),
-                      onPressed: _filterByDateRange,
                     ),
                   ],
                 ),
-                if (_dateRange != null) ...[
+                if (_selectedDate != null) ...[
                   const SizedBox(height: 12),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
-                      color: Colors.blue[50],
+                      color: Colors.white.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.date_range, color: Colors.blue),
+                        const Icon(Icons.date_range, color: Colors.white),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            'Filtered: ${_dateRange!.start.toLocal().toString().split(' ')[0]} - ${_dateRange!.end.toLocal().toString().split(' ')[0]}',
-                            style: const TextStyle(color: Colors.blue),
+                            'Selected Date: ${DateFormat.yMMMMd().format(_selectedDate!)}',
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
                           ),
                         ),
                         TextButton(
                           onPressed: () {
                             setState(() {
-                              _dateRange = null;
+                              _selectedDate = null;
                             });
                             _loadBills();
                           },
+                          style: TextButton.styleFrom(foregroundColor: Colors.white),
                           child: const Text('Clear'),
                         ),
                       ],
@@ -211,80 +373,84 @@ class _BillsScreenState extends State<BillsScreen> {
           ),
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor))
                 : _filteredBills.isEmpty
                     ? Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.receipt_long, size: 80, color: Colors.grey[300]),
-                            const SizedBox(height: 16),
+                            Icon(Icons.receipt_long, size: 100, color: Colors.grey[300]),
+                            const SizedBox(height: 20),
                             Text(
                               'No bills found',
-                              style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                              style: TextStyle(fontSize: 20, color: Colors.grey[600], fontWeight: FontWeight.w500),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Create your first bill to get started',
+                              style: TextStyle(fontSize: 14, color: Colors.grey[500]),
                             ),
                           ],
                         ),
                       )
-                    : ListView.separated(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        separatorBuilder: (context, index) => const SizedBox(height: 12),
-                        itemCount: _filteredBills.length,
-                        itemBuilder: (context, index) {
-                          final bill = _filteredBills[index];
-                          return Card(
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          bill.invoiceNumber,
-                                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          'Customer: ${bill.customer.name}',
-                                          style: TextStyle(color: Colors.grey[600]),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                        'Date: ${bill.billDate}',
-                                        style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                    : ListView(
+                        padding: const EdgeInsets.all(16),
+                        children: _groupedBills.entries.map((entry) {
+                          final date = entry.key;
+                          final bills = entry.value;
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.primaryColor.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(8),
                                       ),
-                                      ],
+                                      child: Text(
+                                        DateFormat.yMMMMd().format(DateTime.parse(date)),
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppTheme.primaryColor,
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Text(
-                                    '₹${bill.finalAmount.toStringAsFixed(2)}',
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.blue,
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      '${bills.length} bill${bills.length != 1 ? 's' : ''}',
+                                      style: TextStyle(color: Colors.grey[600], fontSize: 12),
                                     ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  IconButton(
-                                    icon: const Icon(Icons.edit, color: Colors.grey),
-                                    onPressed: () {
-                                      // Navigate to edit bill screen
-                                    },
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.download, color: Colors.grey),
-                                    onPressed: () {
-                                      _apiService.downloadInvoicePdf(bill.id);
-                                    },
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
+                              _isGridView
+                                  ? GridView.builder(
+                                      shrinkWrap: true,
+                                      physics: const NeverScrollableScrollPhysics(),
+                                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 2,
+                                        crossAxisSpacing: 12,
+                                        mainAxisSpacing: 12,
+                                      ),
+                                      itemCount: bills.length,
+                                      itemBuilder: (context, index) => _buildBillCard(bills[index]),
+                                    )
+                                  : ListView.separated(
+                                      shrinkWrap: true,
+                                      physics: const NeverScrollableScrollPhysics(),
+                                      separatorBuilder: (context, index) => const SizedBox(height: 12),
+                                      itemCount: bills.length,
+                                      itemBuilder: (context, index) => _buildBillCard(bills[index]),
+                                    ),
+                              const SizedBox(height: 24),
+                            ],
                           );
-                        },
+                        }).toList(),
                       ),
           ),
         ],
