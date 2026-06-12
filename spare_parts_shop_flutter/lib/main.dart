@@ -5,6 +5,7 @@ import 'providers/auth_provider.dart';
 import 'providers/theme_provider.dart';
 import 'constants/app_config.dart';
 import 'constants/app_theme.dart';
+import 'services/keep_alive_service.dart';
 import 'screens/splash_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/dashboard_screen.dart';
@@ -21,6 +22,10 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final themeProvider = ThemeProvider();
   await themeProvider.loadTheme();
+  
+  // Start keep-alive service
+  KeepAliveService().start();
+  
   runApp(
     MultiProvider(
       providers: [

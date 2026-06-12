@@ -7,6 +7,8 @@ import com.spareparts.repository.CustomerRepository;
 import com.spareparts.repository.ProductRepository;
 import com.spareparts.repository.SupplierRepository;
 import com.spareparts.service.AuthService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,6 +19,8 @@ import java.util.Arrays;
 @Configuration
 public class DataInitializer {
 
+    private static final Logger logger = LoggerFactory.getLogger(DataInitializer.class);
+
     @Bean
     CommandLineRunner initDatabase(AuthService authService, 
                                  ProductRepository productRepository, 
@@ -25,7 +29,7 @@ public class DataInitializer {
         return args -> {
             // Initialize admin
             authService.createDefaultAdmin();
-            System.out.println("Default admin ready (username: admin, password: admin123)");
+            logger.info("Default admin initialized");
 
             // Add dummy products if empty
             if (productRepository.count() == 0) {
@@ -41,7 +45,7 @@ public class DataInitializer {
                 Product p10 = createProduct("Shock Absorber Rear", "SA-R01", 1800.0, 2800.0, 18.0, 20, 5);
 
                 productRepository.saveAll(Arrays.asList(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10));
-                System.out.println("Dummy products seeded.");
+                logger.info("Dummy products seeded");
             }
 
             // Add dummy customers if empty
@@ -53,7 +57,7 @@ public class DataInitializer {
                 Customer c5 = new Customer(null, "Vikram Malhotra", "9988776655", "Bangalore", LocalDateTime.now());
 
                 customerRepository.saveAll(Arrays.asList(c1, c2, c3, c4, c5));
-                System.out.println("Dummy customers seeded.");
+                logger.info("Dummy customers seeded");
             }
 
             // Add dummy suppliers if empty
@@ -63,7 +67,7 @@ public class DataInitializer {
                 Supplier s3 = new Supplier(null, "Quality Gears Ltd.", "9696969696", "info@qualitygears.com", "Pune, Maharashtra", LocalDateTime.now());
 
                 supplierRepository.saveAll(Arrays.asList(s1, s2, s3));
-                System.out.println("Dummy suppliers seeded.");
+                logger.info("Dummy suppliers seeded");
             }
         };
     }
@@ -82,4 +86,3 @@ public class DataInitializer {
         return p;
     }
 }
-
