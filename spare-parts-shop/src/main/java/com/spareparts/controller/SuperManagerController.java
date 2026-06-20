@@ -95,4 +95,15 @@ public class SuperManagerController {
         response.put("success", true);
         return ResponseEntity.ok(response);
     }
+
+    // ==================== Subscription Management ====================
+    @PutMapping("/businesses/{id}/subscription")
+    public Business updateSubscription(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        return businessService.updateSubscription(id, body.get("subscriptionPlan"));
+    }
+
+    @PutMapping("/businesses/{id}/subscription/status")
+    public Business toggleSubscriptionStatus(@PathVariable Long id, @RequestBody Map<String, Boolean> body) {
+        return businessService.toggleSubscriptionStatus(id, body.get("isActive"));
+    }
 }

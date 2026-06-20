@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:stock_pilot/core/constants/app_constants.dart';
@@ -28,6 +29,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     final username = await _storage.read(key: 'username');
     final role = await _storage.read(key: 'role');
     final businessIdStr = await _storage.read(key: 'businessId');
+    final featuresStr = await _storage.read(key: 'features');
 
     if (userStr != null) {
       final user = UserModel(
@@ -36,7 +38,19 @@ class AuthNotifier extends StateNotifier<AuthState> {
         role: role ?? '',
         businessId: businessIdStr != null ? int.tryParse(businessIdStr) : null,
       );
-      state = AuthAuthenticated(user: user);
+      
+      FeaturePermissionsModel? features;
+      if (featuresStr != null) {
+        try {
+          features = FeaturePermissionsModel.fromJson(
+          jsonDecode(featuresStr) as Map<String, dynamic>,
+        );
+        } catch (e) {
+          features = null;
+        }
+      }
+      
+      state = AuthAuthenticated(user: user, features: features);
     } else {
       state = AuthUnauthenticated();
     }
@@ -63,7 +77,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
         businessId: loginResponse.businessId,
       );
 
-      // Save user details
+      // Save user details and token
+      if (loginResponse.token != null) {
+        await _storage.write(
+          key: AppConstants.storageKeyToken,
+          value: loginResponse.token!,
+        );
+      }
       await _storage.write(
         key: AppConstants.storageKeyUser,
         value: user.id.toString(),
@@ -72,6 +92,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
       await _storage.write(key: 'role', value: user.role);
       if (user.businessId != null) {
         await _storage.write(key: 'businessId', value: user.businessId.toString());
+      }
+      if (loginResponse.features != null) {
+        await _storage.write(
+          key: 'features',
+          value: jsonEncode(loginResponse.features!.toJson()),
+        );
       }
       
       state = AuthAuthenticated(
@@ -89,6 +115,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     await _storage.delete(key: 'username');
     await _storage.delete(key: 'role');
     await _storage.delete(key: 'businessId');
+    await _storage.delete(key: 'features');
     state = AuthUnauthenticated();
   }
 }

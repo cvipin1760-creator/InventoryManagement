@@ -34,6 +34,16 @@ public class Business {
     @Column(name = "logo_path")
     private String logoPath;
 
+    // Subscription fields
+    @Column(nullable = false)
+    private String subscriptionPlan = "TRIAL"; // TRIAL, MONTHLY, YEARLY
+
+    private LocalDateTime subscriptionStartDate;
+
+    private LocalDateTime subscriptionEndDate;
+
+    private Boolean isSubscriptionActive = true;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 }

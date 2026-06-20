@@ -8,6 +8,7 @@ part 'login_response_model.g.dart';
 class LoginResponseModel with _$LoginResponseModel {
   const factory LoginResponseModel({
     int? userId,
+    String? token,
     String? username,
     String? role,
     int? businessId,
