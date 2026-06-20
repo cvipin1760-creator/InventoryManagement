@@ -5,7 +5,7 @@ export interface User {
   id: number;
   username: string;
   email?: string;
-  role: 'SUPER_ADMIN' | 'ADMIN' | 'EMPLOYEE' | 'CUSTOMER';
+  role: 'SUPER_MANAGER' | 'ADMIN' | 'EMPLOYEE' | 'CUSTOMER';
   businessId?: number;
 }
 

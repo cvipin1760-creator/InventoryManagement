@@ -65,7 +65,7 @@ export default function AdminManagement() {
     try {
       setLoading(true)
       const response = await apiClient.get('/auth/users')
-      setAdmins(response.data.filter((u: any) => u.role === 'ADMIN' || u.role === 'SUPER_ADMIN'))
+      setAdmins(response.data.filter((u: any) => u.role === 'ADMIN' || u.role === 'SUPER_MANAGER'))
     } catch (err: any) {
       setError(err.response?.data?.message || err.message || 'Failed to load admins')
     } finally {
@@ -208,7 +208,7 @@ export default function AdminManagement() {
                         px: 2,
                         py: 0.5,
                         borderRadius: 1,
-                        backgroundColor: admin.role === 'SUPER_ADMIN' ? 'primary.main' : 'secondary.main',
+                        backgroundColor: admin.role === 'SUPER_MANAGER' ? 'primary.main' : 'secondary.main',
                         color: 'white',
                         display: 'inline-block',
                         fontWeight: 'bold'
@@ -242,7 +242,7 @@ export default function AdminManagement() {
                         <Edit />
                       </IconButton>
                     </Tooltip>
-                    {admin.role !== 'SUPER_ADMIN' && (
+                    {admin.role !== 'SUPER_MANAGER' && (
                       <>
                         <Tooltip title={admin.enabled ? 'Suspend' : 'Activate'}>
                           <IconButton onClick={() => handleToggleStatus(admin.id, admin.enabled)}>

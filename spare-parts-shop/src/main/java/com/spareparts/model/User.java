@@ -29,7 +29,7 @@ public class User {
     private String password;
 
     @Column(nullable = false)
-    private String role = "CUSTOMER"; // SUPER_ADMIN, ADMIN, EMPLOYEE, CUSTOMER
+    private String role = "CUSTOMER"; // SUPER_MANAGER, ADMIN, EMPLOYEE, CUSTOMER
 
     @Column(name = "is_enabled")
     private Boolean enabled = true;

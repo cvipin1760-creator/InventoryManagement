@@ -52,7 +52,7 @@ const Sidebar = ({ open, onToggle, onClose }: { open: boolean; onToggle: () => v
   // Define menu items based on user role
   const getMenuItems = () => {
     switch (user?.role) {
-      case 'SUPER_ADMIN':
+      case 'SUPER_MANAGER':
         return [
           { label: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
           { label: 'Admin Management', icon: <AdminPanelSettings />, path: '/admins' },

@@ -30,6 +30,9 @@ public class DataInitializer {
                                    SupplierRepository supplierRepository,
                                    BusinessRepository businessRepository) {
         return args -> {
+            // Initialize super manager first
+            authService.createDefaultSuperManager();
+            logger.info("Default super manager initialized");
             // Initialize admin (which creates default business)
             authService.createDefaultAdmin();
             logger.info("Default admin initialized");

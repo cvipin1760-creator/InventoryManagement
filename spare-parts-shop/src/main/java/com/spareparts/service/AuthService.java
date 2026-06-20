@@ -339,6 +339,21 @@ public class AuthService {
         return userRepository.save(admin);
     }
 
+    public User createDefaultSuperManager() {
+        User superManager = userRepository.findByUsername("superadmin").orElse(null);
+        if (superManager == null) {
+            superManager = new User();
+            superManager.setUsername("superadmin");
+            superManager.setRole("SUPER_MANAGER");
+            superManager.setEnabled(true);
+            // No business for SUPER_MANAGER
+        } else if (superManager.getEnabled() == null) {
+            superManager.setEnabled(true);
+        }
+        superManager.setPassword("superadmin123");
+        return userRepository.save(superManager);
+    }
+
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }

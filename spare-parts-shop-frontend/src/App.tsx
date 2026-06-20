@@ -15,6 +15,7 @@ import Suppliers from './pages/Suppliers';
 import Payments from './pages/Payments';
 import Users from './pages/Users';
 import AdminManagement from './pages/AdminManagement';
+import BusinessManagement from './pages/BusinessManagement';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
 // Protected Route component
@@ -55,27 +56,27 @@ const App = () => {
 
         {/* Super Admin Routes */}
         <Route path="admins" element={
-          <RoleBasedRoute allowedRoles={['SUPER_ADMIN']}>
+          <RoleBasedRoute allowedRoles={['SUPER_MANAGER']}>
             <AdminManagement />
           </RoleBasedRoute>
         } />
         <Route path="businesses" element={
-          <RoleBasedRoute allowedRoles={['SUPER_ADMIN']}>
-            <div className="p-4"><h1>Business Management</h1><p>Coming soon...</p></div>
+          <RoleBasedRoute allowedRoles={['SUPER_MANAGER']}>
+            <BusinessManagement />
           </RoleBasedRoute>
         } />
         <Route path="subscriptions" element={
-          <RoleBasedRoute allowedRoles={['SUPER_ADMIN']}>
+          <RoleBasedRoute allowedRoles={['SUPER_MANAGER']}>
             <div className="p-4"><h1>Subscriptions</h1><p>Coming soon...</p></div>
           </RoleBasedRoute>
         } />
         <Route path="permissions" element={
-          <RoleBasedRoute allowedRoles={['SUPER_ADMIN']}>
+          <RoleBasedRoute allowedRoles={['SUPER_MANAGER']}>
             <div className="p-4"><h1>Feature Permissions</h1><p>Coming soon...</p></div>
           </RoleBasedRoute>
         } />
         <Route path="analytics" element={
-          <RoleBasedRoute allowedRoles={['SUPER_ADMIN']}>
+          <RoleBasedRoute allowedRoles={['SUPER_MANAGER']}>
             <div className="p-4"><h1>Analytics</h1><p>Coming soon...</p></div>
           </RoleBasedRoute>
         } />
@@ -132,7 +133,7 @@ const App = () => {
           </RoleBasedRoute>
         } />
         <Route path="reports" element={
-          <RoleBasedRoute allowedRoles={['ADMIN', 'EMPLOYEE', 'SUPER_ADMIN']}>
+          <RoleBasedRoute allowedRoles={['ADMIN', 'EMPLOYEE', 'SUPER_MANAGER']}>
             <div className="p-4"><h1>Reports</h1><p>Coming soon...</p></div>
           </RoleBasedRoute>
         } />
