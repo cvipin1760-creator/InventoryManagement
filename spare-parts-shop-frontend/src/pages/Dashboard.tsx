@@ -1,4 +1,4 @@
-import { Box, Grid, Typography, Card, CardContent, useTheme } from '@mui/material';
+import { Box, Typography, Card, CardContent, useTheme } from '@mui/material';
 import {
   AttachMoney,
   ShoppingCart,
@@ -37,8 +37,8 @@ const Dashboard = () => {
             <Typography variant="h4" sx={{ fontWeight: 700, mb: 3 }}>
               Platform Overview
             </Typography>
-            <Grid container spacing={3} sx={{ mb: 4 }}>
-              <Grid item xs={12} sm={6} md={3}>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 4 }}>
+              <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
                 <KPICard
                   title="Total Businesses"
                   value="284"
@@ -47,8 +47,8 @@ const Dashboard = () => {
                   changeType="increase"
                   subtitle="from last month"
                 />
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
+              </Box>
+              <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
                 <KPICard
                   title="Active Businesses"
                   value="267"
@@ -57,8 +57,8 @@ const Dashboard = () => {
                   changeType="increase"
                   subtitle="active right now"
                 />
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
+              </Box>
+              <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
                 <KPICard
                   title="Monthly Revenue"
                   value="₹1,24,580"
@@ -67,8 +67,8 @@ const Dashboard = () => {
                   changeType="increase"
                   subtitle="vs last month"
                 />
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
+              </Box>
+              <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
                 <KPICard
                   title="Total Users"
                   value="1,240"
@@ -77,11 +77,11 @@ const Dashboard = () => {
                   changeType="increase"
                   subtitle="registered users"
                 />
-              </Grid>
-            </Grid>
+              </Box>
+            </Box>
 
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={8}>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+              <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(66.666% - 12px)' } }}>
                 <Card sx={{ borderRadius: 3 }}>
                   <CardContent>
                     <Typography variant="h6" sx={{ fontWeight: 600, mb: 3 }}>
@@ -113,8 +113,8 @@ const Dashboard = () => {
                     </ResponsiveContainer>
                   </CardContent>
                 </Card>
-              </Grid>
-              <Grid item xs={12} md={4}>
+              </Box>
+              <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(33.333% - 12px)' } }}>
                 <Card sx={{ borderRadius: 3, height: '100%' }}>
                   <CardContent>
                     <Typography variant="h6" sx={{ fontWeight: 600, mb: 3 }}>
@@ -162,8 +162,8 @@ const Dashboard = () => {
                     </Box>
                   </CardContent>
                 </Card>
-              </Grid>
-            </Grid>
+              </Box>
+            </Box>
           </Box>
         );
       case 'CUSTOMER':
@@ -172,40 +172,40 @@ const Dashboard = () => {
             <Typography variant="h4" sx={{ fontWeight: 700, mb: 3 }}>
               My Dashboard
             </Typography>
-            <Grid container spacing={3} sx={{ mb: 4 }}>
-              <Grid item xs={12} sm={6} md={3}>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 4 }}>
+              <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
                 <KPICard
                   title="Total Purchases"
                   value="12"
                   icon={<ShoppingCart />}
                   subtitle="orders made"
                 />
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
+              </Box>
+              <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
                 <KPICard
                   title="Active Warranties"
                   value="3"
                   icon={<NewReleases />}
                   subtitle="currently active"
                 />
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
+              </Box>
+              <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
                 <KPICard
                   title="Active EMI"
                   value="1"
                   icon={<AttachMoney />}
                   subtitle="₹8,500 remaining"
                 />
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
+              </Box>
+              <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
                 <KPICard
                   title="Total Spent"
                   value="₹45,800"
                   icon={<Receipt />}
                   subtitle="lifetime purchases"
                 />
-              </Grid>
-            </Grid>
+              </Box>
+            </Box>
           </Box>
         );
       default: // ADMIN, EMPLOYEE
@@ -214,8 +214,8 @@ const Dashboard = () => {
             <Typography variant="h4" sx={{ fontWeight: 700, mb: 3 }}>
               Business Overview
             </Typography>
-            <Grid container spacing={3} sx={{ mb: 4 }}>
-              <Grid item xs={12} sm={6} md={3}>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 4 }}>
+              <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
                 <KPICard
                   title="Today's Sales"
                   value="₹5,840"
@@ -224,24 +224,24 @@ const Dashboard = () => {
                   changeType="increase"
                   subtitle="from yesterday"
                 />
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
+              </Box>
+              <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
                 <KPICard
                   title="Total Products"
                   value="248"
                   icon={<Inventory />}
                   subtitle="in stock"
                 />
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
+              </Box>
+              <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
                 <KPICard
                   title="Low Stock"
                   value="18"
                   icon={<NewReleases />}
                   subtitle="need restock"
                 />
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
+              </Box>
+              <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
                 <KPICard
                   title="Customers"
                   value="128"
@@ -250,11 +250,11 @@ const Dashboard = () => {
                   changeType="increase"
                   subtitle="new this month"
                 />
-              </Grid>
-            </Grid>
+              </Box>
+            </Box>
 
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={8}>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+              <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(66.666% - 12px)' } }}>
                 <Card sx={{ borderRadius: 3 }}>
                   <CardContent>
                     <Typography variant="h6" sx={{ fontWeight: 600, mb: 3 }}>
@@ -286,8 +286,8 @@ const Dashboard = () => {
                     </ResponsiveContainer>
                   </CardContent>
                 </Card>
-              </Grid>
-              <Grid item xs={12} md={4}>
+              </Box>
+              <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(33.333% - 12px)' } }}>
                 <Card sx={{ borderRadius: 3, height: '100%' }}>
                   <CardContent>
                     <Typography variant="h6" sx={{ fontWeight: 600, mb: 3 }}>
@@ -324,8 +324,8 @@ const Dashboard = () => {
                     </Box>
                   </CardContent>
                 </Card>
-              </Grid>
-            </Grid>
+              </Box>
+            </Box>
           </Box>
         );
     }

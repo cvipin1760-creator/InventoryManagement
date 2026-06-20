@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { useAppDispatch } from '../store/hooks';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { setCredentials } from '../store/slices/authSlice';
 import { useMutation } from '@tanstack/react-query';
 import { authApi, LoginCredentials, LoginResponse } from '../api/authApi';
+import type { RootState } from '../store';
 import {
   Container,
   Box,
@@ -27,12 +28,11 @@ import {
   LightMode,
 } from '@mui/icons-material';
 import { toggleTheme } from '../store/slices/themeSlice';
-import { useAppSelector } from '../store/hooks';
 
 const LoginPage = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const themeMode = useAppSelector((state) => state.theme.mode);
+  const themeMode = useAppSelector((state: RootState) => state.theme.mode);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -244,17 +244,19 @@ const LoginPage = () => {
                 variant="outlined"
                 required
                 autoComplete="current-password"
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        onClick={() => setShowPassword(!showPassword)}
-                        edge="end"
-                      >
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
+                slotProps={{
+                  input: {
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={() => setShowPassword(!showPassword)}
+                          edge="end"
+                        >
+                          {showPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  },
                 }}
               />
 

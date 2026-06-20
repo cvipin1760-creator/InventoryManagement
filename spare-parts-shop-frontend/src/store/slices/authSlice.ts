@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import type { RootState } from '../store';
+import type { RootState } from '../index';
 
 export interface User {
   id: number;
@@ -42,7 +42,7 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     setCredentials: (
-      state,
+      state: AuthState,
       action: PayloadAction<{
         user: User;
         features?: FeaturePermissions;
@@ -58,7 +58,7 @@ const authSlice = createSlice({
       }
       localStorage.setItem('user', JSON.stringify(action.payload.user));
     },
-    logout: (state) => {
+    logout: (state: AuthState) => {
       state.isAuthenticated = false;
       state.user = null;
       state.features = null;

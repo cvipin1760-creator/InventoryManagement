@@ -4,7 +4,11 @@ import com.spareparts.dto.LoginRequest;
 import com.spareparts.dto.LoginResponse;
 import com.spareparts.dto.RegisterRequest;
 import com.spareparts.dto.VerifyOtpRequest;
+import com.spareparts.model.Business;
+import com.spareparts.model.FeaturePermissions;
 import com.spareparts.model.User;
+import com.spareparts.repository.BusinessRepository;
+import com.spareparts.repository.FeaturePermissionsRepository;
 import com.spareparts.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,6 +21,12 @@ public class AuthService {
 
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private BusinessRepository businessRepository;
+    
+    @Autowired
+    private FeaturePermissionsRepository featurePermissionsRepository;
 
     @Autowired
     private EmailService emailService;
@@ -38,8 +48,30 @@ public class AuthService {
         if (!password.equals(user.getPassword())) {
             throw new RuntimeException("Invalid credentials");
         }
+        
+        LoginResponse.FeaturePermissionsDto featuresDto = null;
+        if (user.getBusiness() != null) {
+            FeaturePermissions fp = featurePermissionsRepository.findByBusinessId(user.getBusiness().getId()).orElse(null);
+            if (fp != null) {
+                featuresDto = new LoginResponse.FeaturePermissionsDto(
+                        fp.getInventoryEnabled(),
+                        fp.getBillingEnabled(),
+                        fp.getWarrantyEnabled(),
+                        fp.getEmiEnabled(),
+                        fp.getGstEnabled(),
+                        fp.getCustomerPortalEnabled(),
+                        fp.getReportsEnabled(),
+                        fp.getWhatsappNotificationsEnabled(),
+                        fp.getSmsNotificationsEnabled(),
+                        fp.getMultiUserSupportEnabled(),
+                        fp.getEmployeeManagementEnabled()
+                );
+            }
+        }
 
-        return new LoginResponse(user.getUsername(), user.getRole(), "Login successful");
+        return new LoginResponse(user.getId(), user.getUsername(), user.getRole(), 
+                user.getBusiness() != null ? user.getBusiness().getId() : null, 
+                featuresDto, "Login successful");
     }
 
     public void register(RegisterRequest request) {
@@ -91,7 +123,7 @@ public class AuthService {
         newUser.setUsername(request.getUsername());
         newUser.setEmail(request.getEmail());
         newUser.setPassword(request.getPassword());
-        newUser.setRole("USER");
+        newUser.setRole("CUSTOMER"); // Default to customer
         newUser.setEnabled(false);
         saveAndSendOtp(newUser);
     }
@@ -200,7 +232,7 @@ public class AuthService {
             user.setUsername(username);
             user.setEmail(email);
             user.setPassword("sso");
-            user.setRole("USER");
+            user.setRole("CUSTOMER"); // Default to customer
             user.setEnabled(true);
             existing = userRepository.save(user);
         } else {
@@ -209,7 +241,30 @@ public class AuthService {
                 userRepository.save(existing);
             }
         }
-        return new LoginResponse(existing.getUsername(), existing.getRole(), "Login successful");
+        
+        LoginResponse.FeaturePermissionsDto featuresDto = null;
+        if (existing.getBusiness() != null) {
+            FeaturePermissions fp = featurePermissionsRepository.findByBusinessId(existing.getBusiness().getId()).orElse(null);
+            if (fp != null) {
+                featuresDto = new LoginResponse.FeaturePermissionsDto(
+                        fp.getInventoryEnabled(),
+                        fp.getBillingEnabled(),
+                        fp.getWarrantyEnabled(),
+                        fp.getEmiEnabled(),
+                        fp.getGstEnabled(),
+                        fp.getCustomerPortalEnabled(),
+                        fp.getReportsEnabled(),
+                        fp.getWhatsappNotificationsEnabled(),
+                        fp.getSmsNotificationsEnabled(),
+                        fp.getMultiUserSupportEnabled(),
+                        fp.getEmployeeManagementEnabled()
+                );
+            }
+        }
+        
+        return new LoginResponse(existing.getId(), existing.getUsername(), existing.getRole(), 
+                existing.getBusiness() != null ? existing.getBusiness().getId() : null, 
+                featuresDto, "Login successful");
     }
 
     private GoogleTokenInfo verifyGoogleIdToken(String idToken) {
@@ -259,6 +314,23 @@ public class AuthService {
             admin.setUsername("admin");
             admin.setRole("ADMIN");
             admin.setEnabled(true);
+            
+            // Create default business
+            Business business = new Business();
+            business.setBusinessName("Default Business");
+            business.setContactNumber("1234567890");
+            business = businessRepository.save(business);
+            
+            // Create default feature permissions
+            FeaturePermissions fp = new FeaturePermissions();
+            fp.setBusiness(business);
+            fp.setInventoryEnabled(true);
+            fp.setBillingEnabled(true);
+            fp.setGstEnabled(true);
+            fp.setReportsEnabled(true);
+            featurePermissionsRepository.save(fp);
+            
+            admin.setBusiness(business);
         } else if (admin.getEnabled() == null) {
             admin.setEnabled(true);
         }

@@ -26,7 +26,7 @@ public class AuthController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.status(401)
-                    .body(new LoginResponse(null, null, e.getMessage()));
+                    .body(new LoginResponse(null, null, null, null, null, e.getMessage()));
         }
     }
 
@@ -123,7 +123,7 @@ public class AuthController {
             LoginResponse response = authService.loginWithGoogle(request.getIdToken());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ResponseEntity.status(401).body(new LoginResponse(null, null, e.getMessage()));
+            return ResponseEntity.status(401).body(new LoginResponse(null, null, null, null, null, e.getMessage()));
         }
     }
 }

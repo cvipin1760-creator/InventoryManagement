@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
+import type { RootState } from '../store';
 import {
   Box,
   AppBar,
@@ -14,11 +15,9 @@ import {
   useMediaQuery,
 } from '@mui/material';
 import {
-  Menu as MenuIcon,
   Notifications,
   DarkMode,
   LightMode,
-  AccountCircle,
 } from '@mui/icons-material';
 import Sidebar from './Sidebar';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
@@ -34,7 +33,7 @@ const Layout = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
-  const themeMode = useAppSelector((state) => state.theme.mode);
+  const themeMode = useAppSelector((state: RootState) => state.theme.mode);
   const user = useAppSelector(selectCurrentUser);
   const [notificationCount] = useState(3); // Mock notification count
 

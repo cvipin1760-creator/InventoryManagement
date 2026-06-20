@@ -12,11 +12,11 @@ const themeSlice = createSlice({
   name: 'theme',
   initialState,
   reducers: {
-    toggleTheme: (state, action: PayloadAction<'light' | 'dark'>) => {
+    toggleTheme: (state: ThemeState, action: PayloadAction<'light' | 'dark'>) => {
       state.mode = action.payload;
       localStorage.setItem('theme', action.payload);
     },
-    initializeTheme: (state) => {
+    initializeTheme: (state: ThemeState) => {
       const savedTheme = localStorage.getItem('theme');
       if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark')) {
         state.mode = savedTheme;
