@@ -126,4 +126,20 @@ public class AuthController {
             return ResponseEntity.status(401).body(new LoginResponse(null, null, null, null, null, e.getMessage()));
         }
     }
+
+    @PostMapping("/users")
+    public ResponseEntity<String> createUser(@RequestBody com.spareparts.dto.CreateUserRequest request) {
+        try {
+            authService.createUser(
+                    request.getUsername(),
+                    request.getEmail(),
+                    request.getPassword(),
+                    request.getRole(),
+                    request.getEnabled()
+            );
+            return ResponseEntity.ok("User created successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(400).body(e.getMessage());
+        }
+    }
 }

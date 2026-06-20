@@ -14,6 +14,17 @@ public class LoginResponse {
     private Long businessId;
     private FeaturePermissionsDto features;
     private String message;
+    private String token; // For backward compatibility
+
+    public LoginResponse(Long userId, String username, String role, Long businessId, FeaturePermissionsDto features, String message) {
+        this.userId = userId;
+        this.username = username;
+        this.role = role;
+        this.businessId = businessId;
+        this.features = features;
+        this.message = message;
+        this.token = null;
+    }
 
     @Data
     @NoArgsConstructor

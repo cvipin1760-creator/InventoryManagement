@@ -81,6 +81,7 @@ const Sidebar = ({ open, onToggle, onClose }: { open: boolean; onToggle: () => v
           { label: 'Suppliers', icon: <LocalShipping />, path: '/suppliers' },
           { label: 'Payments', icon: <Payments />, path: '/payments' },
           { label: 'Reports', icon: <BarChart />, path: '/reports' },
+          { label: 'Users', icon: <People />, path: '/users' },
         ];
     }
   };

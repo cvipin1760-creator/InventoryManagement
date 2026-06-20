@@ -6,11 +6,12 @@ import { ThemeProvider } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { store } from './store';
+import { store, RootState } from './store';
 import { initializeTheme } from './store/slices/themeSlice';
 import { lightTheme, darkTheme } from './theme';
 import { useAppSelector, useAppDispatch } from './store/hooks';
 import App from './App';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import './index.css';
 
 // Create a QueryClient instance
@@ -25,7 +26,7 @@ const queryClient = new QueryClient({
 
 function ThemeInitializer() {
   const dispatch = useAppDispatch();
-  const themeMode = useAppSelector((state) => state.theme.mode);
+  const themeMode = useAppSelector((state: RootState) => state.theme.mode);
 
   useEffect(() => {
     dispatch(initializeTheme());
@@ -36,7 +37,9 @@ function ThemeInitializer() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <App />
+      <ErrorBoundary>
+        <App />
+      </ErrorBoundary>
     </ThemeProvider>
   );
 }

@@ -4,6 +4,18 @@ import { selectIsAuthenticated, selectCurrentUser } from './store/slices/authSli
 import Layout from './components/Layout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import Products from './pages/Products';
+import Customers from './pages/Customers';
+import Bills from './pages/Bills';
+import CreateBill from './pages/CreateBill';
+import EditBill from './pages/EditBill';
+import Purchases from './pages/Purchases';
+import CreatePurchase from './pages/CreatePurchase';
+import Suppliers from './pages/Suppliers';
+import Payments from './pages/Payments';
+import Users from './pages/Users';
+import AdminManagement from './pages/AdminManagement';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 // Protected Route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -44,95 +56,115 @@ const App = () => {
         {/* Super Admin Routes */}
         <Route path="admins" element={
           <RoleBasedRoute allowedRoles={['SUPER_ADMIN']}>
-            <div>Admin Management</div>
+            <AdminManagement />
           </RoleBasedRoute>
         } />
         <Route path="businesses" element={
           <RoleBasedRoute allowedRoles={['SUPER_ADMIN']}>
-            <div>Business Management</div>
+            <div className="p-4"><h1>Business Management</h1><p>Coming soon...</p></div>
           </RoleBasedRoute>
         } />
         <Route path="subscriptions" element={
           <RoleBasedRoute allowedRoles={['SUPER_ADMIN']}>
-            <div>Subscriptions</div>
+            <div className="p-4"><h1>Subscriptions</h1><p>Coming soon...</p></div>
           </RoleBasedRoute>
         } />
         <Route path="permissions" element={
           <RoleBasedRoute allowedRoles={['SUPER_ADMIN']}>
-            <div>Feature Permissions</div>
+            <div className="p-4"><h1>Feature Permissions</h1><p>Coming soon...</p></div>
           </RoleBasedRoute>
         } />
         <Route path="analytics" element={
           <RoleBasedRoute allowedRoles={['SUPER_ADMIN']}>
-            <div>Analytics</div>
+            <div className="p-4"><h1>Analytics</h1><p>Coming soon...</p></div>
           </RoleBasedRoute>
         } />
 
         {/* Admin/Employee Routes */}
         <Route path="products" element={
           <RoleBasedRoute allowedRoles={['ADMIN', 'EMPLOYEE']}>
-            <div>Products</div>
+            <Products />
           </RoleBasedRoute>
         } />
         <Route path="customers" element={
           <RoleBasedRoute allowedRoles={['ADMIN', 'EMPLOYEE']}>
-            <div>Customers</div>
+            <Customers />
           </RoleBasedRoute>
         } />
         <Route path="bills" element={
           <RoleBasedRoute allowedRoles={['ADMIN', 'EMPLOYEE']}>
-            <div>Billing</div>
+            <Bills />
+          </RoleBasedRoute>
+        } />
+        <Route path="bills/create" element={
+          <RoleBasedRoute allowedRoles={['ADMIN', 'EMPLOYEE']}>
+            <CreateBill />
+          </RoleBasedRoute>
+        } />
+        <Route path="bills/:id/edit" element={
+          <RoleBasedRoute allowedRoles={['ADMIN', 'EMPLOYEE']}>
+            <EditBill />
           </RoleBasedRoute>
         } />
         <Route path="purchases" element={
           <RoleBasedRoute allowedRoles={['ADMIN', 'EMPLOYEE']}>
-            <div>Purchases</div>
+            <Purchases />
+          </RoleBasedRoute>
+        } />
+        <Route path="purchases/create" element={
+          <RoleBasedRoute allowedRoles={['ADMIN', 'EMPLOYEE']}>
+            <CreatePurchase />
           </RoleBasedRoute>
         } />
         <Route path="suppliers" element={
           <RoleBasedRoute allowedRoles={['ADMIN', 'EMPLOYEE']}>
-            <div>Suppliers</div>
+            <Suppliers />
           </RoleBasedRoute>
         } />
         <Route path="payments" element={
           <RoleBasedRoute allowedRoles={['ADMIN', 'EMPLOYEE']}>
-            <div>Payments</div>
+            <Payments />
+          </RoleBasedRoute>
+        } />
+        <Route path="users" element={
+          <RoleBasedRoute allowedRoles={['ADMIN']}>
+            <Users />
           </RoleBasedRoute>
         } />
         <Route path="reports" element={
           <RoleBasedRoute allowedRoles={['ADMIN', 'EMPLOYEE', 'SUPER_ADMIN']}>
-            <div>Reports</div>
+            <div className="p-4"><h1>Reports</h1><p>Coming soon...</p></div>
           </RoleBasedRoute>
         } />
 
         {/* Customer Routes */}
         <Route path="my-products" element={
           <RoleBasedRoute allowedRoles={['CUSTOMER']}>
-            <div>My Products</div>
+            <div className="p-4"><h1>My Products</h1><p>Coming soon...</p></div>
           </RoleBasedRoute>
         } />
         <Route path="my-bills" element={
           <RoleBasedRoute allowedRoles={['CUSTOMER']}>
-            <div>My Bills</div>
+            <div className="p-4"><h1>My Bills</h1><p>Coming soon...</p></div>
           </RoleBasedRoute>
         } />
         <Route path="warranties" element={
           <RoleBasedRoute allowedRoles={['CUSTOMER', 'ADMIN', 'EMPLOYEE']}>
-            <div>Warranties</div>
+            <div className="p-4"><h1>Warranties</h1><p>Coming soon...</p></div>
           </RoleBasedRoute>
         } />
         <Route path="my-emi" element={
           <RoleBasedRoute allowedRoles={['CUSTOMER']}>
-            <div>My EMI</div>
+            <div className="p-4"><h1>My EMI</h1><p>Coming soon...</p></div>
           </RoleBasedRoute>
         } />
         <Route path="support" element={
           <RoleBasedRoute allowedRoles={['CUSTOMER']}>
-            <div>Support</div>
+            <div className="p-4"><h1>Support</h1><p>Coming soon...</p></div>
           </RoleBasedRoute>
         } />
 
-        <Route path="settings" element={<div>Settings</div>} />
+        <Route path="settings" element={<div className="p-4"><h1>Settings</h1><p>Coming soon...</p></div>} />
       </Route>
 
       {/* Catch-all */}

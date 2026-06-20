@@ -155,7 +155,7 @@ export default function Bills() {
           >
             {backupLoading ? 'Backing up...' : 'Download Backup'}
           </button>
-          <Link to="/bills/new" className="btn btn-primary">New Bill</Link>
+          <Link to="/bills/create" className="btn btn-primary">New Bill</Link>
         </div>
       </div>
       {error && <div className="error">{error}</div>}

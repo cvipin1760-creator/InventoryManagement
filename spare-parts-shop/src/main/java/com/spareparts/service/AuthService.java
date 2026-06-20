@@ -364,4 +364,21 @@ public class AuthService {
         }
         userRepository.save(user);
     }
+
+    public User createUser(String username, String email, String password, String role, Boolean enabled) {
+        if (userRepository.findByUsername(username).isPresent()) {
+            throw new RuntimeException("Username already exists");
+        }
+        if (userRepository.findByEmail(email).isPresent()) {
+            throw new RuntimeException("Email already exists");
+        }
+
+        User user = new User();
+        user.setUsername(username);
+        user.setEmail(email);
+        user.setPassword(password);
+        user.setRole(role);
+        user.setEnabled(enabled != null ? enabled : true);
+        return userRepository.save(user);
+    }
 }
