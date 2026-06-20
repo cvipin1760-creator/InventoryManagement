@@ -1,10 +1,12 @@
-
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:provider/provider.dart';
 import '../services/api_service.dart';
 import '../models/dashboard_stats.dart';
 import '../constants/app_theme.dart';
+import '../providers/auth_provider.dart';
+import 'users_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -45,7 +47,52 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+    final isAdmin = authProvider.isAdmin;
+
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Stock Pilot'),
+        actions: [
+          PopupMenuButton<dynamic>(
+            itemBuilder: (context) => [
+              PopupMenuItem<dynamic>(
+                enabled: false,
+                child: ListTile(
+                  leading: const Icon(Icons.person_outline),
+                  title: Text('Signed in as ${authProvider.username}'),
+                  subtitle: Text(authProvider.role ?? ''),
+                ),
+              ),
+              const PopupMenuDivider(),
+              if (isAdmin)
+                PopupMenuItem<dynamic>(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const UsersScreen(),
+                      ),
+                    );
+                  },
+                  child: const ListTile(
+                    leading: Icon(Icons.manage_accounts_outlined),
+                    title: Text('Manage Users'),
+                  ),
+                ),
+              PopupMenuItem<dynamic>(
+                onTap: () {
+                  authProvider.logout();
+                },
+                child: const ListTile(
+                  leading: Icon(Icons.logout_outlined),
+                  title: Text('Logout'),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
       body: SafeArea(
         child: _isLoading
             ? const Center(child: CircularProgressIndicator())
@@ -56,7 +103,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        _buildQuickActions(),
+                        _buildQuickActions(isAdmin),
                         const SizedBox(height: 24),
                         _buildStatsGrid(),
                         const SizedBox(height: 24),
@@ -68,36 +115,57 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildQuickActions() {
-    return Row(
+  Widget _buildQuickActions(bool isAdmin) {
+    return Column(
       children: [
-        Expanded(
-          child: ElevatedButton.icon(
-            onPressed: () {
-              Navigator.pushNamed(context, '/create-bill');
-            },
-            icon: const Icon(Icons.add),
-            label: const Text('New Bill'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryColor,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16),
+        Row(
+          children: [
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/create-bill');
+                },
+                icon: const Icon(Icons.add),
+                label: const Text('New Bill'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/create-purchase');
+                },
+                icon: const Icon(Icons.shopping_bag_outlined),
+                label: const Text('New Purchase'),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+              ),
+            ),
+          ],
+        ),
+        if (isAdmin) const SizedBox(height: 16),
+        if (isAdmin)
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const UsersScreen(),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.manage_accounts_outlined),
+              label: const Text('Manage Users'),
             ),
           ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: OutlinedButton.icon(
-            onPressed: () {
-              Navigator.pushNamed(context, '/create-purchase');
-            },
-            icon: const Icon(Icons.shopping_bag_outlined),
-            label: const Text('New Purchase'),
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-            ),
-          ),
-        ),
       ],
     );
   }

@@ -31,7 +31,7 @@ const Dashboard = () => {
   // Render different dashboard based on role
   const renderRoleBasedDashboard = () => {
     switch (user?.role) {
-      case 'SUPER_ADMIN':
+      case 'SUPER_MANAGER':
         return (
           <Box>
             <Typography variant="h4" sx={{ fontWeight: 700, mb: 3 }}>

@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
 
 class AuthProvider with ChangeNotifier {
-  final ApiService _apiService = ApiService();
+  final ApiService apiService = ApiService(); // Changed to public
   String? _username;
   String? _role;
   String? _token;
@@ -44,7 +44,7 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _apiService.login(username, password);
+      final response = await apiService.login(username, password);
       _username = response.username;
       _role = response.role;
       _token = response.token;
@@ -64,6 +64,10 @@ class AuthProvider with ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
     notifyListeners();
+  }
+
+  Future<void> initAdmin() async {
+    await apiService.initAdmin();
   }
 
   bool get isAdmin => _role == 'ADMIN' || _username == 'admin';

@@ -57,12 +57,13 @@ const BusinessManagement: React.FC = () => {
   const queryClient = useQueryClient();
 
   // Fetch businesses
-  const { data: businesses = [], isLoading, refetch } = useQuery<Business[]>({
+  const { data: businesses = [], isLoading, refetch } = useQuery({
     queryKey: ['businesses'],
-    queryFn: async () => {
+    queryFn: async (): Promise<Business[]> => {
       const res = await fetch(`${API_BASE}/super-manager/businesses`);
       if (!res.ok) throw new Error('Failed to fetch businesses');
-      return res.json() as Business[];
+      const data = await res.json();
+      return data as Business[];
     },
   });
 

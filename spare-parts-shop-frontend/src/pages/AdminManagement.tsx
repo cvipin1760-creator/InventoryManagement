@@ -21,12 +21,10 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  Switch,
-  FormControlLabel,
   IconButton,
   Tooltip
 } from '@mui/material'
-import { Add, Edit, Delete, Visibility, LockReset, Block, CheckCircle } from '@mui/icons-material'
+import { Add, Edit, Delete, LockReset, Block, CheckCircle } from '@mui/icons-material'
 import apiClient from '../api'
 
 interface AdminUser {
@@ -133,7 +131,7 @@ export default function AdminManagement() {
     }
   }
 
-  const handleResetPassword = async (id: number) => {
+  const handleResetPassword = async (_id: number) => {
     const newPassword = window.prompt('Enter new password for this admin')
     if (!newPassword) return
     alert('Password reset functionality would be implemented here')

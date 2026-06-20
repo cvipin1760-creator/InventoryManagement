@@ -13,7 +13,7 @@ import '../models/dashboard_stats.dart';
 import '../models/login_response.dart';
 
 class ApiService {
-  static const String baseUrl = 'https://inventorymanagement-afhl.onrender.com/api';
+  static const String baseUrl = 'http://localhost:8080/api';
 
   Future<LoginResponse> login(String username, String password) async {
     final response = await http.post(
@@ -479,6 +479,95 @@ class ApiService {
       return DashboardStats.fromJson(jsonDecode(response.body));
     } else {
       throw Exception('Failed to load dashboard stats');
+    }
+  }
+
+  Future<void> register(String username, String email, String password) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/auth/register'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'username': username,
+        'email': email,
+        'password': password,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(response.body);
+    }
+  }
+
+  Future<void> verifyOtp(String email, String otp) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/auth/verify-otp'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'email': email,
+        'otp': otp,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(response.body);
+    }
+  }
+
+  Future<void> resendOtp(String email) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/auth/resend-otp'),
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: {'email': email},
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(response.body);
+    }
+  }
+
+  Future<List<dynamic>> getUsers() async {
+    final response = await http.get(Uri.parse('$baseUrl/auth/users'));
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to load users');
+    }
+  }
+
+  Future<void> createUser(String username, String email, String password, String role, bool enabled) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/auth/users'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'username': username,
+        'email': email,
+        'password': password,
+        'role': role,
+        'enabled': enabled,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(response.body);
+    }
+  }
+
+  Future<void> deleteUser(int id) async {
+    final response = await http.delete(Uri.parse('$baseUrl/auth/users/$id'));
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to delete user');
+    }
+  }
+
+  Future<void> updateUserRole(int id, String role) async {
+    final response = await http.put(
+      Uri.parse('$baseUrl/auth/users/$id/role?role=$role'),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to update role');
     }
   }
 }

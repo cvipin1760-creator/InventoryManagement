@@ -16,7 +16,7 @@ import Payments from './pages/Payments';
 import Users from './pages/Users';
 import AdminManagement from './pages/AdminManagement';
 import BusinessManagement from './pages/BusinessManagement';
-import { ErrorBoundary } from './components/ErrorBoundary';
+
 
 // Protected Route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
