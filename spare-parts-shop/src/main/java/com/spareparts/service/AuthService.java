@@ -69,9 +69,12 @@ public class AuthService {
             }
         }
 
-        return new LoginResponse(user.getId(), user.getUsername(), user.getRole(), 
+        String token = java.util.UUID.randomUUID().toString();
+        LoginResponse response = new LoginResponse(user.getId(), user.getUsername(), user.getRole(), 
                 user.getBusiness() != null ? user.getBusiness().getId() : null, 
                 featuresDto, "Login successful");
+        response.setToken(token);
+        return response;
     }
 
     public void register(RegisterRequest request) {
@@ -262,9 +265,12 @@ public class AuthService {
             }
         }
         
-        return new LoginResponse(existing.getId(), existing.getUsername(), existing.getRole(), 
+        String token = java.util.UUID.randomUUID().toString();
+        LoginResponse response = new LoginResponse(existing.getId(), existing.getUsername(), existing.getRole(), 
                 existing.getBusiness() != null ? existing.getBusiness().getId() : null, 
                 featuresDto, "Login successful");
+        response.setToken(token);
+        return response;
     }
 
     private GoogleTokenInfo verifyGoogleIdToken(String idToken) {
