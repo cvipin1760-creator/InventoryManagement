@@ -1,4 +1,4 @@
-# spare_parts_shop_flutter
+# StockPilot
 
 A new Flutter project.
 

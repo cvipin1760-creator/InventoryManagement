@@ -1,11 +1,11 @@
 {
-    "name": "Stock Pilot",
-    "short_name": "Stock Pilot",
+    "name": "StockPilot",
+    "short_name": "StockPilot",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#hexcode",
     "theme_color": "#hexcode",
-    "description": "A new Flutter project.",
+    "description": "StockPilot - Smart Inventory & Billing Management",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
