@@ -1,5 +1,6 @@
 package com.spareparts.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,6 +20,7 @@ public class EMI {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "business_id", nullable = false)
+    @JsonIgnore
     private Business business;
 
     @ManyToOne(fetch = FetchType.EAGER)
