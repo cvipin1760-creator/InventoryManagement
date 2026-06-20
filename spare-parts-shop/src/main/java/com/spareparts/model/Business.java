@@ -35,13 +35,14 @@ public class Business {
     private String logoPath;
 
     // Subscription fields
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "varchar(255) default 'TRIAL'")
     private String subscriptionPlan = "TRIAL"; // TRIAL, MONTHLY, YEARLY
 
     private LocalDateTime subscriptionStartDate;
 
     private LocalDateTime subscriptionEndDate;
 
+    @Column(columnDefinition = "boolean default true")
     private Boolean isSubscriptionActive = true;
 
     @Column(name = "created_at")
