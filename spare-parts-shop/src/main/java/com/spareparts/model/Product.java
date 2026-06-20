@@ -13,13 +13,17 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class Product {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "business_id", nullable = false)
+    private Business business;
     
     @Column(nullable = false)
     private String name;
     
-    @Column(name = "part_number", nullable = false, unique = true)
+    @Column(name = "part_number")
     private String partNumber;
     
     @Column(name = "cost_price")
@@ -28,8 +32,8 @@ public class Product {
     @Column(nullable = false)
     private Double price;
     
-    @Column(name = "gst_percent", nullable = false)
-    private Double gstPercent;
+    @Column(name = "gst_percent")
+    private Double gstPercent = 0.0;
     
     @Column(nullable = false)
     private Integer quantity;

@@ -18,7 +18,11 @@ public class Purchase {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @Column(name = "invoice_number", nullable = false, unique = true)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "business_id", nullable = false)
+    private Business business;
+    
+    @Column(name = "invoice_number", nullable = false)
     private String invoiceNumber;
     
     @ManyToOne(fetch = FetchType.EAGER)
@@ -28,8 +32,8 @@ public class Purchase {
     @Column(nullable = false)
     private Double subtotal;
     
-    @Column(name = "gst_amount", nullable = false)
-    private Double gstAmount;
+    @Column(name = "gst_amount")
+    private Double gstAmount = 0.0;
     
     @Column(nullable = false)
     private Double discount = 0.0;
@@ -37,7 +41,7 @@ public class Purchase {
     @Column(name = "final_amount", nullable = false)
     private Double finalAmount;
     
-    @Column(name = "gst_type", nullable = false)
+    @Column(name = "gst_type")
     private String gstType;
     
     @Column(name = "purchase_date")

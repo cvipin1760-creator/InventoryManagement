@@ -22,14 +22,21 @@ public class User {
     @Column(unique = true)
     private String email;
 
+    @Column(name = "phone")
+    private String phone;
+
     @Column(nullable = false, length = 255)
     private String password;
 
     @Column(nullable = false)
-    private String role = "ADMIN";
+    private String role = "CUSTOMER"; // SUPER_ADMIN, ADMIN, EMPLOYEE, CUSTOMER
 
     @Column(name = "is_enabled")
     private Boolean enabled = true;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "business_id")
+    private Business business;
 
     @Column(name = "otp_code")
     private String otpCode;

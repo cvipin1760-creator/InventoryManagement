@@ -10,8 +10,9 @@ import java.util.List;
 
 @Repository
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
+    List<Payment> findByBusinessId(Long businessId);
     List<Payment> findByCustomerIdOrderByPaymentDateDesc(Long customerId);
 
-    @Query("SELECT COALESCE(SUM(p.amount), 0.0) FROM Payment p WHERE p.customer.id = :customerId")
-    Double getTotalPaidByCustomerId(@Param("customerId") Long customerId);
+    @Query("SELECT COALESCE(SUM(p.amount), 0.0) FROM Payment p WHERE p.customer.id = :customerId AND p.business.id = :businessId")
+    Double getTotalPaidByCustomerId(@Param("customerId") Long customerId, @Param("businessId") Long businessId);
 }

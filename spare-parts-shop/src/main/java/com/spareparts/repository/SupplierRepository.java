@@ -9,7 +9,8 @@ import java.util.List;
 
 @Repository
 public interface SupplierRepository extends JpaRepository<Supplier, Long> {
+    List<Supplier> findByBusinessId(Long businessId);
     
-    @Query("SELECT s FROM Supplier s WHERE LOWER(s.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR s.phone LIKE CONCAT('%', :keyword, '%')")
-    List<Supplier> searchSuppliers(@Param("keyword") String keyword);
+    @Query("SELECT s FROM Supplier s WHERE s.business.id = :businessId AND (LOWER(s.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR s.phone LIKE CONCAT('%', :keyword, '%'))")
+    List<Supplier> searchSuppliers(@Param("keyword") String keyword, @Param("businessId") Long businessId);
 }

@@ -7,28 +7,33 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "customers")
+@Table(name = "businesses")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Customer {
+public class Business {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "business_id", nullable = false)
-    private Business business;
-    
+
     @Column(nullable = false)
-    private String name;
-    
-    @Column(nullable = false)
-    private String phone;
-    
+    private String businessName;
+
+    @Column(unique = true)
+    private String gstNumber;
+
     @Column(columnDefinition = "TEXT")
     private String address;
-    
+
+    private String contactNumber;
+
+    private String email;
+
+    private String businessType;
+
+    @Column(name = "logo_path")
+    private String logoPath;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 }
