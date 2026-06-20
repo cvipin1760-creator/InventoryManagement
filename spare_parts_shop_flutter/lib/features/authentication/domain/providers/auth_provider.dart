@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:stock_pilot/core/constants/app_constants.dart';
@@ -104,8 +105,25 @@ class AuthNotifier extends StateNotifier<AuthState> {
         user: user,
         features: loginResponse.features,
       );
+    } on DioException catch (e) {
+      String errorMessage = 'An error occurred. Please try again.';
+      if (e.type == DioExceptionType.connectionError || 
+          e.type == DioExceptionType.connectionTimeout) {
+        errorMessage = 'Could not connect to server. Please check your internet connection or server address.';
+      } else if (e.type == DioExceptionType.receiveTimeout || 
+                 e.type == DioExceptionType.sendTimeout) {
+        errorMessage = 'Connection timed out. Please try again.';
+      } else if (e.response != null) {
+        if (e.response!.statusCode == 401) {
+          errorMessage = 'Invalid username or password.';
+        } else if (e.response!.data is Map && 
+                   e.response!.data['message'] != null) {
+          errorMessage = e.response!.data['message'];
+        }
+      }
+      state = AuthError(errorMessage);
     } catch (e) {
-      state = AuthError(e.toString());
+      state = AuthError('An unexpected error occurred. Please try again.');
     }
   }
 

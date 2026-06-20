@@ -1,5 +1,7 @@
 package com.spareparts.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,6 +13,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,13 +32,14 @@ public class User {
     private String password;
 
     @Column(nullable = false)
-    private String role = "CUSTOMER"; // SUPER_MANAGER, ADMIN, EMPLOYEE, CUSTOMER
+    private String role = "CUSTOMER"; // SUPER_ADMIN, ADMIN, EMPLOYEE, CUSTOMER
 
     @Column(name = "is_enabled")
     private Boolean enabled = true;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "business_id")
+    @JsonIgnore
     private Business business;
 
     @Column(name = "otp_code")

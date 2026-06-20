@@ -1,5 +1,7 @@
 package com.spareparts.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,6 +13,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class FeaturePermissions {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,6 +21,7 @@ public class FeaturePermissions {
 
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "business_id", nullable = false, unique = true)
+    @JsonIgnore
     private Business business;
 
     @Column(name = "inventory_enabled")

@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:stock_pilot/core/constants/app_colors.dart';
+import 'package:stock_pilot/core/providers/theme_provider.dart';
 import 'package:stock_pilot/core/widgets/kpi_card.dart';
 
-class AdminDashboard extends StatelessWidget {
+class AdminDashboard extends ConsumerWidget {
   const AdminDashboard({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -18,17 +20,35 @@ class AdminDashboard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Good Morning!',
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    color: theme.colorScheme.onSurface.withOpacity(0.7),
-                  ),
-                ),
-                Text(
-                  'Business Overview',
-                  style: theme.textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Good Morning!',
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            color: theme.colorScheme.onSurface.withOpacity(0.7),
+                          ),
+                        ),
+                        Text(
+                          'Business Overview',
+                          style: theme.textTheme.headlineMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    IconButton(
+                      onPressed: () => ref.read(themeModeProvider.notifier).toggleTheme(),
+                      icon: FaIcon(
+                        theme.brightness == Brightness.light
+                            ? FontAwesomeIcons.moon
+                            : FontAwesomeIcons.sun,
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 24),
                 GridView.count(

@@ -133,6 +133,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           return null;
                         },
                       ),
+                      if (authState is AuthError)
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(16),
+                          margin: const EdgeInsets.only(bottom: 16),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.errorContainer,
+                            borderRadius: BorderRadius.circular(
+                              AppConstants.defaultBorderRadius,
+                            ),
+                          ),
+                          child: Text(
+                            (authState as AuthError).message,
+                            style: TextStyle(
+                              color: theme.colorScheme.onErrorContainer,
+                            ),
+                          ),
+                        ),
                       const SizedBox(height: 32),
                       SizedBox(
                         width: double.infinity,

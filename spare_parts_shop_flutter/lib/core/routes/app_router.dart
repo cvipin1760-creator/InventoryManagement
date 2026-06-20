@@ -1,13 +1,21 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:stock_pilot/core/constants/app_constants.dart';
+import 'package:stock_pilot/features/admins/presentation/screens/admins_screen.dart';
 import 'package:stock_pilot/features/authentication/domain/providers/auth_provider.dart';
 import 'package:stock_pilot/features/authentication/presentation/screens/login_screen.dart';
 import 'package:stock_pilot/features/authentication/presentation/screens/splash_screen.dart';
+import 'package:stock_pilot/features/bills/presentation/screens/bills_screen.dart';
+import 'package:stock_pilot/features/billing/presentation/screens/billing_screen.dart';
+import 'package:stock_pilot/features/businesses/presentation/screens/businesses_screen.dart';
+import 'package:stock_pilot/features/customers/presentation/screens/customers_screen.dart';
 import 'package:stock_pilot/features/dashboard/presentation/screens/admin_dashboard.dart';
 import 'package:stock_pilot/features/dashboard/presentation/screens/customer_dashboard.dart';
 import 'package:stock_pilot/features/dashboard/presentation/screens/super_admin_dashboard.dart';
 import 'package:stock_pilot/features/main/presentation/screens/main_screen.dart';
+import 'package:stock_pilot/features/products/presentation/screens/products_screen.dart';
+import 'package:stock_pilot/features/settings/presentation/screens/settings_screen.dart';
+import 'package:stock_pilot/features/warranty/presentation/screens/warranty_screen.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authNotifierProvider);
@@ -69,6 +77,72 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                       return const CustomerDashboard();
                     } else {
                       return const AdminDashboard();
+                    }
+                  }
+                  return const LoginScreen();
+                },
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/second',
+                name: 'second',
+                builder: (context, state) {
+                  final authState = ref.read(authNotifierProvider);
+                  if (authState is AuthAuthenticated) {
+                    final role = authState.user.role;
+                    if (role == AppConstants.roleSuperAdmin) {
+                      return const BusinessesScreen();
+                    } else if (role == AppConstants.roleCustomer) {
+                      return const BillsScreen();
+                    } else {
+                      return const ProductsScreen();
+                    }
+                  }
+                  return const LoginScreen();
+                },
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/third',
+                name: 'third',
+                builder: (context, state) {
+                  final authState = ref.read(authNotifierProvider);
+                  if (authState is AuthAuthenticated) {
+                    final role = authState.user.role;
+                    if (role == AppConstants.roleSuperAdmin) {
+                      return const AdminsScreen();
+                    } else if (role == AppConstants.roleCustomer) {
+                      return const ProductsScreen();
+                    } else {
+                      return const BillingScreen();
+                    }
+                  }
+                  return const LoginScreen();
+                },
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/fourth',
+                name: 'fourth',
+                builder: (context, state) {
+                  final authState = ref.read(authNotifierProvider);
+                  if (authState is AuthAuthenticated) {
+                    final role = authState.user.role;
+                    if (role == AppConstants.roleSuperAdmin) {
+                      return const SettingsScreen();
+                    } else if (role == AppConstants.roleCustomer) {
+                      return const WarrantyScreen();
+                    } else {
+                      return const CustomersScreen();
                     }
                   }
                   return const LoginScreen();

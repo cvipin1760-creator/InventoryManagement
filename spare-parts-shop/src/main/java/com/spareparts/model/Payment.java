@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Payment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
