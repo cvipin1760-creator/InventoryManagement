@@ -18,14 +18,16 @@ class LoginResponse {
   });
 
   factory LoginResponse.fromJson(Map<String, dynamic> json) {
+    print('=== Parsing LoginResponse ===');
+    print('JSON: $json');
     return LoginResponse(
-      userId: json['userId'] as int?,
+      userId: (json['userId'] as num?)?.toInt(),
       token: json['token'] as String?,
-      username: json['username'] as String,
-      role: json['role'] as String,
-      businessId: json['businessId'] as int?,
+      username: json['username'] as String? ?? '',
+      role: json['role'] as String? ?? '',
+      businessId: (json['businessId'] as num?)?.toInt(),
       features: json['features'],
-      message: json['message'] as String,
+      message: json['message'] as String? ?? '',
     );
   }
 

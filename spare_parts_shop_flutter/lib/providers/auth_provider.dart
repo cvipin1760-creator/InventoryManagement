@@ -3,6 +3,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:stock_pilot/core/constants/app_constants.dart';
 import '../services/api_service.dart';
+import '../models/login_response.dart';
 
 class AuthProvider with ChangeNotifier {
   final ApiService apiService = ApiService();
@@ -10,35 +11,62 @@ class AuthProvider with ChangeNotifier {
   String? _username;
   String? _role;
   String? _token;
+  int? _userId;
+  int? _businessId;
+  dynamic _features;
   bool _isLoading = false;
+  bool _isInitialized = false;
 
   String? get username => _username;
   String? get role => _role;
+  String? get token => _token;
+  int? get userId => _userId;
+  int? get businessId => _businessId;
+  dynamic get features => _features;
   bool get isLoading => _isLoading;
-  bool get isAuthenticated => _username != null;
+  bool get isAuthenticated => _username != null && _token != null;
+  bool get isInitialized => _isInitialized;
 
   AuthProvider() {
     _loadFromStorage();
   }
 
   Future<void> _loadFromStorage() async {
-    final prefs = await SharedPreferences.getInstance();
-    _username = prefs.getString('username');
-    _role = prefs.getString('role');
-    _token = await _storage.read(key: AppConstants.storageKeyToken);
-    notifyListeners();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _username = prefs.getString('username');
+      _role = prefs.getString('role');
+      _userId = prefs.getInt('userId');
+      _businessId = prefs.getInt('businessId');
+      _token = await _storage.read(key: AppConstants.storageKeyToken);
+    } catch (e) {
+      debugPrint('Error loading from storage: $e');
+    } finally {
+      _isInitialized = true;
+      notifyListeners();
+    }
   }
 
   Future<void> _saveToStorage() async {
-    final prefs = await SharedPreferences.getInstance();
-    if (_username != null) {
-      await prefs.setString('username', _username!);
-    }
-    if (_role != null) {
-      await prefs.setString('role', _role!);
-    }
-    if (_token != null) {
-      await _storage.write(key: AppConstants.storageKeyToken, value: _token!);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (_username != null) {
+        await prefs.setString('username', _username!);
+      }
+      if (_role != null) {
+        await prefs.setString('role', _role!);
+      }
+      if (_userId != null) {
+        await prefs.setInt('userId', _userId!);
+      }
+      if (_businessId != null) {
+        await prefs.setInt('businessId', _businessId!);
+      }
+      if (_token != null) {
+        await _storage.write(key: AppConstants.storageKeyToken, value: _token!);
+      }
+    } catch (e) {
+      debugPrint('Error saving to storage: $e');
     }
   }
 
@@ -51,6 +79,9 @@ class AuthProvider with ChangeNotifier {
       _username = response.username;
       _role = response.role;
       _token = response.token;
+      _userId = response.userId;
+      _businessId = response.businessId;
+      _features = response.features;
       await _saveToStorage();
     } catch (e) {
       rethrow;
@@ -64,9 +95,18 @@ class AuthProvider with ChangeNotifier {
     _username = null;
     _role = null;
     _token = null;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
-    await _storage.delete(key: AppConstants.storageKeyToken);
+    _userId = null;
+    _businessId = null;
+    _features = null;
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
+      await _storage.delete(key: AppConstants.storageKeyToken);
+    } catch (e) {
+      debugPrint('Error clearing storage: $e');
+    }
+
     notifyListeners();
   }
 
@@ -75,4 +115,5 @@ class AuthProvider with ChangeNotifier {
   }
 
   bool get isAdmin => _role == 'ADMIN' || _username == 'admin';
+  bool get isSuperAdmin => _role == 'SUPER_ADMIN' || _role == 'SUPER_MANAGER';
 }

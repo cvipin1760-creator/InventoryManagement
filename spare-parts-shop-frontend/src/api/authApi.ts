@@ -34,6 +34,7 @@ export interface LoginResponse {
     multiUserSupportEnabled: boolean;
     employeeManagementEnabled: boolean;
   };
+  token?: string;
   message: string;
 }
 

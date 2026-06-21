@@ -29,16 +29,34 @@ class ApiService {
   }
   
   Future<LoginResponse> login(String username, String password) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/auth/login'),
-      headers: await _getHeaders(),
-      body: jsonEncode({'username': username.trim(), 'password': password.trim()}),
-    );
+    print('=== Login Attempt ===');
+    print('Base URL: $baseUrl');
+    print('Username: $username');
+    final url = Uri.parse('$baseUrl/auth/login');
+    print('Request URL: $url');
+    final requestBody = {'username': username.trim(), 'password': password.trim()};
+    print('Request Body: $requestBody');
+    final headers = await _getHeaders();
+    print('Headers: $headers');
+    
+    try {
+      final response = await http.post(
+        url,
+        headers: headers,
+        body: jsonEncode(requestBody),
+      );
 
-    if (response.statusCode == 200) {
-      return LoginResponse.fromJson(jsonDecode(response.body));
-    } else {
-      throw Exception('Failed to login: ${response.body}');
+      print('Response Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        return LoginResponse.fromJson(jsonDecode(response.body));
+      } else {
+        throw Exception('Failed to login: ${response.body}');
+      }
+    } catch (e) {
+      print('Login Error: $e');
+      rethrow;
     }
   }
 

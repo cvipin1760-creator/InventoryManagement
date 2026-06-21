@@ -3,10 +3,20 @@ const API_BASE = 'https://inventorymanagement-afhl.onrender.com/api'
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const method = options.method || 'GET'
   const isJson = options.body !== undefined || method === 'POST' || method === 'PUT'
+  
+  // Get token from localStorage
+  const token = localStorage.getItem('token')
+  
   const headers: HeadersInit = {
     ...(isJson ? { 'Content-Type': 'application/json' } : {}),
     ...(options.headers as Record<string, string>),
   }
+  
+  // Add Bearer token if available
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
+  }
+  
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
     headers,

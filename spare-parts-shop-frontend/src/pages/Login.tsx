@@ -58,6 +58,7 @@ const LoginPage = () => {
           businessId: data.businessId,
         },
         features: data.features,
+        token: data.token,
       }));
       navigate(from, { replace: true });
     },
