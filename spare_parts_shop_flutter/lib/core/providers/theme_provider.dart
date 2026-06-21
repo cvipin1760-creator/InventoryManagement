@@ -9,7 +9,7 @@ final themeModeProvider = StateNotifierProvider<ThemeModeNotifier, ThemeMode>((r
 });
 
 class ThemeModeNotifier extends StateNotifier<ThemeMode> {
-  ThemeModeNotifier() : super(ThemeMode.system) {
+  ThemeModeNotifier() : super(ThemeMode.light) {
     _loadThemeMode();
   }
 
@@ -19,7 +19,7 @@ class ThemeModeNotifier extends StateNotifier<ThemeMode> {
     if (themeModeStr != null) {
       state = _getThemeModeFromString(themeModeStr);
     } else {
-      state = ThemeMode.system;
+      state = ThemeMode.light;
     }
   }
 

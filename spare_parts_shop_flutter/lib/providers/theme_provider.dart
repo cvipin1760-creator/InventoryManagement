@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ThemeProvider with ChangeNotifier {
   static const String _themeKey = 'theme_mode';
-  ThemeMode _themeMode = ThemeMode.system;
+  ThemeMode _themeMode = ThemeMode.light;
 
   ThemeMode get themeMode => _themeMode;
 
@@ -16,7 +16,7 @@ class ThemeProvider with ChangeNotifier {
     } else if (savedTheme == 'dark') {
       _themeMode = ThemeMode.dark;
     } else {
-      _themeMode = ThemeMode.system;
+      _themeMode = ThemeMode.light;
     }
     notifyListeners();
   }

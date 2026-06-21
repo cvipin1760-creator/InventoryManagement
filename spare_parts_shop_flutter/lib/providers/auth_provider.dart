@@ -1,9 +1,12 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:stock_pilot/core/constants/app_constants.dart';
 import '../services/api_service.dart';
 
 class AuthProvider with ChangeNotifier {
-  final ApiService apiService = ApiService(); // Changed to public
+  final ApiService apiService = ApiService();
+  final FlutterSecureStorage _storage = const FlutterSecureStorage();
   String? _username;
   String? _role;
   String? _token;
@@ -15,18 +18,18 @@ class AuthProvider with ChangeNotifier {
   bool get isAuthenticated => _username != null;
 
   AuthProvider() {
-    _loadFromPrefs();
+    _loadFromStorage();
   }
 
-  Future<void> _loadFromPrefs() async {
+  Future<void> _loadFromStorage() async {
     final prefs = await SharedPreferences.getInstance();
     _username = prefs.getString('username');
     _role = prefs.getString('role');
-    _token = prefs.getString('token');
+    _token = await _storage.read(key: AppConstants.storageKeyToken);
     notifyListeners();
   }
 
-  Future<void> _saveToPrefs() async {
+  Future<void> _saveToStorage() async {
     final prefs = await SharedPreferences.getInstance();
     if (_username != null) {
       await prefs.setString('username', _username!);
@@ -35,7 +38,7 @@ class AuthProvider with ChangeNotifier {
       await prefs.setString('role', _role!);
     }
     if (_token != null) {
-      await prefs.setString('token', _token!);
+      await _storage.write(key: AppConstants.storageKeyToken, value: _token!);
     }
   }
 
@@ -48,7 +51,7 @@ class AuthProvider with ChangeNotifier {
       _username = response.username;
       _role = response.role;
       _token = response.token;
-      await _saveToPrefs();
+      await _saveToStorage();
     } catch (e) {
       rethrow;
     } finally {
@@ -63,6 +66,7 @@ class AuthProvider with ChangeNotifier {
     _token = null;
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
+    await _storage.delete(key: AppConstants.storageKeyToken);
     notifyListeners();
   }
 

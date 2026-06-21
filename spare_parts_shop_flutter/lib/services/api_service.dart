@@ -19,10 +19,19 @@ class ApiService {
   
   String get baseUrl => AppConstants.baseUrl;
 
+  Future<Map<String, String>> _getHeaders() async {
+    final token = await _storage.read(key: AppConstants.storageKeyToken);
+    final headers = {'Content-Type': 'application/json'};
+    if (token != null && token.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $token';
+    }
+    return headers;
+  }
+  
   Future<LoginResponse> login(String username, String password) async {
     final response = await http.post(
       Uri.parse('$baseUrl/auth/login'),
-      headers: {'Content-Type': 'application/json'},
+      headers: await _getHeaders(),
       body: jsonEncode({'username': username.trim(), 'password': password.trim()}),
     );
 
@@ -36,12 +45,12 @@ class ApiService {
   Future<void> initAdmin() async {
     await http.post(
       Uri.parse('$baseUrl/auth/init-admin'),
-      headers: {'Content-Type': 'application/json'},
+      headers: await _getHeaders(),
     );
   }
 
   Future<List<Customer>> getCustomers() async {
-    final response = await http.get(Uri.parse('$baseUrl/customers'));
+    final response = await http.get(Uri.parse('$baseUrl/customers'), headers: await _getHeaders());
 
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
@@ -52,7 +61,7 @@ class ApiService {
   }
 
   Future<Customer> getCustomer(int id) async {
-    final response = await http.get(Uri.parse('$baseUrl/customers/$id'));
+    final response = await http.get(Uri.parse('$baseUrl/customers/$id'), headers: await _getHeaders());
 
     if (response.statusCode == 200) {
       return Customer.fromJson(jsonDecode(response.body));
@@ -62,7 +71,10 @@ class ApiService {
   }
 
   Future<List<Customer>> searchCustomers(String keyword) async {
-    final response = await http.get(Uri.parse('$baseUrl/customers/search?keyword=${Uri.encodeComponent(keyword)}'));
+    final response = await http.get(
+      Uri.parse('$baseUrl/customers/search?keyword=${Uri.encodeComponent(keyword)}'),
+      headers: await _getHeaders(),
+    );
 
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
@@ -75,7 +87,7 @@ class ApiService {
   Future<Customer> createCustomer(Customer customer) async {
     final response = await http.post(
       Uri.parse('$baseUrl/customers'),
-      headers: {'Content-Type': 'application/json'},
+      headers: await _getHeaders(),
       body: jsonEncode(customer.toJson()..remove('id')..remove('createdAt')),
     );
 
@@ -89,7 +101,7 @@ class ApiService {
   Future<Customer> updateCustomer(int id, Customer customer) async {
     final response = await http.put(
       Uri.parse('$baseUrl/customers/$id'),
-      headers: {'Content-Type': 'application/json'},
+      headers: await _getHeaders(),
       body: jsonEncode(customer.toJson()),
     );
 
@@ -101,7 +113,7 @@ class ApiService {
   }
 
   Future<void> deleteCustomer(int id) async {
-    final response = await http.delete(Uri.parse('$baseUrl/customers/$id'));
+    final response = await http.delete(Uri.parse('$baseUrl/customers/$id'), headers: await _getHeaders());
 
     if (response.statusCode != 200) {
       throw Exception('Failed to delete customer');
@@ -109,7 +121,7 @@ class ApiService {
   }
 
   Future<List<Supplier>> getSuppliers() async {
-    final response = await http.get(Uri.parse('$baseUrl/suppliers'));
+    final response = await http.get(Uri.parse('$baseUrl/suppliers'), headers: await _getHeaders());
 
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
@@ -120,7 +132,7 @@ class ApiService {
   }
 
   Future<Supplier> getSupplier(int id) async {
-    final response = await http.get(Uri.parse('$baseUrl/suppliers/$id'));
+    final response = await http.get(Uri.parse('$baseUrl/suppliers/$id'), headers: await _getHeaders());
 
     if (response.statusCode == 200) {
       return Supplier.fromJson(jsonDecode(response.body));
@@ -130,7 +142,10 @@ class ApiService {
   }
 
   Future<List<Supplier>> searchSuppliers(String keyword) async {
-    final response = await http.get(Uri.parse('$baseUrl/suppliers/search?keyword=${Uri.encodeComponent(keyword)}'));
+    final response = await http.get(
+      Uri.parse('$baseUrl/suppliers/search?keyword=${Uri.encodeComponent(keyword)}'),
+      headers: await _getHeaders(),
+    );
 
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
@@ -143,7 +158,7 @@ class ApiService {
   Future<Supplier> createSupplier(Supplier supplier) async {
     final response = await http.post(
       Uri.parse('$baseUrl/suppliers'),
-      headers: {'Content-Type': 'application/json'},
+      headers: await _getHeaders(),
       body: jsonEncode(supplier.toJson()..remove('id')..remove('createdAt')),
     );
 
@@ -157,7 +172,7 @@ class ApiService {
   Future<Supplier> updateSupplier(int id, Supplier supplier) async {
     final response = await http.put(
       Uri.parse('$baseUrl/suppliers/$id'),
-      headers: {'Content-Type': 'application/json'},
+      headers: await _getHeaders(),
       body: jsonEncode(supplier.toJson()),
     );
 
@@ -169,7 +184,7 @@ class ApiService {
   }
 
   Future<void> deleteSupplier(int id) async {
-    final response = await http.delete(Uri.parse('$baseUrl/suppliers/$id'));
+    final response = await http.delete(Uri.parse('$baseUrl/suppliers/$id'), headers: await _getHeaders());
 
     if (response.statusCode != 200) {
       throw Exception('Failed to delete supplier');
@@ -177,7 +192,7 @@ class ApiService {
   }
 
   Future<List<Product>> getProducts() async {
-    final response = await http.get(Uri.parse('$baseUrl/products'));
+    final response = await http.get(Uri.parse('$baseUrl/products'), headers: await _getHeaders());
 
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
@@ -188,7 +203,7 @@ class ApiService {
   }
 
   Future<Product> getProduct(int id) async {
-    final response = await http.get(Uri.parse('$baseUrl/products/$id'));
+    final response = await http.get(Uri.parse('$baseUrl/products/$id'), headers: await _getHeaders());
 
     if (response.statusCode == 200) {
       return Product.fromJson(jsonDecode(response.body));
@@ -198,7 +213,7 @@ class ApiService {
   }
 
   Future<List<Product>> getLowStockProducts() async {
-    final response = await http.get(Uri.parse('$baseUrl/products/low-stock'));
+    final response = await http.get(Uri.parse('$baseUrl/products/low-stock'), headers: await _getHeaders());
 
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
@@ -209,7 +224,10 @@ class ApiService {
   }
 
   Future<List<Product>> searchProducts(String keyword) async {
-    final response = await http.get(Uri.parse('$baseUrl/products/search?keyword=${Uri.encodeComponent(keyword)}'));
+    final response = await http.get(
+      Uri.parse('$baseUrl/products/search?keyword=${Uri.encodeComponent(keyword)}'),
+      headers: await _getHeaders(),
+    );
 
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
@@ -222,7 +240,7 @@ class ApiService {
   Future<Product> createProduct(Product product) async {
     final response = await http.post(
       Uri.parse('$baseUrl/products'),
-      headers: {'Content-Type': 'application/json'},
+      headers: await _getHeaders(),
       body: jsonEncode(product.toJson()..remove('id')..remove('createdAt')..remove('updatedAt')),
     );
 
@@ -236,7 +254,7 @@ class ApiService {
   Future<Product> updateProduct(int id, Product product) async {
     final response = await http.put(
       Uri.parse('$baseUrl/products/$id'),
-      headers: {'Content-Type': 'application/json'},
+      headers: await _getHeaders(),
       body: jsonEncode(product.toJson()),
     );
 
@@ -248,7 +266,7 @@ class ApiService {
   }
 
   Future<void> deleteProduct(int id) async {
-    final response = await http.delete(Uri.parse('$baseUrl/products/$id'));
+    final response = await http.delete(Uri.parse('$baseUrl/products/$id'), headers: await _getHeaders());
 
     if (response.statusCode != 200) {
       throw Exception('Failed to delete product');
@@ -256,7 +274,10 @@ class ApiService {
   }
 
   Future<Map<String, double>> getCustomerProductPrices(int customerId) async {
-    final response = await http.get(Uri.parse('$baseUrl/bills/customer-prices?customerId=$customerId'));
+    final response = await http.get(
+      Uri.parse('$baseUrl/bills/customer-prices?customerId=$customerId'),
+      headers: await _getHeaders(),
+    );
 
     if (response.statusCode == 200) {
       Map<String, dynamic> body = jsonDecode(response.body);
@@ -267,7 +288,7 @@ class ApiService {
   }
 
   Future<List<Bill>> getBills() async {
-    final response = await http.get(Uri.parse('$baseUrl/bills'));
+    final response = await http.get(Uri.parse('$baseUrl/bills'), headers: await _getHeaders());
 
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
@@ -278,7 +299,7 @@ class ApiService {
   }
 
   Future<Bill> getBill(int id) async {
-    final response = await http.get(Uri.parse('$baseUrl/bills/$id'));
+    final response = await http.get(Uri.parse('$baseUrl/bills/$id'), headers: await _getHeaders());
 
     if (response.statusCode == 200) {
       return Bill.fromJson(jsonDecode(response.body));
@@ -288,7 +309,10 @@ class ApiService {
   }
 
   Future<List<Bill>> getBillsByDateRange(String startDate, String endDate) async {
-    final response = await http.get(Uri.parse('$baseUrl/bills/by-date-range?startDate=${Uri.encodeComponent(startDate)}&endDate=${Uri.encodeComponent(endDate)}'));
+    final response = await http.get(
+      Uri.parse('$baseUrl/bills/by-date-range?startDate=${Uri.encodeComponent(startDate)}&endDate=${Uri.encodeComponent(endDate)}'),
+      headers: await _getHeaders(),
+    );
 
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
@@ -299,7 +323,10 @@ class ApiService {
   }
 
   Future<List<Bill>> searchBills(String customerName) async {
-    final response = await http.get(Uri.parse('$baseUrl/bills/search?customerName=${Uri.encodeComponent(customerName)}'));
+    final response = await http.get(
+      Uri.parse('$baseUrl/bills/search?customerName=${Uri.encodeComponent(customerName)}'),
+      headers: await _getHeaders(),
+    );
 
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
@@ -310,7 +337,10 @@ class ApiService {
   }
 
   Future<List<Bill>> searchBillsByProduct(String keyword) async {
-    final response = await http.get(Uri.parse('$baseUrl/bills/search-by-product?keyword=${Uri.encodeComponent(keyword)}'));
+    final response = await http.get(
+      Uri.parse('$baseUrl/bills/search-by-product?keyword=${Uri.encodeComponent(keyword)}'),
+      headers: await _getHeaders(),
+    );
 
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
@@ -323,7 +353,7 @@ class ApiService {
   Future<Bill> createBill(Map<String, dynamic> billData) async {
     final response = await http.post(
       Uri.parse('$baseUrl/bills'),
-      headers: {'Content-Type': 'application/json'},
+      headers: await _getHeaders(),
       body: jsonEncode(billData),
     );
 
@@ -337,7 +367,7 @@ class ApiService {
   Future<Bill> updateBill(int id, Map<String, dynamic> billData) async {
     final response = await http.put(
       Uri.parse('$baseUrl/bills/$id'),
-      headers: {'Content-Type': 'application/json'},
+      headers: await _getHeaders(),
       body: jsonEncode(billData),
     );
 
@@ -354,6 +384,10 @@ class ApiService {
 
   Future<String> uploadBillAttachment(dynamic file) async {
     final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/bills/upload'));
+    final token = await _storage.read(key: AppConstants.storageKeyToken);
+    if (token != null && token.isNotEmpty) {
+      request.headers['Authorization'] = 'Bearer $token';
+    }
     
     if (file is XFile) {
       request.files.add(await http.MultipartFile.fromPath('file', file.path));
@@ -374,7 +408,7 @@ class ApiService {
   }
 
   Future<List<Purchase>> getPurchases() async {
-    final response = await http.get(Uri.parse('$baseUrl/purchases'));
+    final response = await http.get(Uri.parse('$baseUrl/purchases'), headers: await _getHeaders());
 
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
@@ -385,7 +419,7 @@ class ApiService {
   }
 
   Future<Purchase> getPurchase(int id) async {
-    final response = await http.get(Uri.parse('$baseUrl/purchases/$id'));
+    final response = await http.get(Uri.parse('$baseUrl/purchases/$id'), headers: await _getHeaders());
 
     if (response.statusCode == 200) {
       return Purchase.fromJson(jsonDecode(response.body));
@@ -395,7 +429,10 @@ class ApiService {
   }
 
   Future<List<Purchase>> getPurchasesByDateRange(String startDate, String endDate) async {
-    final response = await http.get(Uri.parse('$baseUrl/purchases/by-date-range?startDate=${Uri.encodeComponent(startDate)}&endDate=${Uri.encodeComponent(endDate)}'));
+    final response = await http.get(
+      Uri.parse('$baseUrl/purchases/by-date-range?startDate=${Uri.encodeComponent(startDate)}&endDate=${Uri.encodeComponent(endDate)}'),
+      headers: await _getHeaders(),
+    );
 
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
@@ -406,7 +443,10 @@ class ApiService {
   }
 
   Future<List<Purchase>> searchPurchases(String supplierName) async {
-    final response = await http.get(Uri.parse('$baseUrl/purchases/search?supplierName=${Uri.encodeComponent(supplierName)}'));
+    final response = await http.get(
+      Uri.parse('$baseUrl/purchases/search?supplierName=${Uri.encodeComponent(supplierName)}'),
+      headers: await _getHeaders(),
+    );
 
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
@@ -417,7 +457,10 @@ class ApiService {
   }
 
   Future<List<Purchase>> searchPurchasesByProduct(String keyword) async {
-    final response = await http.get(Uri.parse('$baseUrl/purchases/search-by-product?keyword=${Uri.encodeComponent(keyword)}'));
+    final response = await http.get(
+      Uri.parse('$baseUrl/purchases/search-by-product?keyword=${Uri.encodeComponent(keyword)}'),
+      headers: await _getHeaders(),
+    );
 
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
@@ -430,7 +473,7 @@ class ApiService {
   Future<Purchase> createPurchase(Map<String, dynamic> purchaseData) async {
     final response = await http.post(
       Uri.parse('$baseUrl/purchases'),
-      headers: {'Content-Type': 'application/json'},
+      headers: await _getHeaders(),
       body: jsonEncode(purchaseData),
     );
 
@@ -442,7 +485,10 @@ class ApiService {
   }
 
   Future<List<Payment>> getCustomerPayments(int customerId) async {
-    final response = await http.get(Uri.parse('$baseUrl/payments/customer/$customerId'));
+    final response = await http.get(
+      Uri.parse('$baseUrl/payments/customer/$customerId'),
+      headers: await _getHeaders(),
+    );
 
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
@@ -453,7 +499,10 @@ class ApiService {
   }
 
   Future<CustomerBalance> getCustomerBalance(int customerId) async {
-    final response = await http.get(Uri.parse('$baseUrl/payments/customer/$customerId/balance'));
+    final response = await http.get(
+      Uri.parse('$baseUrl/payments/customer/$customerId/balance'),
+      headers: await _getHeaders(),
+    );
 
     if (response.statusCode == 200) {
       return CustomerBalance.fromJson(jsonDecode(response.body));
@@ -465,7 +514,7 @@ class ApiService {
   Future<Payment> createPayment(Map<String, dynamic> paymentData) async {
     final response = await http.post(
       Uri.parse('$baseUrl/payments'),
-      headers: {'Content-Type': 'application/json'},
+      headers: await _getHeaders(),
       body: jsonEncode(paymentData),
     );
 
@@ -477,7 +526,7 @@ class ApiService {
   }
 
   Future<DashboardStats> getDashboardStats() async {
-    final response = await http.get(Uri.parse('$baseUrl/dashboard/stats'));
+    final response = await http.get(Uri.parse('$baseUrl/dashboard/stats'), headers: await _getHeaders());
 
     if (response.statusCode == 200) {
       return DashboardStats.fromJson(jsonDecode(response.body));
@@ -489,7 +538,7 @@ class ApiService {
   Future<void> register(String username, String email, String password) async {
     final response = await http.post(
       Uri.parse('$baseUrl/auth/register'),
-      headers: {'Content-Type': 'application/json'},
+      headers: await _getHeaders(),
       body: jsonEncode({
         'username': username,
         'email': email,
@@ -505,7 +554,7 @@ class ApiService {
   Future<void> verifyOtp(String email, String otp) async {
     final response = await http.post(
       Uri.parse('$baseUrl/auth/verify-otp'),
-      headers: {'Content-Type': 'application/json'},
+      headers: await _getHeaders(),
       body: jsonEncode({
         'email': email,
         'otp': otp,
@@ -518,19 +567,22 @@ class ApiService {
   }
 
   Future<void> resendOtp(String email) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/auth/resend-otp'),
-      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-      body: {'email': email},
-    );
+    final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/auth/resend-otp'));
+    request.headers['Content-Type'] = 'application/x-www-form-urlencoded';
+    request.fields['email'] = email;
+    final token = await _storage.read(key: AppConstants.storageKeyToken);
+    if (token != null && token.isNotEmpty) {
+      request.headers['Authorization'] = 'Bearer $token';
+    }
 
+    final response = await request.send();
     if (response.statusCode != 200) {
-      throw Exception(response.body);
+      throw Exception(await response.stream.bytesToString());
     }
   }
 
   Future<List<dynamic>> getUsers() async {
-    final response = await http.get(Uri.parse('$baseUrl/auth/users'));
+    final response = await http.get(Uri.parse('$baseUrl/auth/users'), headers: await _getHeaders());
 
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
@@ -542,7 +594,7 @@ class ApiService {
   Future<void> createUser(String username, String email, String password, String role, bool enabled) async {
     final response = await http.post(
       Uri.parse('$baseUrl/auth/users'),
-      headers: {'Content-Type': 'application/json'},
+      headers: await _getHeaders(),
       body: jsonEncode({
         'username': username,
         'email': email,
@@ -558,7 +610,7 @@ class ApiService {
   }
 
   Future<void> deleteUser(int id) async {
-    final response = await http.delete(Uri.parse('$baseUrl/auth/users/$id'));
+    final response = await http.delete(Uri.parse('$baseUrl/auth/users/$id'), headers: await _getHeaders());
 
     if (response.statusCode != 200) {
       throw Exception('Failed to delete user');
@@ -568,6 +620,7 @@ class ApiService {
   Future<void> updateUserRole(int id, String role) async {
     final response = await http.put(
       Uri.parse('$baseUrl/auth/users/$id/role?role=$role'),
+      headers: await _getHeaders(),
     );
 
     if (response.statusCode != 200) {
