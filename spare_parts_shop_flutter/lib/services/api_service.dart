@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:stock_pilot/core/constants/app_constants.dart';
 import '../models/customer.dart';
 import '../models/supplier.dart';
 import '../models/product.dart';
@@ -13,7 +15,9 @@ import '../models/dashboard_stats.dart';
 import '../models/login_response.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://localhost:8080/api';
+  final FlutterSecureStorage _storage = const FlutterSecureStorage();
+  
+  String get baseUrl => AppConstants.baseUrl;
 
   Future<LoginResponse> login(String username, String password) async {
     final response = await http.post(

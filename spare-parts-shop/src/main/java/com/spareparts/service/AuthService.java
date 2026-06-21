@@ -1,5 +1,6 @@
 package com.spareparts.service;
 
+import com.spareparts.config.JwtUtil;
 import com.spareparts.dto.LoginRequest;
 import com.spareparts.dto.LoginResponse;
 import com.spareparts.dto.RegisterRequest;
@@ -30,6 +31,9 @@ public class AuthService {
 
     @Autowired
     private EmailService emailService;
+    
+    @Autowired
+    private JwtUtil jwtUtil;
 
     public LoginResponse login(LoginRequest request) {
         String username = request.getUsername() != null ? request.getUsername().trim() : "";
@@ -69,7 +73,12 @@ public class AuthService {
             }
         }
 
-        String token = java.util.UUID.randomUUID().toString();
+        String token = jwtUtil.generateToken(
+                user.getId(),
+                user.getUsername(),
+                user.getRole(),
+                user.getBusiness() != null ? user.getBusiness().getId() : null
+        );
         LoginResponse response = new LoginResponse(user.getId(), user.getUsername(), user.getRole(), 
                 user.getBusiness() != null ? user.getBusiness().getId() : null, 
                 featuresDto, "Login successful");
@@ -265,7 +274,12 @@ public class AuthService {
             }
         }
         
-        String token = java.util.UUID.randomUUID().toString();
+        String token = jwtUtil.generateToken(
+                existing.getId(),
+                existing.getUsername(),
+                existing.getRole(),
+                existing.getBusiness() != null ? existing.getBusiness().getId() : null
+        );
         LoginResponse response = new LoginResponse(existing.getId(), existing.getUsername(), existing.getRole(), 
                 existing.getBusiness() != null ? existing.getBusiness().getId() : null, 
                 featuresDto, "Login successful");

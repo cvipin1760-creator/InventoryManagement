@@ -1,17 +1,17 @@
-package com.spareparts.Config;
+package com.spareparts.config;
 
 public class TenantContext {
-    private static final ThreadLocal<Long> currentTenantId = new ThreadLocal<>();
+    private static final ThreadLocal<Long> currentBusinessId = new ThreadLocal<>();
 
-    public static void setTenantId(Long tenantId) {
-        currentTenantId.set(tenantId);
+    public static void setBusinessId(Long businessId) {
+        currentBusinessId.set(businessId);
     }
 
-    public static Long getTenantId() {
-        return currentTenantId.get();
+    public static Long getBusinessId() {
+        return currentBusinessId.get();
     }
 
     public static void clear() {
-        currentTenantId.remove();
+        currentBusinessId.remove();
     }
 }
