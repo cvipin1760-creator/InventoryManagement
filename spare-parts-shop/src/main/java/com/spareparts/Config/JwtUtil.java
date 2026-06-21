@@ -7,7 +7,7 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.security.Key;
+import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,7 +22,7 @@ public class JwtUtil {
     @Value("${jwt.expiration:86400000}") // 24 hours in milliseconds
     private Long expiration;
 
-    private Key getSigningKey() {
+    private SecretKey getSigningKey() {
         try {
             // Try to decode as Base64 first
             return Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));
