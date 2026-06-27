@@ -24,6 +24,8 @@ import { Edit, Delete, Add, Refresh } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 // Types
+import apiClient from '../api';
+
 interface Business {
   id: number;
   businessName: string;
@@ -34,8 +36,6 @@ interface Business {
   businessType?: string;
   createdAt: string;
 }
-
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
 
 const BusinessManagement: React.FC = () => {
   const [openDialog, setOpenDialog] = useState(false);
@@ -60,23 +60,16 @@ const BusinessManagement: React.FC = () => {
   const { data: businesses = [], isLoading, refetch } = useQuery({
     queryKey: ['businesses'],
     queryFn: async (): Promise<Business[]> => {
-      const res = await fetch(`${API_BASE}/super-manager/businesses`);
-      if (!res.ok) throw new Error('Failed to fetch businesses');
-      const data = await res.json();
-      return data as Business[];
+      const res = await apiClient.get('/super-manager/businesses');
+      return res.data;
     },
   });
 
   // Create mutation
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      const res = await fetch(`${API_BASE}/super-manager/businesses`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) throw new Error('Failed to create business');
-      return res.json();
+      const res = await apiClient.post('/super-manager/businesses', data);
+      return res.data;
     },
     onSuccess: () => {
       setSnackbar({ open: true, message: 'Business created successfully', severity: 'success' });
@@ -84,20 +77,15 @@ const BusinessManagement: React.FC = () => {
       handleCloseDialog();
     },
     onError: (err) => {
-      setSnackbar({ open: true, message: (err as Error).message, severity: 'error' });
+      setSnackbar({ open: true, message: (err as any).response?.data?.message || (err as Error).message, severity: 'error' });
     },
   });
 
   // Update mutation
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: typeof formData }) => {
-      const res = await fetch(`${API_BASE}/super-manager/businesses/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) throw new Error('Failed to update business');
-      return res.json();
+      const res = await apiClient.put(`/super-manager/businesses/${id}`, data);
+      return res.data;
     },
     onSuccess: () => {
       setSnackbar({ open: true, message: 'Business updated successfully', severity: 'success' });
@@ -105,25 +93,22 @@ const BusinessManagement: React.FC = () => {
       handleCloseDialog();
     },
     onError: (err) => {
-      setSnackbar({ open: true, message: (err as Error).message, severity: 'error' });
+      setSnackbar({ open: true, message: (err as any).response?.data?.message || (err as Error).message, severity: 'error' });
     },
   });
 
   // Delete mutation
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(`${API_BASE}/super-manager/businesses/${id}`, {
-        method: 'DELETE',
-      });
-      if (!res.ok) throw new Error('Failed to delete business');
-      return res.json();
+      const res = await apiClient.delete(`/super-manager/businesses/${id}`);
+      return res.data;
     },
     onSuccess: () => {
       setSnackbar({ open: true, message: 'Business deleted successfully', severity: 'success' });
       queryClient.invalidateQueries({ queryKey: ['businesses'] });
     },
     onError: (err) => {
-      setSnackbar({ open: true, message: (err as Error).message, severity: 'error' });
+      setSnackbar({ open: true, message: (err as any).response?.data?.message || (err as Error).message, severity: 'error' });
     },
   });
 

@@ -14,6 +14,8 @@ import com.spareparts.model.BillItem;
 import com.spareparts.model.Customer;
 import com.spareparts.model.Payment;
 import com.spareparts.model.Product;
+import com.spareparts.model.Business;
+import com.spareparts.model.Branch;
 import com.spareparts.repository.BillRepository;
 import com.spareparts.repository.PaymentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,21 +44,53 @@ public class BillService {
 
     @Autowired
     private PaymentRepository paymentRepository;
+
+    @Autowired
+    private com.spareparts.repository.BusinessRepository businessRepository;
+
+    @Autowired
+    private com.spareparts.repository.ProductRepository productRepository;
+
+    @Autowired
+    private com.spareparts.repository.BranchRepository branchRepository;
     
     public List<Bill> getAllBills() {
-        return billRepository.findAll();
+        Long businessId = com.spareparts.config.TenantContext.getBusinessId();
+        if (businessId == null) {
+            throw new com.spareparts.exception.TenantAccessException("No business context found");
+        }
+        Long branchId = com.spareparts.config.BranchContext.getBranchId();
+        return billRepository.findByBusinessId(businessId, branchId);
     }
     
     public Bill getBillById(Long id) {
-        return billRepository.findById(id)
+        Bill bill = billRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Bill not found with id: " + id));
+        com.spareparts.config.TenantSecurity.checkAccess(bill);
+        return bill;
     }
     
     @Transactional
     public Bill createBill(BillRequest request) {
+        Long businessId = com.spareparts.config.TenantContext.getBusinessId();
+        if (businessId == null) {
+            throw new com.spareparts.exception.TenantAccessException("No business context found");
+        }
+        Business business = businessRepository.findById(businessId)
+                .orElseThrow(() -> new com.spareparts.exception.TenantAccessException("Business not found"));
+
         Customer customer = customerService.getCustomerById(request.getCustomerId());
         
         Bill bill = new Bill();
+        bill.setBusiness(business);
+        
+        Long branchId = com.spareparts.config.BranchContext.getBranchId();
+        if (branchId != null) {
+            Branch branch = branchRepository.findById(branchId)
+                    .orElseThrow(() -> new com.spareparts.exception.TenantAccessException("Branch not found"));
+            bill.setBranch(branch);
+        }
+
         bill.setInvoiceNumber(generateInvoiceNumber());
         bill.setCustomer(customer);
         bill.setGstType(request.getGstType());
@@ -112,10 +146,14 @@ public class BillService {
         
         bill.setFinalAmount(finalAmount);
         bill.setBillDate(LocalDateTime.now());
-
+ 
         Bill savedBill = billRepository.save(bill);
         if (request.getPaidAmount() != null && request.getPaidAmount() > 0) {
             Payment payment = new Payment();
+            payment.setBusiness(business);
+            if (bill.getBranch() != null) {
+                payment.setBranch(bill.getBranch());
+            }
             payment.setCustomer(customer);
             payment.setBill(savedBill);
             payment.setAmount(request.getPaidAmount());
@@ -123,7 +161,7 @@ public class BillService {
             payment.setPaymentDate(LocalDateTime.now());
             paymentRepository.save(payment);
         }
-
+ 
         return savedBill;
     }
     
@@ -195,22 +233,42 @@ public class BillService {
     }
     
     public List<Bill> getBillsByDateRange(LocalDateTime startDate, LocalDateTime endDate) {
-        return billRepository.findBillsBetweenDates(startDate, endDate);
+        Long businessId = com.spareparts.config.TenantContext.getBusinessId();
+        if (businessId == null) {
+            throw new com.spareparts.exception.TenantAccessException("No business context found");
+        }
+        Long branchId = com.spareparts.config.BranchContext.getBranchId();
+        return billRepository.findBillsBetweenDates(startDate, endDate, businessId, branchId);
     }
     
     public List<Bill> searchBillsByCustomerName(String customerName) {
-        return billRepository.findByCustomerName(customerName);
+        Long businessId = com.spareparts.config.TenantContext.getBusinessId();
+        if (businessId == null) {
+            throw new com.spareparts.exception.TenantAccessException("No business context found");
+        }
+        Long branchId = com.spareparts.config.BranchContext.getBranchId();
+        return billRepository.findByCustomerName(customerName, businessId, branchId);
     }
     
     public List<Bill> searchBillsByProductKeyword(String keyword) {
-        return billRepository.findByProductKeyword(keyword);
+        Long businessId = com.spareparts.config.TenantContext.getBusinessId();
+        if (businessId == null) {
+            throw new com.spareparts.exception.TenantAccessException("No business context found");
+        }
+        Long branchId = com.spareparts.config.BranchContext.getBranchId();
+        return billRepository.findByProductKeyword(keyword, businessId, branchId);
     }
 
     public Map<Long, Double> getLatestCustomerProductPrices(Long customerId) {
-        customerService.getCustomerById(customerId);
+        Long businessId = com.spareparts.config.TenantContext.getBusinessId();
+        if (businessId == null) {
+            throw new com.spareparts.exception.TenantAccessException("No business context found");
+        }
+        customerService.getCustomerById(customerId); // Already validates tenant
 
         Map<Long, Double> latestPrices = new LinkedHashMap<>();
-        for (Object[] row : billRepository.findCustomerProductPriceHistory(customerId)) {
+        Long branchId = com.spareparts.config.BranchContext.getBranchId();
+        for (Object[] row : billRepository.findCustomerProductPriceHistory(customerId, businessId, branchId)) {
             Long productId = (Long) row[0];
             Double price = (Double) row[1];
             latestPrices.putIfAbsent(productId, price);
@@ -219,25 +277,45 @@ public class BillService {
     }
     
     public DashboardStats getDashboardStats() {
+        Long businessId = com.spareparts.config.TenantContext.getBusinessId();
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime todayStart = now.with(LocalTime.MIN);
         LocalDateTime todayEnd = now.with(LocalTime.MAX);
         LocalDateTime weekStart = now.minusDays(7);
         LocalDateTime monthStart = now.minusDays(30);
         
-        Double todaySales = billRepository.getTotalSalesBetweenDates(todayStart, todayEnd);
-        Double weeklySales = billRepository.getTotalSalesBetweenDates(weekStart, now);
-        Double monthlySales = billRepository.getTotalSalesBetweenDates(monthStart, now);
-        Long todayBillsCount = billRepository.countBillsBetweenDates(todayStart, todayEnd);
-        
-        List<Product> lowStockProducts = productService.getLowStockProducts();
+        Double todaySales;
+        Double weeklySales;
+        Double monthlySales;
+        Long todayBillsCount;
+        int lowStockCount;
+        long totalProducts;
+
+        if (businessId != null) {
+            Long branchId = com.spareparts.config.BranchContext.getBranchId();
+            todaySales = billRepository.getTotalSalesBetweenDates(todayStart, todayEnd, businessId, branchId);
+            weeklySales = billRepository.getTotalSalesBetweenDates(weekStart, now, businessId, branchId);
+            monthlySales = billRepository.getTotalSalesBetweenDates(monthStart, now, businessId, branchId);
+            todayBillsCount = billRepository.countBillsBetweenDates(todayStart, todayEnd, businessId, branchId);
+            lowStockCount = productRepository.findLowStockProducts(businessId, branchId).size();
+            totalProducts = productRepository.countByBusinessId(businessId, branchId);
+        } else {
+            // Global stats for SUPER_MANAGER
+            todaySales = billRepository.getTotalSalesBetweenDates(todayStart, todayEnd);
+            weeklySales = billRepository.getTotalSalesBetweenDates(weekStart, now);
+            monthlySales = billRepository.getTotalSalesBetweenDates(monthStart, now);
+            todayBillsCount = billRepository.countBillsBetweenDates(todayStart, todayEnd);
+            lowStockCount = productRepository.findLowStockProducts().size();
+            totalProducts = productRepository.count();
+        }
         
         return new DashboardStats(
                 todaySales,
                 weeklySales,
                 monthlySales,
                 todayBillsCount,
-                lowStockProducts.size()
+                lowStockCount,
+                totalProducts
         );
     }
     

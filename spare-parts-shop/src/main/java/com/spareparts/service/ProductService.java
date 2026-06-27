@@ -1,6 +1,8 @@
 package com.spareparts.service;
 
 import com.spareparts.model.Product;
+import com.spareparts.model.Business;
+import com.spareparts.model.Branch;
 import com.spareparts.repository.ProductRepository;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -17,24 +19,52 @@ public class ProductService {
     
     @Autowired
     private ProductRepository productRepository;
-    
+
+    @Autowired
+    private com.spareparts.repository.BusinessRepository businessRepository;
+
+    @Autowired
+    private com.spareparts.repository.BranchRepository branchRepository;
+
     public List<Product> getAllProducts() {
-        return productRepository.findAll();
+        Long businessId = com.spareparts.config.TenantContext.getBusinessId();
+        if (businessId == null) {
+            throw new com.spareparts.exception.TenantAccessException("No business context found");
+        }
+        Long branchId = com.spareparts.config.BranchContext.getBranchId();
+        return productRepository.findByBusinessId(businessId, branchId);
     }
     
     public Product getProductById(Long id) {
-        return productRepository.findById(id)
+        Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
+        com.spareparts.config.TenantSecurity.checkAccess(product);
+        return product;
     }
     
     public Product createProduct(Product product) {
+        Long businessId = com.spareparts.config.TenantContext.getBusinessId();
+        if (businessId == null) {
+            throw new com.spareparts.exception.TenantAccessException("No business context found");
+        }
+        Business business = businessRepository.findById(businessId)
+                .orElseThrow(() -> new com.spareparts.exception.TenantAccessException("Business not found"));
+        product.setBusiness(business);
+        
+        Long branchId = com.spareparts.config.BranchContext.getBranchId();
+        if (branchId != null) {
+            Branch branch = branchRepository.findById(branchId)
+                    .orElseThrow(() -> new com.spareparts.exception.TenantAccessException("Branch not found"));
+            product.setBranch(branch);
+        }
+
         product.setCreatedAt(LocalDateTime.now());
         product.setUpdatedAt(LocalDateTime.now());
         return productRepository.save(product);
     }
     
     public Product updateProduct(Long id, Product productDetails) {
-        Product product = getProductById(id);
+        Product product = getProductById(id); // Already validates tenant
         product.setName(productDetails.getName());
         product.setPartNumber(productDetails.getPartNumber());
         product.setCostPrice(productDetails.getCostPrice());
@@ -48,18 +78,41 @@ public class ProductService {
     }
     
     public void deleteProduct(Long id) {
-        productRepository.deleteById(id);
+        Product product = getProductById(id); // Already validates tenant
+        productRepository.delete(product);
     }
     
     public List<Product> searchProducts(String keyword) {
-        return productRepository.searchProducts(keyword);
+        Long businessId = com.spareparts.config.TenantContext.getBusinessId();
+        if (businessId == null) {
+            throw new com.spareparts.exception.TenantAccessException("No business context found");
+        }
+        Long branchId = com.spareparts.config.BranchContext.getBranchId();
+        return productRepository.searchProducts(keyword, businessId, branchId);
     }
     
     public List<Product> getLowStockProducts() {
-        return productRepository.findLowStockProducts();
+        Long businessId = com.spareparts.config.TenantContext.getBusinessId();
+        if (businessId == null) {
+            throw new com.spareparts.exception.TenantAccessException("No business context found");
+        }
+        Long branchId = com.spareparts.config.BranchContext.getBranchId();
+        return productRepository.findLowStockProducts(businessId, branchId);
     }
     
     public List<Product> uploadFromExcel(MultipartFile file) throws IOException {
+        Long businessId = com.spareparts.config.TenantContext.getBusinessId();
+        if (businessId == null) {
+            throw new com.spareparts.exception.TenantAccessException("No business context found");
+        }
+        Business business = businessRepository.findById(businessId)
+                .orElseThrow(() -> new com.spareparts.exception.TenantAccessException("Business not found"));
+        Long branchId = com.spareparts.config.BranchContext.getBranchId();
+        Branch branch = null;
+        if (branchId != null) {
+            branch = branchRepository.findById(branchId).orElse(null);
+        }
+
         List<Product> products = new ArrayList<>();
         
         try (Workbook workbook = new XSSFWorkbook(file.getInputStream())) {
@@ -75,8 +128,8 @@ public class ProductService {
                         throw new RuntimeException("Part number is missing");
                     }
                     
-                    // Check if product already exists by part number
-                    Product product = productRepository.findByPartNumber(partNumber)
+                    // Check if product already exists by part number and business ID
+                    Product product = productRepository.findByPartNumberAndBusinessId(partNumber, businessId, branchId)
                             .orElse(new Product());
                     
                     product.setName(getCellValue(row.getCell(0)));
@@ -101,6 +154,10 @@ public class ProductService {
                     }
                     
                     if (product.getId() == null) {
+                        product.setBusiness(business);
+                        if (branch != null) {
+                            product.setBranch(branch);
+                        }
                         product.setLowStockThreshold(10);
                         product.setCreatedAt(LocalDateTime.now());
                     }
@@ -148,7 +205,12 @@ public class ProductService {
     }
     
     public Workbook exportToExcel() {
-        List<Product> products = productRepository.findAll();
+        Long businessId = com.spareparts.config.TenantContext.getBusinessId();
+        if (businessId == null) {
+            throw new com.spareparts.exception.TenantAccessException("No business context found");
+        }
+        Long branchId = com.spareparts.config.BranchContext.getBranchId();
+        List<Product> products = productRepository.findByBusinessId(businessId, branchId);
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet("Products");
         

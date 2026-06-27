@@ -9,10 +9,11 @@ import java.util.List;
 
 @Repository
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
-    List<Customer> findByBusinessId(Long businessId);
+    @Query("SELECT c FROM Customer c WHERE c.business.id = :businessId AND (:branchId IS NULL OR c.branch.id = :branchId)")
+    List<Customer> findByBusinessId(@Param("businessId") Long businessId, @Param("branchId") Long branchId);
     
-    @Query("SELECT c FROM Customer c WHERE c.business.id = :businessId AND (LOWER(c.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR c.phone LIKE CONCAT('%', :keyword, '%'))")
-    List<Customer> searchCustomers(@Param("keyword") String keyword, @Param("businessId") Long businessId);
+    @Query("SELECT c FROM Customer c WHERE c.business.id = :businessId AND (:branchId IS NULL OR c.branch.id = :branchId) AND (LOWER(c.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR c.phone LIKE CONCAT('%', :keyword, '%'))")
+    List<Customer> searchCustomers(@Param("keyword") String keyword, @Param("businessId") Long businessId, @Param("branchId") Long branchId);
     
     @Query("SELECT c FROM Customer c WHERE LOWER(c.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR c.phone LIKE CONCAT('%', :keyword, '%')")
     List<Customer> searchCustomers(@Param("keyword") String keyword);

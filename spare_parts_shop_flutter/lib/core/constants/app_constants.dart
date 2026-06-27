@@ -1,6 +1,6 @@
 class AppConstants {
   // Base URL
-  static const String baseUrl = String.fromEnvironment('BASE_URL', defaultValue: 'https://inventorymanagement-afhl.onrender.com/api');
+  static const String baseUrl = String.fromEnvironment('BASE_URL', defaultValue: 'http://localhost:8080/api');
   static const Duration apiTimeout = Duration(seconds: 30);
 
   // Routes

@@ -41,6 +41,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 String role = jwtUtil.extractRole(jwt);
                 TenantContext.setBusinessId(businessId);
 
+                Long branchId = null;
+                String branchIdHeader = request.getHeader("X-Branch-ID");
+                if (branchIdHeader != null && !branchIdHeader.isEmpty()) {
+                    try {
+                        branchId = Long.parseLong(branchIdHeader);
+                    } catch (NumberFormatException e) {
+                        // ignore
+                    }
+                }
+                if (branchId == null) {
+                    branchId = jwtUtil.extractBranchId(jwt);
+                }
+                if (branchId != null) {
+                    BranchContext.setBranchId(branchId);
+                }
+
                 UsernamePasswordAuthenticationToken authenticationToken =
                         new UsernamePasswordAuthenticationToken(
                                 username,
@@ -55,5 +71,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
         
         TenantContext.clear();
+        BranchContext.clear();
     }
 }

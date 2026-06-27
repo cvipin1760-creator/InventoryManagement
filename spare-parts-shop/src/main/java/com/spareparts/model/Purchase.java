@@ -16,7 +16,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class Purchase {
+public class Purchase implements BelongsToBusiness {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -25,6 +25,10 @@ public class Purchase {
     @JoinColumn(name = "business_id", nullable = false)
     @JsonIgnore
     private Business business;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "branch_id")
+    private Branch branch;
     
     @Column(name = "invoice_number", nullable = false)
     private String invoiceNumber;

@@ -13,4 +13,5 @@ public class DashboardStats {
     private Double monthlySales;
     private Long todayBillsCount;
     private Integer lowStockCount;
+    private Long totalProducts = 0L;
 }

@@ -6,6 +6,8 @@ import com.spareparts.model.Product;
 import com.spareparts.model.Purchase;
 import com.spareparts.model.PurchaseItem;
 import com.spareparts.model.Supplier;
+import com.spareparts.model.Business;
+import com.spareparts.model.Branch;
 import com.spareparts.repository.PurchaseRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,20 +29,49 @@ public class PurchaseService {
     @Autowired
     private ProductService productService;
     
+    @Autowired
+    private com.spareparts.repository.BusinessRepository businessRepository;
+
+    @Autowired
+    private com.spareparts.repository.BranchRepository branchRepository;
+
     public List<Purchase> getAllPurchases() {
-        return purchaseRepository.findAll();
+        Long businessId = com.spareparts.config.TenantContext.getBusinessId();
+        if (businessId == null) {
+            throw new com.spareparts.exception.TenantAccessException("No business context found");
+        }
+        Long branchId = com.spareparts.config.BranchContext.getBranchId();
+        return purchaseRepository.findByBusinessId(businessId, branchId);
     }
     
     public Purchase getPurchaseById(Long id) {
-        return purchaseRepository.findById(id)
+        Purchase purchase = purchaseRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Purchase not found with id: " + id));
+        com.spareparts.config.TenantSecurity.checkAccess(purchase);
+        return purchase;
     }
     
     @Transactional
     public Purchase createPurchase(PurchaseRequest request) {
-        Supplier supplier = supplierService.getSupplierById(request.getSupplierId());
+        Long businessId = com.spareparts.config.TenantContext.getBusinessId();
+        if (businessId == null) {
+            throw new com.spareparts.exception.TenantAccessException("No business context found");
+        }
+        Business business = businessRepository.findById(businessId)
+                .orElseThrow(() -> new com.spareparts.exception.TenantAccessException("Business not found"));
+
+        Supplier supplier = supplierService.getSupplierById(request.getSupplierId()); // Already checks tenant
         
         Purchase purchase = new Purchase();
+        purchase.setBusiness(business);
+        
+        Long branchId = com.spareparts.config.BranchContext.getBranchId();
+        if (branchId != null) {
+            Branch branch = branchRepository.findById(branchId)
+                    .orElseThrow(() -> new com.spareparts.exception.TenantAccessException("Branch not found"));
+            purchase.setBranch(branch);
+        }
+
         purchase.setInvoiceNumber(generateInvoiceNumber());
         purchase.setSupplier(supplier);
         purchase.setGstType(request.getGstType());
@@ -52,7 +83,7 @@ public class PurchaseService {
         List<PurchaseItem> purchaseItems = new ArrayList<>();
         
         for (PurchaseItemRequest itemReq : request.getItems()) {
-            Product product = productService.getProductById(itemReq.getProductId());
+            Product product = productService.getProductById(itemReq.getProductId()); // Already checks tenant
             
             PurchaseItem item = new PurchaseItem();
             item.setPurchase(purchase);
@@ -100,15 +131,30 @@ public class PurchaseService {
     }
     
     public List<Purchase> getPurchasesByDateRange(LocalDateTime startDate, LocalDateTime endDate) {
-        return purchaseRepository.findPurchasesBetweenDates(startDate, endDate);
+        Long businessId = com.spareparts.config.TenantContext.getBusinessId();
+        if (businessId == null) {
+            throw new com.spareparts.exception.TenantAccessException("No business context found");
+        }
+        Long branchId = com.spareparts.config.BranchContext.getBranchId();
+        return purchaseRepository.findPurchasesBetweenDates(startDate, endDate, businessId, branchId);
     }
     
     public List<Purchase> searchPurchasesBySupplierName(String supplierName) {
-        return purchaseRepository.findBySupplierName(supplierName);
+        Long businessId = com.spareparts.config.TenantContext.getBusinessId();
+        if (businessId == null) {
+            throw new com.spareparts.exception.TenantAccessException("No business context found");
+        }
+        Long branchId = com.spareparts.config.BranchContext.getBranchId();
+        return purchaseRepository.findBySupplierName(supplierName, businessId, branchId);
     }
     
     public List<Purchase> searchPurchasesByProduct(String keyword) {
-        return purchaseRepository.findByProductKeyword(keyword);
+        Long businessId = com.spareparts.config.TenantContext.getBusinessId();
+        if (businessId == null) {
+            throw new com.spareparts.exception.TenantAccessException("No business context found");
+        }
+        Long branchId = com.spareparts.config.BranchContext.getBranchId();
+        return purchaseRepository.findByProductKeyword(keyword, businessId, branchId);
     }
     
     private String generateInvoiceNumber() {

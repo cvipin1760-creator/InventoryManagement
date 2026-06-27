@@ -82,13 +82,19 @@ export default function AdminManagement() {
         // Update admin logic
         await apiClient.put(`/auth/users/${editingAdmin.id}`, formData)
       } else {
-        // Create admin logic
-        await apiClient.post('/auth/users', {
+        // Create admin logic with business onboarding
+        await apiClient.post('/super-manager/admins', {
           username: formData.ownerName,
           email: formData.email,
           password: formData.password,
           role: 'ADMIN',
-          enabled: true
+          enabled: true,
+          businessName: formData.businessName,
+          gstNumber: formData.gstNumber,
+          address: formData.address,
+          contactNumber: formData.phone,
+          businessType: formData.businessType,
+          subscriptionPlan: formData.subscriptionPlan
         })
       }
       setOpenDialog(false)

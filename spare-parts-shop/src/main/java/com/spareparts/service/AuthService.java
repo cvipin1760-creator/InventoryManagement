@@ -77,10 +77,12 @@ public class AuthService {
                 user.getId(),
                 user.getUsername(),
                 user.getRole(),
-                user.getBusiness() != null ? user.getBusiness().getId() : null
+                user.getBusiness() != null ? user.getBusiness().getId() : null,
+                user.getBranch() != null ? user.getBranch().getId() : null
         );
         LoginResponse response = new LoginResponse(user.getId(), user.getUsername(), user.getRole(), 
                 user.getBusiness() != null ? user.getBusiness().getId() : null, 
+                user.getBranch() != null ? user.getBranch().getId() : null,
                 featuresDto, "Login successful");
         response.setToken(token);
         return response;
@@ -278,10 +280,12 @@ public class AuthService {
                 existing.getId(),
                 existing.getUsername(),
                 existing.getRole(),
-                existing.getBusiness() != null ? existing.getBusiness().getId() : null
+                existing.getBusiness() != null ? existing.getBusiness().getId() : null,
+                existing.getBranch() != null ? existing.getBranch().getId() : null
         );
         LoginResponse response = new LoginResponse(existing.getId(), existing.getUsername(), existing.getRole(), 
                 existing.getBusiness() != null ? existing.getBusiness().getId() : null, 
+                existing.getBranch() != null ? existing.getBranch().getId() : null,
                 featuresDto, "Login successful");
         response.setToken(token);
         return response;
@@ -397,6 +401,19 @@ public class AuthService {
             user.setOtpCode(null);
             user.setOtpExpiry(null);
         }
+        userRepository.save(user);
+    }
+
+    public void updateUser(Long id, com.spareparts.dto.CreateUserRequest request) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setUsername(request.getUsername());
+        user.setEmail(request.getEmail());
+        if (request.getPassword() != null && !request.getPassword().isEmpty()) {
+            user.setPassword(request.getPassword());
+        }
+        user.setRole(request.getRole());
+        user.setEnabled(request.getEnabled() != null ? request.getEnabled() : true);
         userRepository.save(user);
     }
 

@@ -24,6 +24,12 @@ public class SuperManagerController {
     @Autowired
     private BusinessService businessService;
 
+    @Autowired
+    private com.spareparts.repository.UserRepository userRepository;
+
+    @Autowired
+    private com.spareparts.repository.FeaturePermissionsRepository featurePermissionsRepository;
+
     // ==================== Admin Management ====================
     @GetMapping("/admins")
     public List<User> getAllAdmins() {
@@ -34,13 +40,35 @@ public class SuperManagerController {
 
     @PostMapping("/admins")
     public User createAdmin(@RequestBody CreateUserRequest request) {
-        return authService.createUser(
-                request.getUsername(),
-                request.getEmail(),
-                request.getPassword(),
-                "ADMIN",
-                true
-        );
+        // 1. Create and save Business
+        Business business = new Business();
+        business.setBusinessName(request.getBusinessName());
+        business.setGstNumber(request.getGstNumber());
+        business.setAddress(request.getAddress());
+        business.setContactNumber(request.getContactNumber());
+        business.setEmail(request.getEmail());
+        business.setBusinessType(request.getBusinessType());
+        business.setSubscriptionPlan(request.getSubscriptionPlan() != null ? request.getSubscriptionPlan() : "TRIAL");
+        business = businessService.createBusiness(business);
+
+        // 2. Create and save FeaturePermissions
+        com.spareparts.model.FeaturePermissions fp = new com.spareparts.model.FeaturePermissions();
+        fp.setBusiness(business);
+        fp.setInventoryEnabled(true);
+        fp.setBillingEnabled(true);
+        fp.setGstEnabled(true);
+        fp.setReportsEnabled(true);
+        featurePermissionsRepository.save(fp);
+
+        // 3. Create Admin User associated with the Business
+        User admin = new User();
+        admin.setUsername(request.getUsername());
+        admin.setEmail(request.getEmail());
+        admin.setPassword(request.getPassword());
+        admin.setRole("ADMIN");
+        admin.setEnabled(request.getEnabled() != null ? request.getEnabled() : true);
+        admin.setBusiness(business);
+        return userRepository.save(admin);
     }
 
     @PutMapping("/admins/{id}/role")

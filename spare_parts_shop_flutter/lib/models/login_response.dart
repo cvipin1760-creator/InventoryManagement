@@ -4,6 +4,7 @@ class LoginResponse {
   final String username;
   final String role;
   final int? businessId;
+  final int? branchId;
   final dynamic features;
   final String message;
 
@@ -13,6 +14,7 @@ class LoginResponse {
     required this.username,
     required this.role,
     this.businessId,
+    this.branchId,
     this.features,
     required this.message,
   });
@@ -26,6 +28,7 @@ class LoginResponse {
       username: json['username'] as String? ?? '',
       role: json['role'] as String? ?? '',
       businessId: (json['businessId'] as num?)?.toInt(),
+      branchId: (json['branchId'] as num?)?.toInt(),
       features: json['features'],
       message: json['message'] as String? ?? '',
     );
@@ -38,6 +41,7 @@ class LoginResponse {
       'username': username,
       'role': role,
       'businessId': businessId,
+      'branchId': branchId,
       'features': features,
       'message': message,
     };

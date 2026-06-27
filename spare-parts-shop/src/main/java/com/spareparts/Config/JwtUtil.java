@@ -44,6 +44,10 @@ public class JwtUtil {
         return extractClaim(token, claims -> claims.get("businessId", Long.class));
     }
 
+    public Long extractBranchId(String token) {
+        return extractClaim(token, claims -> claims.get("branchId", Long.class));
+    }
+
     public String extractRole(String token) {
         return extractClaim(token, claims -> claims.get("role", String.class));
     }
@@ -69,12 +73,15 @@ public class JwtUtil {
         return extractExpiration(token).before(new Date());
     }
 
-    public String generateToken(Long userId, String username, String role, Long businessId) {
+    public String generateToken(Long userId, String username, String role, Long businessId, Long branchId) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
         claims.put("role", role);
         if (businessId != null) {
             claims.put("businessId", businessId);
+        }
+        if (branchId != null) {
+            claims.put("branchId", branchId);
         }
         return createToken(claims, username);
     }

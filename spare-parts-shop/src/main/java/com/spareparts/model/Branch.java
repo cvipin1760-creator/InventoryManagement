@@ -6,16 +6,15 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "payments")
+@Table(name = "branches")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class Payment implements BelongsToBusiness {
+public class Branch implements BelongsToBusiness {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -25,25 +24,15 @@ public class Payment implements BelongsToBusiness {
     @JsonIgnore
     private Business business;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "branch_id")
-    private Branch branch;
-
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "customer_id", nullable = false)
-    private Customer customer;
-
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "bill_id")
-    @JsonIgnoreProperties({"items", "customer"})
-    private Bill bill;
-
     @Column(nullable = false)
-    private Double amount;
-
-    @Column(name = "payment_date", nullable = false)
-    private LocalDateTime paymentDate = LocalDateTime.now();
+    private String name;
 
     @Column(columnDefinition = "TEXT")
-    private String note;
+    private String address;
+
+    @Column(name = "contact_number")
+    private String contactNumber;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt = LocalDateTime.now();
 }

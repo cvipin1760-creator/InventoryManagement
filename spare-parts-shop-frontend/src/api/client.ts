@@ -1,20 +1,26 @@
-const API_BASE = 'https://inventorymanagement-afhl.onrender.com/api'
+const API_BASE = '/api'
+
+function getAuthHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {}
+  const token = localStorage.getItem('token')
+  const branchId = localStorage.getItem('activeBranchId')
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
+  }
+  if (branchId) {
+    headers['X-Branch-ID'] = branchId
+  }
+  return headers
+}
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const method = options.method || 'GET'
   const isJson = options.body !== undefined || method === 'POST' || method === 'PUT'
   
-  // Get token from localStorage
-  const token = localStorage.getItem('token')
-  
   const headers: HeadersInit = {
     ...(isJson ? { 'Content-Type': 'application/json' } : {}),
+    ...getAuthHeaders(),
     ...(options.headers as Record<string, string>),
-  }
-  
-  // Add Bearer token if available
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`
   }
   
   const res = await fetch(`${API_BASE}${path}`, {
@@ -143,7 +149,7 @@ export const api = {
     formData.append('file', file)
     const res = await fetch(`${API_BASE}/products/upload-excel`, {
       method: 'POST',
-      credentials: 'include',
+      headers: getAuthHeaders(),
       body: formData,
     })
     if (!res.ok) throw new Error(await res.text())
@@ -151,7 +157,7 @@ export const api = {
   },
   exportExcel: async () => {
     const res = await fetch(`${API_BASE}/products/export-excel`, {
-      credentials: 'include',
+      headers: getAuthHeaders(),
     })
     if (!res.ok) throw new Error(await res.text())
     const blob = await res.blob()
@@ -191,7 +197,7 @@ export const api = {
     formData.append('file', file)
     const res = await fetch(`${API_BASE}/bills/upload`, {
       method: 'POST',
-      credentials: 'include',
+      headers: getAuthHeaders(),
       body: formData,
     })
     if (!res.ok) throw new Error(await res.text())
@@ -199,7 +205,7 @@ export const api = {
   },
   getInvoicePdf: async (id: number) => {
     const res = await fetch(`${API_BASE}/bills/${id}/invoice-pdf`, {
-      credentials: 'include',
+      headers: getAuthHeaders(),
     })
     if (!res.ok) throw new Error(await res.text())
     const blob = await res.blob()
@@ -213,7 +219,7 @@ export const api = {
   downloadBillsBackup: async () => {
     const res = await fetch(`${API_BASE}/backups/bills/download`, {
       method: 'POST',
-      credentials: 'include',
+      headers: getAuthHeaders(),
     })
     if (!res.ok) throw new Error(await res.text())
 
@@ -260,4 +266,20 @@ export const api = {
   // Dashboard
   getDashboardStats: () =>
     request<import('../types').DashboardStats>('/dashboard/stats'),
+
+  // Branches
+  getBranches: () => request<any[]>('/branches'),
+  getBranch: (id: number) => request<any>(`/branches/${id}`),
+  createBranch: (data: any) =>
+    request<any>('/branches', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  updateBranch: (id: number, data: any) =>
+    request<any>(`/branches/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+  deleteBranch: (id: number) =>
+    request<void>(`/branches/${id}`, { method: 'DELETE' }),
 }

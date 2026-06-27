@@ -10,19 +10,25 @@ import java.util.Optional;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
-    Optional<Product> findByPartNumberAndBusinessId(String partNumber, Long businessId);
+    @Query("SELECT p FROM Product p WHERE p.partNumber = :partNumber AND p.business.id = :businessId AND (:branchId IS NULL OR p.branch.id = :branchId)")
+    Optional<Product> findByPartNumberAndBusinessId(@Param("partNumber") String partNumber, @Param("businessId") Long businessId, @Param("branchId") Long branchId);
+    
     Optional<Product> findByPartNumber(String partNumber);
     
-    List<Product> findByBusinessId(Long businessId);
+    @Query("SELECT p FROM Product p WHERE p.business.id = :businessId AND (:branchId IS NULL OR p.branch.id = :branchId)")
+    List<Product> findByBusinessId(@Param("businessId") Long businessId, @Param("branchId") Long branchId);
     
-    @Query("SELECT p FROM Product p WHERE p.business.id = :businessId AND (LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(p.partNumber) LIKE LOWER(CONCAT('%', :keyword, '%')))")
-    List<Product> searchProducts(@Param("keyword") String keyword, @Param("businessId") Long businessId);
+    @Query("SELECT COUNT(p) FROM Product p WHERE p.business.id = :businessId AND (:branchId IS NULL OR p.branch.id = :branchId)")
+    long countByBusinessId(@Param("businessId") Long businessId, @Param("branchId") Long branchId);
+    
+    @Query("SELECT p FROM Product p WHERE p.business.id = :businessId AND (:branchId IS NULL OR p.branch.id = :branchId) AND (LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(p.partNumber) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    List<Product> searchProducts(@Param("keyword") String keyword, @Param("businessId") Long businessId, @Param("branchId") Long branchId);
     
     @Query("SELECT p FROM Product p WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(p.partNumber) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     List<Product> searchProducts(@Param("keyword") String keyword);
     
-    @Query("SELECT p FROM Product p WHERE p.business.id = :businessId AND p.quantity <= p.lowStockThreshold ORDER BY p.quantity ASC")
-    List<Product> findLowStockProducts(@Param("businessId") Long businessId);
+    @Query("SELECT p FROM Product p WHERE p.business.id = :businessId AND (:branchId IS NULL OR p.branch.id = :branchId) AND p.quantity <= p.lowStockThreshold ORDER BY p.quantity ASC")
+    List<Product> findLowStockProducts(@Param("businessId") Long businessId, @Param("branchId") Long branchId);
     
     @Query("SELECT p FROM Product p WHERE p.quantity <= p.lowStockThreshold ORDER BY p.quantity ASC")
     List<Product> findLowStockProducts();

@@ -12,15 +12,28 @@ public class LoginResponse {
     private String username;
     private String role;
     private Long businessId;
+    private Long branchId;
     private FeaturePermissionsDto features;
     private String message;
     private String token; // For backward compatibility
+
+    public LoginResponse(Long userId, String username, String role, Long businessId, Long branchId, FeaturePermissionsDto features, String message) {
+        this.userId = userId;
+        this.username = username;
+        this.role = role;
+        this.businessId = businessId;
+        this.branchId = branchId;
+        this.features = features;
+        this.message = message;
+        this.token = null;
+    }
 
     public LoginResponse(Long userId, String username, String role, Long businessId, FeaturePermissionsDto features, String message) {
         this.userId = userId;
         this.username = username;
         this.role = role;
         this.businessId = businessId;
+        this.branchId = null;
         this.features = features;
         this.message = message;
         this.token = null;

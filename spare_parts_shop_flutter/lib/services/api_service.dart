@@ -21,9 +21,13 @@ class ApiService {
 
   Future<Map<String, String>> _getHeaders() async {
     final token = await _storage.read(key: AppConstants.storageKeyToken);
+    final branchId = await _storage.read(key: 'active_branch_id');
     final headers = {'Content-Type': 'application/json'};
     if (token != null && token.isNotEmpty) {
       headers['Authorization'] = 'Bearer $token';
+    }
+    if (branchId != null && branchId.isNotEmpty) {
+      headers['X-Branch-ID'] = branchId;
     }
     return headers;
   }

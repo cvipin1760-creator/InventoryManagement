@@ -41,8 +41,17 @@ public class BackupService {
         try {
             Files.createDirectories(Path.of(backupDir));
 
-            List<Bill> bills = billRepository.findAll();
-            List<Payment> payments = paymentRepository.findAll();
+            Long businessId = com.spareparts.config.TenantContext.getBusinessId();
+            List<Bill> bills;
+            List<Payment> payments;
+            if (businessId != null) {
+                bills = billRepository.findByBusinessId(businessId, null);
+                payments = paymentRepository.findByBusinessId(businessId, null);
+            } else {
+                bills = billRepository.findAll();
+                payments = paymentRepository.findAll();
+            }
+
             Map<String, Object> backup = new LinkedHashMap<>();
             backup.put("backupType", "BILLS_AND_PAYMENTS_JSON");
             backup.put("createdAt", LocalDateTime.now());

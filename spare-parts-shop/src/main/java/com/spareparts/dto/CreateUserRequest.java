@@ -9,4 +9,12 @@ public class CreateUserRequest {
     private String password;
     private String role;
     private Boolean enabled;
+
+    // Optional fields for SaaS admin/business onboarding
+    private String businessName;
+    private String gstNumber;
+    private String address;
+    private String contactNumber;
+    private String businessType;
+    private String subscriptionPlan;
 }
