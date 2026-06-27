@@ -50,6 +50,7 @@ const LoginPage = () => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [changePasswordError, setChangePasswordError] = useState('');
+  const [error, setError] = useState('');
 
   const loginMutation = useMutation({
     mutationFn: authApi.login,
