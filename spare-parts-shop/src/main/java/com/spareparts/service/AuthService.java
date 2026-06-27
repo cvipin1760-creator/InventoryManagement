@@ -83,9 +83,18 @@ public class AuthService {
         LoginResponse response = new LoginResponse(user.getId(), user.getUsername(), user.getRole(), 
                 user.getBusiness() != null ? user.getBusiness().getId() : null, 
                 user.getBranch() != null ? user.getBranch().getId() : null,
+                Boolean.FALSE.equals(user.getPasswordChanged()),
                 featuresDto, "Login successful");
         response.setToken(token);
         return response;
+    }
+
+    public void changePassword(String username, String newPassword) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setPassword(newPassword);
+        user.setPasswordChanged(true);
+        userRepository.save(user);
     }
 
     public void register(RegisterRequest request) {
@@ -286,6 +295,7 @@ public class AuthService {
         LoginResponse response = new LoginResponse(existing.getId(), existing.getUsername(), existing.getRole(), 
                 existing.getBusiness() != null ? existing.getBusiness().getId() : null, 
                 existing.getBranch() != null ? existing.getBranch().getId() : null,
+                Boolean.FALSE.equals(existing.getPasswordChanged()),
                 featuresDto, "Login successful");
         response.setToken(token);
         return response;
@@ -370,6 +380,7 @@ public class AuthService {
             superManager.setUsername("superadmin");
             superManager.setRole("SUPER_MANAGER");
             superManager.setEnabled(true);
+            superManager.setPasswordChanged(true);
             // No business for SUPER_MANAGER
         } else if (superManager.getEnabled() == null) {
             superManager.setEnabled(true);
@@ -431,6 +442,7 @@ public class AuthService {
         user.setPassword(password);
         user.setRole(role);
         user.setEnabled(enabled != null ? enabled : true);
+        user.setPasswordChanged(false);
         return userRepository.save(user);
     }
 }

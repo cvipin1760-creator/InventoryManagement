@@ -3,6 +3,7 @@ import { useAppSelector } from './store/hooks';
 import { selectIsAuthenticated, selectCurrentUser } from './store/slices/authSlice';
 import Layout from './components/Layout';
 import Login from './pages/Login';
+import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
 import Customers from './pages/Customers';
@@ -41,6 +42,7 @@ const App = () => {
     <Routes>
       {/* Public Routes */}
       <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
 
       {/* Protected Routes */}
       <Route

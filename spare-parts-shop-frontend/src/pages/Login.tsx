@@ -45,27 +45,75 @@ const LoginPage = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [error, setError] = useState('');
+  const [mustChangePassword, setMustChangePassword] = useState(false);
+  const [tempLoginData, setTempLoginData] = useState<LoginResponse | null>(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [changePasswordError, setChangePasswordError] = useState('');
 
   const loginMutation = useMutation({
     mutationFn: authApi.login,
     onSuccess: (data: LoginResponse) => {
-      dispatch(setCredentials({
-        user: {
-          id: data.userId,
-          username: data.username,
-          role: data.role as any,
-          businessId: data.businessId,
-        },
-        features: data.features,
-        token: data.token,
-      }));
-      navigate(from, { replace: true });
+      if (data.mustChangePassword) {
+        if (data.token) {
+          localStorage.setItem('token', data.token);
+        }
+        setTempLoginData(data);
+        setMustChangePassword(true);
+      } else {
+        dispatch(setCredentials({
+          user: {
+            id: data.userId,
+            username: data.username,
+            role: data.role as any,
+            businessId: data.businessId,
+          },
+          features: data.features,
+          token: data.token,
+        }));
+        navigate(from, { replace: true });
+      }
     },
     onError: (err: any) => {
       setError(err.response?.data?.message || err.message || 'Login failed');
     },
   });
+
+  const changePasswordMutation = useMutation({
+    mutationFn: authApi.changePassword,
+    onSuccess: () => {
+      if (tempLoginData) {
+        dispatch(setCredentials({
+          user: {
+            id: tempLoginData.userId,
+            username: tempLoginData.username,
+            role: tempLoginData.role as any,
+            businessId: tempLoginData.businessId,
+          },
+          features: tempLoginData.features,
+          token: tempLoginData.token,
+        }));
+        navigate(from, { replace: true });
+      }
+    },
+    onError: (err: any) => {
+      setChangePasswordError(err.response?.data?.message || err.message || 'Failed to change password');
+    },
+  });
+
+  const handleChangePasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setChangePasswordError('');
+    if (newPassword !== confirmPassword) {
+      setChangePasswordError('Passwords do not match');
+      return;
+    }
+    if (newPassword.length < 6) {
+      setChangePasswordError('Password must be at least 6 characters long');
+      return;
+    }
+    changePasswordMutation.mutate(newPassword);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -208,115 +256,176 @@ const LoginPage = () => {
               backgroundColor: theme.palette.background.paper,
             }}
           >
-            <Box sx={{ mb: 4, textAlign: 'center' }}>
-              <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
-                Sign In
-              </Typography>
-              <Typography variant="body1" color="text.secondary">
-                Enter your credentials to continue
-              </Typography>
-            </Box>
+            {mustChangePassword ? (
+              // CHANGE PASSWORD FORM
+              <Box>
+                <Box sx={{ mb: 4, textAlign: 'center' }}>
+                  <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
+                    Update Password
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary">
+                    Your password was set by an administrator. Please update it to continue.
+                  </Typography>
+                </Box>
 
-            {error && (
-              <Alert severity="error" sx={{ mb: 3 }}>
-                {error}
-              </Alert>
-            )}
+                {changePasswordError && (
+                  <Alert severity="error" sx={{ mb: 3 }}>
+                    {changePasswordError}
+                  </Alert>
+                )}
 
-            <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-              <TextField
-                fullWidth
-                label="Username"
-                name="username"
-                value={formData.username}
-                onChange={handleChange}
-                variant="outlined"
-                required
-                autoComplete="username"
-              />
+                <Box component="form" onSubmit={handleChangePasswordSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+                  <TextField
+                    fullWidth
+                    label="New Password"
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    variant="outlined"
+                    required
+                  />
 
-              <TextField
-                fullWidth
-                label="Password"
-                name="password"
-                type={showPassword ? 'text' : 'password'}
-                value={formData.password}
-                onChange={handleChange}
-                variant="outlined"
-                required
-                autoComplete="current-password"
-                slotProps={{
-                  input: {
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          onClick={() => setShowPassword(!showPassword)}
-                          edge="end"
-                        >
-                          {showPassword ? <VisibilityOff /> : <Visibility />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  },
-                }}
-              />
+                  <TextField
+                    fullWidth
+                    label="Confirm New Password"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    variant="outlined"
+                    required
+                  />
 
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={rememberMe}
-                      onChange={handleRememberMeChange}
-                      color="primary"
-                    />
-                  }
-                  label="Remember Me"
-                />
-
-                <Link
-                  to="/forgot-password"
-                  style={{
-                    textDecoration: 'none',
-                    color: theme.palette.primary.main,
-                    fontWeight: 600,
-                  }}
-                >
-                  Forgot Password?
-                </Link>
-              </Box>
-
-              <Button
-                type="submit"
-                variant="contained"
-                fullWidth
-                disabled={loginMutation.isPending}
-                sx={{
-                  py: 1.75,
-                  fontSize: '1rem',
-                  mt: 1,
-                }}
-              >
-                {loginMutation.isPending ? (
-                  <CircularProgress size={24} sx={{ color: 'white' }} />
-                ) : 'Sign In'}
-              </Button>
-
-              <Box sx={{ mt: 3, textAlign: 'center' }}>
-                <Typography variant="body2" color="text.secondary">
-                  Don't have an account?{' '}
-                  <Link
-                    to="/register"
-                    style={{
-                      textDecoration: 'none',
-                      color: theme.palette.primary.main,
-                      fontWeight: 600,
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    fullWidth
+                    disabled={changePasswordMutation.isPending}
+                    sx={{
+                      py: 1.75,
+                      fontSize: '1rem',
+                      mt: 1,
                     }}
                   >
-                    Sign Up
-                  </Link>
-                </Typography>
+                    {changePasswordMutation.isPending ? (
+                      <CircularProgress size={24} sx={{ color: 'white' }} />
+                    ) : 'Update Password & Login'}
+                  </Button>
+                </Box>
               </Box>
-            </Box>
+            ) : (
+              // LOGIN FORM
+              <Box>
+                <Box sx={{ mb: 4, textAlign: 'center' }}>
+                  <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
+                    Sign In
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary">
+                    Enter your credentials to continue
+                  </Typography>
+                </Box>
+
+                {error && (
+                  <Alert severity="error" sx={{ mb: 3 }}>
+                    {error}
+                  </Alert>
+                )}
+
+                <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+                  <TextField
+                    fullWidth
+                    label="Username"
+                    name="username"
+                    value={formData.username}
+                    onChange={handleChange}
+                    variant="outlined"
+                    required
+                    autoComplete="username"
+                  />
+
+                  <TextField
+                    fullWidth
+                    label="Password"
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={formData.password}
+                    onChange={handleChange}
+                    variant="outlined"
+                    required
+                    autoComplete="current-password"
+                    slotProps={{
+                      input: {
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              onClick={() => setShowPassword(!showPassword)}
+                              edge="end"
+                            >
+                              {showPassword ? <VisibilityOff /> : <Visibility />}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      },
+                    }}
+                  />
+
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={rememberMe}
+                          onChange={handleRememberMeChange}
+                          color="primary"
+                        />
+                      }
+                      label="Remember Me"
+                    />
+
+                    <Link
+                      to="/forgot-password"
+                      style={{
+                        textDecoration: 'none',
+                        color: theme.palette.primary.main,
+                        fontWeight: 600,
+                      }}
+                    >
+                      Forgot Password?
+                    </Link>
+                  </Box>
+
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    fullWidth
+                    disabled={loginMutation.isPending}
+                    sx={{
+                      py: 1.75,
+                      fontSize: '1rem',
+                      mt: 1,
+                    }}
+                  >
+                    {loginMutation.isPending ? (
+                      <CircularProgress size={24} sx={{ color: 'white' }} />
+                    ) : 'Sign In'}
+                  </Button>
+
+                  <Box sx={{ mt: 3, textAlign: 'center' }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Don't have an account?{' '}
+                      <Link
+                        to="/register"
+                        style={{
+                          textDecoration: 'none',
+                          color: theme.palette.primary.main,
+                          fontWeight: 600,
+                        }}
+                      >
+                        Sign Up
+                      </Link>
+                    </Typography>
+                  </Box>
+                </Box>
+              </Box>
+            )}
           </Paper>
         </Box>
       </Container>

@@ -35,6 +35,7 @@ export interface LoginResponse {
     employeeManagementEnabled: boolean;
   };
   token?: string;
+  mustChangePassword?: boolean;
   message: string;
 }
 
@@ -67,5 +68,9 @@ export const authApi = {
   loginWithGoogle: async (idToken: string): Promise<LoginResponse> => {
     const response = await apiClient.post<LoginResponse>('/auth/google', { idToken });
     return response.data;
+  },
+
+  changePassword: async (newPassword: string): Promise<void> => {
+    await apiClient.post('/auth/change-password', { newPassword });
   },
 };

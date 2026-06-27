@@ -5,6 +5,7 @@ class LoginResponse {
   final String role;
   final int? businessId;
   final int? branchId;
+  final bool mustChangePassword;
   final dynamic features;
   final String message;
 
@@ -15,6 +16,7 @@ class LoginResponse {
     required this.role,
     this.businessId,
     this.branchId,
+    this.mustChangePassword = false,
     this.features,
     required this.message,
   });
@@ -29,6 +31,7 @@ class LoginResponse {
       role: json['role'] as String? ?? '',
       businessId: (json['businessId'] as num?)?.toInt(),
       branchId: (json['branchId'] as num?)?.toInt(),
+      mustChangePassword: json['mustChangePassword'] as bool? ?? false,
       features: json['features'],
       message: json['message'] as String? ?? '',
     );
@@ -42,6 +45,7 @@ class LoginResponse {
       'role': role,
       'businessId': businessId,
       'branchId': branchId,
+      'mustChangePassword': mustChangePassword,
       'features': features,
       'message': message,
     };

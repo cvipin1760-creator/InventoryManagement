@@ -649,4 +649,18 @@ class ApiService {
       throw Exception('Failed to update role');
     }
   }
+
+  Future<void> changePassword(String newPassword) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/auth/change-password'),
+      headers: await _getHeaders(),
+      body: jsonEncode({
+        'newPassword': newPassword,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(response.body);
+    }
+  }
 }

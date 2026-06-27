@@ -125,6 +125,19 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> changePassword(String newPassword) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      await apiService.changePassword(newPassword);
+    } catch (e) {
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   Future<void> initAdmin() async {
     await apiService.initAdmin();
   }

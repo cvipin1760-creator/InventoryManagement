@@ -13,6 +13,7 @@ public class LoginResponse {
     private String role;
     private Long businessId;
     private Long branchId;
+    private Boolean mustChangePassword = false;
     private FeaturePermissionsDto features;
     private String message;
     private String token; // For backward compatibility
@@ -23,6 +24,19 @@ public class LoginResponse {
         this.role = role;
         this.businessId = businessId;
         this.branchId = branchId;
+        this.mustChangePassword = false;
+        this.features = features;
+        this.message = message;
+        this.token = null;
+    }
+
+    public LoginResponse(Long userId, String username, String role, Long businessId, Long branchId, Boolean mustChangePassword, FeaturePermissionsDto features, String message) {
+        this.userId = userId;
+        this.username = username;
+        this.role = role;
+        this.businessId = businessId;
+        this.branchId = branchId;
+        this.mustChangePassword = mustChangePassword;
         this.features = features;
         this.message = message;
         this.token = null;
@@ -34,6 +48,7 @@ public class LoginResponse {
         this.role = role;
         this.businessId = businessId;
         this.branchId = null;
+        this.mustChangePassword = false;
         this.features = features;
         this.message = message;
         this.token = null;

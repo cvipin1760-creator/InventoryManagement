@@ -152,4 +152,20 @@ public class AuthController {
             return ResponseEntity.status(400).body(e.getMessage());
         }
     }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<String> changePassword(
+            @RequestBody com.spareparts.dto.ChangePasswordRequest request,
+            java.security.Principal principal
+    ) {
+        try {
+            if (principal == null) {
+                return ResponseEntity.status(401).body("Unauthorized");
+            }
+            authService.changePassword(principal.getName(), request.getNewPassword());
+            return ResponseEntity.ok("Password changed successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(400).body(e.getMessage());
+        }
+    }
 }

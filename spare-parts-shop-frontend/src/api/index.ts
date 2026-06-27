@@ -9,12 +9,16 @@ const apiClient = axios.create({
   },
 });
 
-// Add auth token to requests if available
+// Add auth token and branch ID to requests if available
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
+    const branchId = localStorage.getItem('activeBranchId');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+    }
+    if (branchId) {
+      config.headers['X-Branch-ID'] = branchId;
     }
     return config;
   },

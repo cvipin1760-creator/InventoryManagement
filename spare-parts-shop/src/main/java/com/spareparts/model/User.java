@@ -54,4 +54,7 @@ public class User implements BelongsToBusiness {
 
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "password_changed")
+    private Boolean passwordChanged = false;
 }
