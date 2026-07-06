@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   Drawer,
@@ -34,9 +34,11 @@ import {
   Menu,
   Close,
   Notifications,
+  Send,
 } from '@mui/icons-material';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
 import { logout, selectCurrentUser } from '../store/slices/authSlice';
+import { api } from '../api/client';
 
 const drawerWidth = 280;
 
@@ -47,7 +49,22 @@ const Sidebar = ({ open, onToggle, onClose }: { open: boolean; onToggle: () => v
   const dispatch = useAppDispatch();
   const user = useAppSelector(selectCurrentUser);
 
-  const [notificationCount] = useState(3); // Mock notification count
+  const [notificationCount, setNotificationCount] = useState(0);
+
+  useEffect(() => {
+    if (user) {
+      fetchUnreadCount();
+    }
+  }, [user]);
+
+  const fetchUnreadCount = async () => {
+    try {
+      const count = await api.getUnreadCount();
+      setNotificationCount(count);
+    } catch (err) {
+      console.error('Error fetching unread count:', err);
+    }
+  };
 
   // Define menu items based on user role
   const getMenuItems = () => {
@@ -61,6 +78,7 @@ const Sidebar = ({ open, onToggle, onClose }: { open: boolean; onToggle: () => v
           { label: 'Feature Permissions', icon: <Shield />, path: '/permissions' },
           { label: 'Analytics', icon: <BarChart />, path: '/analytics' },
           { label: 'Reports', icon: <ReceiptLong />, path: '/reports' },
+          { label: 'Send Notifications', icon: <Send />, path: '/send-notifications' },
         ];
       case 'CUSTOMER':
         return [
@@ -72,7 +90,7 @@ const Sidebar = ({ open, onToggle, onClose }: { open: boolean; onToggle: () => v
           { label: 'Support', icon: <Support />, path: '/support' },
         ];
       default: // ADMIN, EMPLOYEE
-        return [
+        const items: any[] = [
           { label: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
           { label: 'Products', icon: <Inventory />, path: '/products' },
           { label: 'Customers', icon: <People />, path: '/customers' },
@@ -81,8 +99,11 @@ const Sidebar = ({ open, onToggle, onClose }: { open: boolean; onToggle: () => v
           { label: 'Suppliers', icon: <LocalShipping />, path: '/suppliers' },
           { label: 'Payments', icon: <Payments />, path: '/payments' },
           { label: 'Reports', icon: <BarChart />, path: '/reports' },
-          { label: 'Users', icon: <People />, path: '/users' },
         ];
+        if (user?.role === 'ADMIN') {
+          items.push({ label: 'Users', icon: <People />, path: '/users' });
+        }
+        return items;
     }
   };
 
@@ -198,6 +219,21 @@ const Sidebar = ({ open, onToggle, onClose }: { open: boolean; onToggle: () => v
 
       {/* Bottom Menu */}
       <List sx={{ p: 2 }}>
+        <ListItem disablePadding sx={{ mb: 0.5 }}>
+          <ListItemButton
+            component={Link}
+            to="/notifications"
+            onClick={isMobile ? onClose : undefined}
+            sx={{ borderRadius: 1.5 }}
+          >
+            <ListItemIcon>
+              <Badge badgeContent={notificationCount} color="error" max={99}>
+                <Notifications />
+              </Badge>
+            </ListItemIcon>
+            <ListItemText primary="Notifications" />
+          </ListItemButton>
+        </ListItem>
         <ListItem disablePadding sx={{ mb: 0.5 }}>
           <ListItemButton
             component={Link}

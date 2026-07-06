@@ -28,8 +28,8 @@ public class BusinessService {
             business.setSubscriptionStartDate(LocalDateTime.now());
         }
         if (business.getSubscriptionPlan().equals("TRIAL")) {
-            // 14-day trial
-            business.setSubscriptionEndDate(LocalDateTime.now().plusDays(14));
+            // 7-day trial
+            business.setSubscriptionEndDate(LocalDateTime.now().plusDays(7));
         } else if (business.getSubscriptionPlan().equals("MONTHLY")) {
             business.setSubscriptionEndDate(LocalDateTime.now().plusMonths(1));
         } else if (business.getSubscriptionPlan().equals("YEARLY")) {
@@ -54,7 +54,7 @@ public class BusinessService {
         business.setSubscriptionPlan(subscriptionPlan);
         business.setSubscriptionStartDate(LocalDateTime.now());
         if (subscriptionPlan.equals("TRIAL")) {
-            business.setSubscriptionEndDate(LocalDateTime.now().plusDays(14));
+            business.setSubscriptionEndDate(LocalDateTime.now().plusDays(7));
         } else if (subscriptionPlan.equals("MONTHLY")) {
             business.setSubscriptionEndDate(LocalDateTime.now().plusMonths(1));
         } else if (subscriptionPlan.equals("YEARLY")) {

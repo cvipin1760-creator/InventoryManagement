@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:stock_pilot/core/constants/app_constants.dart';
 import 'package:stock_pilot/features/admins/presentation/screens/admins_screen.dart';
+import 'package:stock_pilot/features/analytics/presentation/screens/analytics_screen.dart';
 import 'package:stock_pilot/features/authentication/domain/providers/auth_provider.dart';
 import 'package:stock_pilot/features/authentication/presentation/screens/login_screen.dart';
 import 'package:stock_pilot/features/authentication/presentation/screens/splash_screen.dart';
@@ -13,8 +14,12 @@ import 'package:stock_pilot/features/dashboard/presentation/screens/admin_dashbo
 import 'package:stock_pilot/features/dashboard/presentation/screens/customer_dashboard.dart';
 import 'package:stock_pilot/features/dashboard/presentation/screens/super_admin_dashboard.dart';
 import 'package:stock_pilot/features/main/presentation/screens/main_screen.dart';
+import 'package:stock_pilot/features/payments/presentation/screens/payments_screen.dart';
 import 'package:stock_pilot/features/products/presentation/screens/products_screen.dart';
+import 'package:stock_pilot/features/purchases/presentation/screens/purchases_screen.dart';
+import 'package:stock_pilot/features/reports/presentation/screens/reports_screen.dart';
 import 'package:stock_pilot/features/settings/presentation/screens/settings_screen.dart';
+import 'package:stock_pilot/features/suppliers/presentation/screens/suppliers_screen.dart';
 import 'package:stock_pilot/features/warranty/presentation/screens/warranty_screen.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
@@ -87,8 +92,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/second',
-                name: 'second',
+                path: AppConstants.productsRoute,
+                name: 'products',
                 builder: (context, state) {
                   final authState = ref.read(authNotifierProvider);
                   if (authState is AuthAuthenticated) {
@@ -109,8 +114,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/third',
-                name: 'third',
+                path: AppConstants.billsRoute,
+                name: 'bills',
                 builder: (context, state) {
                   final authState = ref.read(authNotifierProvider);
                   if (authState is AuthAuthenticated) {
@@ -120,7 +125,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                     } else if (role == AppConstants.roleCustomer) {
                       return const ProductsScreen();
                     } else {
-                      return const BillingScreen();
+                      return const BillsScreen();
                     }
                   }
                   return const LoginScreen();
@@ -131,8 +136,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/fourth',
-                name: 'fourth',
+                path: AppConstants.customersRoute,
+                name: 'customers',
                 builder: (context, state) {
                   final authState = ref.read(authNotifierProvider);
                   if (authState is AuthAuthenticated) {
@@ -144,6 +149,96 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                     } else {
                       return const CustomersScreen();
                     }
+                  }
+                  return const LoginScreen();
+                },
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppConstants.purchasesRoute,
+                name: 'purchases',
+                builder: (context, state) {
+                  final authState = ref.read(authNotifierProvider);
+                  if (authState is AuthAuthenticated) {
+                    return const PurchasesScreen();
+                  }
+                  return const LoginScreen();
+                },
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppConstants.suppliersRoute,
+                name: 'suppliers',
+                builder: (context, state) {
+                  final authState = ref.read(authNotifierProvider);
+                  if (authState is AuthAuthenticated) {
+                    return const SuppliersScreen();
+                  }
+                  return const LoginScreen();
+                },
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppConstants.paymentsRoute,
+                name: 'payments',
+                builder: (context, state) {
+                  final authState = ref.read(authNotifierProvider);
+                  if (authState is AuthAuthenticated) {
+                    return const PaymentsScreen();
+                  }
+                  return const LoginScreen();
+                },
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppConstants.analyticsRoute,
+                name: 'analytics',
+                builder: (context, state) {
+                  final authState = ref.read(authNotifierProvider);
+                  if (authState is AuthAuthenticated) {
+                    return const AnalyticsScreen();
+                  }
+                  return const LoginScreen();
+                },
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppConstants.reportsRoute,
+                name: 'reports',
+                builder: (context, state) {
+                  final authState = ref.read(authNotifierProvider);
+                  if (authState is AuthAuthenticated) {
+                    return const ReportsScreen();
+                  }
+                  return const LoginScreen();
+                },
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppConstants.settingsRoute,
+                name: 'settings',
+                builder: (context, state) {
+                  final authState = ref.read(authNotifierProvider);
+                  if (authState is AuthAuthenticated) {
+                    return const SettingsScreen();
                   }
                   return const LoginScreen();
                 },

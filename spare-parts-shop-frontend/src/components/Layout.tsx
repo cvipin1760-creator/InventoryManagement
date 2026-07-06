@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import type { RootState } from '../store';
 import {
   Box,
@@ -16,16 +16,20 @@ import {
   FormControl,
   InputLabel,
   Select,
+  Alert,
+  Button,
 } from '@mui/material';
 import {
   Notifications,
   DarkMode,
   LightMode,
+  ShoppingCart,
 } from '@mui/icons-material';
 import Sidebar from './Sidebar';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
-import { toggleTheme } from '../store/slices/themeSlice';
+import { logout } from '../store/slices/authSlice';
 import { selectCurrentUser } from '../store/slices/authSlice';
+import { toggleTheme } from '../store/slices/themeSlice';
 import { api } from '../api/client';
 
 const drawerWidth = 280;
@@ -34,12 +38,14 @@ const Layout = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const themeMode = useAppSelector((state: RootState) => state.theme.mode);
   const user = useAppSelector(selectCurrentUser);
-  const [notificationCount] = useState(3); // Mock notification count
+  const [notificationCount, setNotificationCount] = useState(0);
+  const [business, setBusiness] = useState<any>(null);
 
   const [branches, setBranches] = useState<any[]>([]);
   const [selectedBranch, setSelectedBranch] = useState<string>(localStorage.getItem('activeBranchId') || '');
@@ -56,8 +62,29 @@ const Layout = () => {
           }
         })
         .catch(err => console.error("Error fetching branches:", err));
+
+      api.getBusiness()
+        .then(setBusiness)
+        .catch(err => console.error("Error fetching business:", err));
+    }
+    
+    if (user) {
+      api.getUnreadCount()
+        .then(setNotificationCount)
+        .catch(err => console.error("Error fetching unread count:", err));
     }
   }, [user]);
+
+  const calculateDaysLeft = () => {
+    if (!business || !business.subscriptionEndDate) return 0;
+    const endDate = new Date(business.subscriptionEndDate);
+    const now = new Date();
+    const diffTime = endDate.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
+
+  const daysLeft = calculateDaysLeft();
 
   const handleBranchChange = (event: any) => {
     const val = event.target.value;
@@ -67,7 +94,7 @@ const Layout = () => {
     } else {
       localStorage.removeItem('activeBranchId');
     }
-    window.location.reload(); // Reload to refresh all active page data with the new header
+    window.location.reload();
   };
 
   const handleDrawerToggle = () => {
@@ -80,6 +107,11 @@ const Layout = () => {
 
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate('/login');
   };
 
   return (
@@ -100,6 +132,28 @@ const Layout = () => {
           backgroundColor: theme.palette.background.default,
         }}
       >
+        {/* Trial Period Notification */}
+        {business && business.subscriptionPlan === 'TRIAL' && business.isSubscriptionActive && (
+          <Alert
+            severity="warning"
+            sx={{ mb: 3, borderRadius: 2 }}
+            action={
+              <Button
+                color="inherit"
+                size="small"
+                startIcon={<ShoppingCart />}
+                onClick={() => navigate('/settings')}
+              >
+                Upgrade Now
+              </Button>
+            }
+          >
+            {daysLeft > 0
+              ? `Your trial period ends in ${daysLeft} day${daysLeft !== 1 ? 's' : ''}! Upgrade to premium to keep using all features.`
+              : 'Your trial period has ended! Upgrade to premium to continue using the app.'}
+          </Alert>
+        )}
+
         {/* Desktop Top Bar */}
         {!isMobile && (
           <AppBar
@@ -121,7 +175,7 @@ const Layout = () => {
                 Welcome back, {user?.username}!
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <IconButton onClick={() => dispatch(toggleTheme(themeMode === 'light' ? 'dark' : 'light'))}>
+                <IconButton onClick={() => dispatch(toggleTheme())}>
                   {themeMode === 'light' ? <DarkMode /> : <LightMode />}
                 </IconButton>
                 <IconButton>
@@ -142,9 +196,9 @@ const Layout = () => {
                   open={Boolean(anchorEl)}
                   onClose={handleClose}
                 >
-                  <MenuItem onClick={handleClose}>Profile</MenuItem>
-                  <MenuItem onClick={handleClose}>Settings</MenuItem>
-                  <MenuItem onClick={handleClose}>Logout</MenuItem>
+                  <MenuItem onClick={() => { handleClose(); navigate('/settings'); }}>Profile</MenuItem>
+                  <MenuItem onClick={() => { handleClose(); navigate('/settings'); }}>Settings</MenuItem>
+                  <MenuItem onClick={() => { handleClose(); handleLogout(); }}>Logout</MenuItem>
                 </Menu>
               </Box>
             </Toolbar>

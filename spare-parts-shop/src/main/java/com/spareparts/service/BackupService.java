@@ -1,9 +1,12 @@
 package com.spareparts.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.spareparts.config.TenantContext;
 import com.spareparts.model.Bill;
+import com.spareparts.model.Business;
 import com.spareparts.model.Payment;
 import com.spareparts.repository.BillRepository;
+import com.spareparts.repository.BusinessRepository;
 import com.spareparts.repository.PaymentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,6 +34,9 @@ public class BackupService {
     private PaymentRepository paymentRepository;
 
     @Autowired
+    private BusinessRepository businessRepository;
+
+    @Autowired
     private ObjectMapper objectMapper;
 
     @Value("${app.backup.dir:backups}")
@@ -41,12 +47,14 @@ public class BackupService {
         try {
             Files.createDirectories(Path.of(backupDir));
 
-            Long businessId = com.spareparts.config.TenantContext.getBusinessId();
+            Long businessId = TenantContext.getBusinessId();
             List<Bill> bills;
             List<Payment> payments;
+            String businessPrefix = "";
             if (businessId != null) {
                 bills = billRepository.findByBusinessId(businessId, null);
                 payments = paymentRepository.findByBusinessId(businessId, null);
+                businessPrefix = "business-" + businessId + "-";
             } else {
                 bills = billRepository.findAll();
                 payments = paymentRepository.findAll();
@@ -54,13 +62,14 @@ public class BackupService {
 
             Map<String, Object> backup = new LinkedHashMap<>();
             backup.put("backupType", "BILLS_AND_PAYMENTS_JSON");
+            backup.put("businessId", businessId);
             backup.put("createdAt", LocalDateTime.now());
             backup.put("billCount", bills.size());
             backup.put("paymentCount", payments.size());
             backup.put("bills", bills);
             backup.put("payments", payments);
 
-            Path backupPath = Path.of(backupDir, "bills-backup-" + LocalDateTime.now().format(FILE_TIMESTAMP) + ".json");
+            Path backupPath = Path.of(backupDir, businessPrefix + "bills-backup-" + LocalDateTime.now().format(FILE_TIMESTAMP) + ".json");
             objectMapper.writerWithDefaultPrettyPrinter().writeValue(backupPath.toFile(), backup);
             return backupPath;
         } catch (IOException e) {
@@ -68,8 +77,18 @@ public class BackupService {
         }
     }
 
+    @Transactional(readOnly = true)
     @Scheduled(cron = "0 55 23 * * *", zone = "Asia/Kolkata")
     public void createDailyBillsBackup() {
-        createBillsBackup();
+        List<Business> allBusinesses = businessRepository.findAll();
+        
+        for (Business business : allBusinesses) {
+            try {
+                TenantContext.setBusinessId(business.getId());
+                createBillsBackup();
+            } finally {
+                TenantContext.clear();
+            }
+        }
     }
 }

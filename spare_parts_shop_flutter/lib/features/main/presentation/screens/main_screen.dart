@@ -25,63 +25,87 @@ class MainScreen extends ConsumerWidget {
 
     final userRole = authState.user.role;
 
-    List<BottomNavigationBarItem> _getNavItems() {
+    List<NavigationDestination> _getNavItems() {
       switch (userRole) {
         case AppConstants.roleSuperAdmin:
-          return [
-            const BottomNavigationBarItem(
+          return const [
+            NavigationDestination(
               icon: Icon(FontAwesomeIcons.gaugeHigh),
               label: 'Dashboard',
             ),
-            const BottomNavigationBarItem(
+            NavigationDestination(
               icon: Icon(FontAwesomeIcons.building),
               label: 'Businesses',
             ),
-            const BottomNavigationBarItem(
+            NavigationDestination(
               icon: Icon(FontAwesomeIcons.users),
               label: 'Admins',
             ),
-            const BottomNavigationBarItem(
+            NavigationDestination(
               icon: Icon(FontAwesomeIcons.gear),
               label: 'Settings',
             ),
           ];
         case AppConstants.roleCustomer:
-          return [
-            const BottomNavigationBarItem(
+          return const [
+            NavigationDestination(
               icon: Icon(FontAwesomeIcons.gaugeHigh),
               label: 'Dashboard',
             ),
-            const BottomNavigationBarItem(
+            NavigationDestination(
               icon: Icon(FontAwesomeIcons.fileInvoiceDollar),
               label: 'Bills',
             ),
-            const BottomNavigationBarItem(
+            NavigationDestination(
               icon: Icon(FontAwesomeIcons.box),
               label: 'Products',
             ),
-            const BottomNavigationBarItem(
+            NavigationDestination(
               icon: Icon(FontAwesomeIcons.shield),
               label: 'Warranty',
             ),
           ];
         default:
-          return [
-            const BottomNavigationBarItem(
+          return const [
+            NavigationDestination(
               icon: Icon(FontAwesomeIcons.gaugeHigh),
               label: 'Dashboard',
             ),
-            const BottomNavigationBarItem(
+            NavigationDestination(
               icon: Icon(FontAwesomeIcons.box),
               label: 'Products',
             ),
-            const BottomNavigationBarItem(
+            NavigationDestination(
               icon: Icon(FontAwesomeIcons.receipt),
-              label: 'Billing',
+              label: 'Bills',
             ),
-            const BottomNavigationBarItem(
+            NavigationDestination(
               icon: Icon(FontAwesomeIcons.users),
               label: 'Customers',
+            ),
+            NavigationDestination(
+              icon: Icon(FontAwesomeIcons.cartShopping),
+              label: 'Purchases',
+            ),
+            NavigationDestination(
+              icon: Icon(FontAwesomeIcons.truck),
+              label: 'Suppliers',
+            ),
+            NavigationDestination(
+              icon: Icon(FontAwesomeIcons.moneyBillTransfer),
+              label: 'Payments',
+            ),
+            NavigationDestination(
+              icon: Icon(FontAwesomeIcons.chartLine),
+              label: 'Analytics',
+            ),
+            NavigationDestination(
+              icon: Icon(FontAwesomeIcons.fileLines),
+              label: 'Reports',
+            ),
+            NavigationDestination(
+              icon: Icon(FontAwesomeIcons.gear),
+              label: 'Settings',
             ),
           ];
       }
@@ -127,14 +151,7 @@ class MainScreen extends ConsumerWidget {
       bottomNavigationBar: NavigationBar(
         selectedIndex: navigationShell.currentIndex,
         onDestinationSelected: navigationShell.goBranch,
-        destinations: _getNavItems()
-            .map(
-              (item) => NavigationDestination(
-                icon: item.icon,
-                label: item.label!,
-              ),
-            )
-            .toList(),
+        destinations: _getNavItems(),
       ),
     );
   }

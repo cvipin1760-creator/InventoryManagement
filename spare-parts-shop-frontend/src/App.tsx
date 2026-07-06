@@ -20,6 +20,8 @@ import BusinessManagement from './pages/BusinessManagement';
 import Settings from './pages/Settings';
 import Reports from './pages/Reports';
 import Analytics from './pages/Analytics';
+import SendNotifications from './pages/SendNotifications';
+import Notifications from './pages/Notifications';
 
 
 // Protected Route component
@@ -84,6 +86,16 @@ const App = () => {
           <RoleBasedRoute allowedRoles={['SUPER_MANAGER']}>
             <Analytics />
           </RoleBasedRoute>
+        } />
+        <Route path="send-notifications" element={
+          <RoleBasedRoute allowedRoles={['SUPER_MANAGER']}>
+            <SendNotifications />
+          </RoleBasedRoute>
+        } />
+        <Route path="notifications" element={
+          <ProtectedRoute>
+            <Notifications />
+          </ProtectedRoute>
         } />
 
         {/* Admin/Employee Routes */}

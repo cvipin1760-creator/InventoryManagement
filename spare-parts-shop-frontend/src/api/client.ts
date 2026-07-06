@@ -282,4 +282,25 @@ export const api = {
     }),
   deleteBranch: (id: number) =>
     request<void>(`/branches/${id}`, { method: 'DELETE' }),
+
+  // Business & Subscription
+  getBusiness: () => request<any>('/business'),
+  updateSubscription: (id: number, subscriptionPlan: string) =>
+    request<any>(`/super-manager/businesses/${id}/subscription`, {
+      method: 'PUT',
+      body: JSON.stringify({ subscriptionPlan }),
+    }),
+  toggleSubscriptionStatus: (id: number, isActive: boolean) =>
+    request<any>(`/super-manager/businesses/${id}/subscription/status`, {
+      method: 'PUT',
+      body: JSON.stringify({ isActive }),
+    }),
+
+  // Notifications
+  getNotifications: () => request<any[]>('/notifications'),
+  getUnreadNotifications: () => request<any[]>('/notifications/unread'),
+  getUnreadCount: () => request<number>('/notifications/unread/count'),
+  markAsRead: (id: number) => request<any>(`/notifications/${id}/read`, { method: 'PUT' }),
+  sendNotification: (payload: { title: string; message: string; sendToAll?: boolean; userIds?: number[] }) =>
+    request<string>('/notifications/send', { method: 'POST', body: JSON.stringify(payload) }),
 }

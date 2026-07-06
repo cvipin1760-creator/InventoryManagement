@@ -102,7 +102,7 @@ const RegisterPage = () => {
       {/* Theme Toggle */}
       <Box sx={{ position: 'absolute', top: 24, right: 24 }}>
         <IconButton
-          onClick={() => dispatch(toggleTheme(themeMode === 'light' ? 'dark' : 'light'))}
+          onClick={() => dispatch(toggleTheme())}
           sx={{
             backgroundColor: theme.palette.background.paper,
             boxShadow: 2,
