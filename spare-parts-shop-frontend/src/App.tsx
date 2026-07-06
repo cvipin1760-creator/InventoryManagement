@@ -17,6 +17,9 @@ import Payments from './pages/Payments';
 import Users from './pages/Users';
 import AdminManagement from './pages/AdminManagement';
 import BusinessManagement from './pages/BusinessManagement';
+import Settings from './pages/Settings';
+import Reports from './pages/Reports';
+import Analytics from './pages/Analytics';
 
 
 // Protected Route component
@@ -79,7 +82,7 @@ const App = () => {
         } />
         <Route path="analytics" element={
           <RoleBasedRoute allowedRoles={['SUPER_MANAGER']}>
-            <div className="p-4"><h1>Analytics</h1><p>Coming soon...</p></div>
+            <Analytics />
           </RoleBasedRoute>
         } />
 
@@ -136,7 +139,7 @@ const App = () => {
         } />
         <Route path="reports" element={
           <RoleBasedRoute allowedRoles={['ADMIN', 'EMPLOYEE', 'SUPER_MANAGER']}>
-            <div className="p-4"><h1>Reports</h1><p>Coming soon...</p></div>
+            <Reports />
           </RoleBasedRoute>
         } />
 
@@ -167,7 +170,7 @@ const App = () => {
           </RoleBasedRoute>
         } />
 
-        <Route path="settings" element={<div className="p-4"><h1>Settings</h1><p>Coming soon...</p></div>} />
+        <Route path="settings" element={<Settings />} />
       </Route>
 
       {/* Catch-all */}

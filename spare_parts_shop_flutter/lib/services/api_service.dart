@@ -56,10 +56,24 @@ class ApiService {
       if (response.statusCode == 200) {
         return LoginResponse.fromJson(jsonDecode(response.body));
       } else {
-        throw Exception('Failed to login: ${response.body}');
+        try {
+          final Map<String, dynamic> errorBody = jsonDecode(response.body);
+          if (errorBody['message'] != null) {
+            throw Exception(errorBody['message']);
+          }
+          throw Exception('Login failed with status code: ${response.statusCode}');
+        } catch (e) {
+          if (e is Exception) {
+            rethrow;
+          }
+          throw Exception('Login failed with status code: ${response.statusCode}');
+        }
       }
     } catch (e) {
       print('Login Error: $e');
+      if (e.toString().contains('SocketException')) {
+        throw Exception('Could not connect to server. Please check your internet connection.');
+      }
       rethrow;
     }
   }

@@ -120,27 +120,7 @@ const Layout = () => {
               <Typography variant="h6" color="text.primary" sx={{ fontWeight: 600 }}>
                 Welcome back, {user?.username}!
               </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                {user && user.role !== 'SUPER_MANAGER' && branches.length > 0 && (
-                  <FormControl size="small" sx={{ minWidth: 180 }}>
-                    <InputLabel id="branch-select-label">Active Branch</InputLabel>
-                    <Select
-                      labelId="branch-select-label"
-                      id="branch-select"
-                      value={selectedBranch}
-                      label="Active Branch"
-                      onChange={handleBranchChange}
-                      sx={{ backgroundColor: theme.palette.background.paper }}
-                    >
-                      <MenuItem value="">All Branches</MenuItem>
-                      {branches.map((b) => (
-                        <MenuItem key={b.id} value={String(b.id)}>
-                          {b.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                )}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <IconButton onClick={() => dispatch(toggleTheme(themeMode === 'light' ? 'dark' : 'light'))}>
                   {themeMode === 'light' ? <DarkMode /> : <LightMode />}
                 </IconButton>
