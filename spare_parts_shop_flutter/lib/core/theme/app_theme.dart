@@ -17,7 +17,7 @@ class AppTheme {
       surface: AppColors.surface,
       onSurface: AppColors.textPrimary,
     ),
-    scaffoldBackgroundColor: AppColors.surface,
+    scaffoldBackgroundColor: AppColors.background,
     cardTheme: CardThemeData(
       color: AppColors.surface,
       elevation: 0,

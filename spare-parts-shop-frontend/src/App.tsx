@@ -22,6 +22,7 @@ import Reports from './pages/Reports';
 import Analytics from './pages/Analytics';
 import SendNotifications from './pages/SendNotifications';
 import Notifications from './pages/Notifications';
+import BillTemplates from './pages/BillTemplates';
 
 
 // Protected Route component
@@ -142,6 +143,11 @@ const App = () => {
         <Route path="payments" element={
           <RoleBasedRoute allowedRoles={['ADMIN', 'EMPLOYEE']}>
             <Payments />
+          </RoleBasedRoute>
+        } />
+        <Route path="bill-templates" element={
+          <RoleBasedRoute allowedRoles={['ADMIN']}>
+            <BillTemplates />
           </RoleBasedRoute>
         } />
         <Route path="users" element={

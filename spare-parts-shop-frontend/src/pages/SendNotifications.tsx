@@ -10,7 +10,6 @@ import {
   FormControlLabel,
   Checkbox,
   Autocomplete,
-  Chip,
   Snackbar,
   Alert,
   CircularProgress,

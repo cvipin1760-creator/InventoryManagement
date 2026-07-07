@@ -1,497 +1,604 @@
-import { Box, Typography, Card, CardContent, useTheme } from '@mui/material';
 import {
-  AttachMoney,
-  ShoppingCart,
-  Inventory,
-  People,
-  Receipt,
+  Box,
+  Typography,
+  Card,
+  CardContent,
+  Avatar,
+  Chip,
+} from '@mui/material';
+import {
   TrendingUp,
-  NewReleases,
-  Business,
-} from '@mui/icons-material';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import KPICard from '../components/KPICard';
+  TrendingDown,
+  PackageOpen,
+  DollarSign,
+  Users,
+  Package,
+  TrendingUp as TrendingUpIcon,
+} from 'lucide-react';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  BarChart,
+  Bar,
+} from 'recharts';
+import { motion } from 'framer-motion';
 import { useAppSelector } from '../store/hooks';
 import { selectCurrentUser } from '../store/slices/authSlice';
 
-// Sample data for chart
+// Sample Data for charts
 const revenueData = [
-  { month: 'Jan', revenue: 4000 },
-  { month: 'Feb', revenue: 3000 },
-  { month: 'Mar', revenue: 5000 },
-  { month: 'Apr', revenue: 4500 },
-  { month: 'May', revenue: 6000 },
-  { month: 'Jun', revenue: 8000 },
+  { name: 'Jan', revenue: 4000 },
+  { name: 'Feb', revenue: 3000 },
+  { name: 'Mar', revenue: 5000 },
+  { name: 'Apr', revenue: 4500 },
+  { name: 'May', revenue: 6000 },
+  { name: 'Jun', revenue: 5500 },
 ];
 
 const Dashboard = () => {
-  const theme = useTheme();
   const user = useAppSelector(selectCurrentUser);
-
-  // Render different dashboard based on role
+  
   const renderRoleBasedDashboard = () => {
     switch (user?.role) {
       case 'SUPER_MANAGER':
         return (
-          <Box>
-            <Typography variant="h4" sx={{ fontWeight: 700, mb: 3 }}>
-              Platform Overview
-            </Typography>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 4 }}>
-              <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
-                <KPICard
-                  title="Total Businesses"
-                  value="284"
-                  icon={<Business />}
-                  change="12%"
-                  changeType="increase"
-                  subtitle="from last month"
-                />
-              </Box>
-              <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
-                <KPICard
-                  title="Active Businesses"
-                  value="267"
-                  icon={<TrendingUp />}
-                  change="8%"
-                  changeType="increase"
-                  subtitle="active right now"
-                />
-              </Box>
-              <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
-                <KPICard
-                  title="Monthly Revenue"
-                  value="₹1,24,580"
-                  icon={<AttachMoney />}
-                  change="15%"
-                  changeType="increase"
-                  subtitle="vs last month"
-                />
-              </Box>
-              <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
-                <KPICard
-                  title="Total Users"
-                  value="1,240"
-                  icon={<People />}
-                  change="22%"
-                  changeType="increase"
-                  subtitle="registered users"
-                />
-              </Box>
-            </Box>
-
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
-              <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(66.666% - 12px)' } }}>
-                <Card sx={{ borderRadius: 3 }}>
-                  <CardContent>
-                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 3 }}>
-                      Revenue Trend
-                    </Typography>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <LineChart data={revenueData}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                        <XAxis dataKey="month" />
-                        <YAxis />
-                        <Tooltip
-                          contentStyle={{
-                            borderRadius: 12,
-                            border: 'none',
-                            boxShadow: theme.palette.mode === 'light'
-                              ? '0 4px 20px -5px rgba(0,0,0,0.15)'
-                              : '0 4px 20px -5px rgba(0,0,0,0.3)',
-                          }}
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="revenue"
-                          stroke={theme.palette.primary.main}
-                          strokeWidth={3}
-                          dot={{ r: 5 }}
-                          activeDot={{ r: 7 }}
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </CardContent>
-                </Card>
-              </Box>
-              <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(33.333% - 12px)' } }}>
-                <Card sx={{ borderRadius: 3, height: '100%' }}>
-                  <CardContent>
-                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 3 }}>
-                      Recent Activity
-                    </Typography>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                      {[1, 2, 3, 4].map((i) => (
-                        <Box
-                          key={i}
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 2,
-                            p: 1.5,
-                            borderRadius: 2,
-                            backgroundColor: theme.palette.mode === 'light'
-                              ? '#f8fafc'
-                              : '#334155',
-                          }}
-                        >
-                          <Box
-                            sx={{
-                              width: 48,
-                              height: 48,
-                              borderRadius: 2,
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              backgroundColor: theme.palette.primary.main + '20',
-                              color: theme.palette.primary.main,
-                            }}
-                          >
-                            {i % 2 === 0 ? <People /> : <ShoppingCart />}
-                          </Box>
-                          <Box sx={{ flex: 1 }}>
-                            <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                              {i % 2 === 0 ? 'New Admin Registered' : 'New Purchase Order'}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              {i * 2} minutes ago
-                            </Typography>
-                          </Box>
-                        </Box>
-                      ))}
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Box>
-            </Box>
-          </Box>
+          <SuperManagerDashboard />
         );
       case 'ADMIN':
         return (
-          <Box>
-            <Typography variant="h4" sx={{ fontWeight: 700, mb: 3 }}>
-              Admin Dashboard
-            </Typography>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 4 }}>
-              <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
-                <KPICard
-                  title="Today's Revenue"
-                  value="₹12,450"
-                  icon={<AttachMoney />}
-                  change="24%"
-                  changeType="increase"
-                  subtitle="vs yesterday"
-                />
-              </Box>
-              <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
-                <KPICard
-                  title="Total Orders"
-                  value="89"
-                  icon={<Receipt />}
-                  change="18%"
-                  changeType="increase"
-                  subtitle="today"
-                />
-              </Box>
-              <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
-                <KPICard
-                  title="Active Employees"
-                  value="6"
-                  icon={<People />}
-                  subtitle="currently working"
-                />
-              </Box>
-              <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
-                <KPICard
-                  title="Pending Bills"
-                  value="12"
-                  icon={<NewReleases />}
-                  subtitle="awaiting payment"
-                />
-              </Box>
-            </Box>
-
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
-              <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 12px)' } }}>
-                <Card sx={{ borderRadius: 3 }}>
-                  <CardContent>
-                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 3 }}>
-                      Sales by Category
-                    </Typography>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <LineChart data={revenueData}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                        <XAxis dataKey="month" />
-                        <YAxis />
-                        <Tooltip
-                          contentStyle={{
-                            borderRadius: 12,
-                            border: 'none',
-                            boxShadow: theme.palette.mode === 'light'
-                              ? '0 4px 20px -5px rgba(0,0,0,0.15)'
-                              : '0 4px 20px -5px rgba(0,0,0,0.3)',
-                          }}
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="revenue"
-                          stroke={theme.palette.primary.main}
-                          strokeWidth={3}
-                          dot={{ r: 5 }}
-                          activeDot={{ r: 7 }}
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </CardContent>
-                </Card>
-              </Box>
-              <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 12px)' } }}>
-                <Card sx={{ borderRadius: 3 }}>
-                  <CardContent>
-                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 3 }}>
-                      Quick Actions
-                    </Typography>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                      {['Add New Product', 'Create Bill', 'Manage Users', 'View Reports'].map((action, i) => (
-                        <Box
-                          key={i}
-                          sx={{
-                            p: 2,
-                            borderRadius: 2,
-                            backgroundColor: theme.palette.mode === 'light'
-                              ? '#f0f9ff'
-                              : '#1e293b',
-                            cursor: 'pointer',
-                            '&:hover': {
-                              backgroundColor: theme.palette.mode === 'light'
-                                ? '#e0f2fe'
-                                : '#334155',
-                            },
-                          }}
-                        >
-                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                            {action}
-                          </Typography>
-                        </Box>
-                      ))}
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Box>
-            </Box>
-          </Box>
+          <AdminDashboard />
         );
       case 'EMPLOYEE':
         return (
-          <Box>
-            <Typography variant="h4" sx={{ fontWeight: 700, mb: 3 }}>
-              Employee Workspace
-            </Typography>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 4 }}>
-              <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(33.333% - 12px)' } }}>
-                <KPICard
-                  title="My Tasks Today"
-                  value="12"
-                  icon={<Inventory />}
-                  subtitle="assigned"
-                />
-              </Box>
-              <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(33.333% - 12px)' } }}>
-                <KPICard
-                  title="Completed"
-                  value="8"
-                  icon={<TrendingUp />}
-                  subtitle="today"
-                />
-              </Box>
-              <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(33.333% - 12px)' } }}>
-                <KPICard
-                  title="Pending"
-                  value="4"
-                  icon={<NewReleases />}
-                  subtitle="remaining"
-                />
-              </Box>
-            </Box>
-
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
-              <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(60% - 12px)' } }}>
-                <Card sx={{ borderRadius: 3 }}>
-                  <CardContent>
-                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 3 }}>
-                      Today's Tasks
-                    </Typography>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                      {[
-                        { task: 'Restock shelf A-3', status: 'pending' },
-                        { task: 'Verify inventory count', status: 'in-progress' },
-                        { task: 'Help customer with warranty', status: 'completed' },
-                        { task: 'Process 5 pending orders', status: 'pending' },
-                      ].map((item, i) => (
-                        <Box
-                          key={i}
-                          sx={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            p: 1.5,
-                            borderRadius: 2,
-                            backgroundColor: theme.palette.mode === 'light'
-                              ? '#f8fafc'
-                              : '#334155',
-                          }}
-                        >
-                          <Typography variant="body2">{item.task}</Typography>
-                          <Box
-                            sx={{
-                              px: 1.5,
-                              py: 0.5,
-                              borderRadius: 5,
-                              fontSize: '0.75rem',
-                              fontWeight: 600,
-                              backgroundColor:
-                                item.status === 'completed'
-                                  ? theme.palette.success.main + '20'
-                                  : item.status === 'in-progress'
-                                  ? theme.palette.primary.main + '20'
-                                  : theme.palette.warning.main + '20',
-                              color:
-                                item.status === 'completed'
-                                  ? theme.palette.success.main
-                                  : item.status === 'in-progress'
-                                  ? theme.palette.primary.main
-                                  : theme.palette.warning.main,
-                            }}
-                          >
-                            {item.status}
-                          </Box>
-                        </Box>
-                      ))}
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Box>
-              <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(40% - 12px)' } }}>
-                <Card sx={{ borderRadius: 3 }}>
-                  <CardContent>
-                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 3 }}>
-                      Quick Actions
-                    </Typography>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                      {['Create Bill', 'Check Inventory', 'Add Customer'].map((action, i) => (
-                        <Box
-                          key={i}
-                          sx={{
-                            p: 2,
-                            borderRadius: 2,
-                            backgroundColor: theme.palette.mode === 'light'
-                              ? '#f0f9ff'
-                              : '#1e293b',
-                            cursor: 'pointer',
-                            '&:hover': {
-                              backgroundColor: theme.palette.mode === 'light'
-                                ? '#e0f2fe'
-                                : '#334155',
-                            },
-                          }}
-                        >
-                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                            {action}
-                          </Typography>
-                        </Box>
-                      ))}
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Box>
-            </Box>
-          </Box>
+          <EmployeeDashboard />
         );
       case 'CUSTOMER':
         return (
-          <Box>
-            <Typography variant="h4" sx={{ fontWeight: 700, mb: 3 }}>
-              My Dashboard
-            </Typography>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 4 }}>
-              <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
-                <KPICard
-                  title="Total Purchases"
-                  value="12"
-                  icon={<ShoppingCart />}
-                  subtitle="orders made"
-                />
-              </Box>
-              <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
-                <KPICard
-                  title="Active Warranties"
-                  value="3"
-                  icon={<NewReleases />}
-                  subtitle="currently active"
-                />
-              </Box>
-              <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
-                <KPICard
-                  title="Active EMI"
-                  value="1"
-                  icon={<AttachMoney />}
-                  subtitle="₹8,500 remaining"
-                />
-              </Box>
-              <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
-                <KPICard
-                  title="Total Spent"
-                  value="₹45,800"
-                  icon={<Receipt />}
-                  subtitle="lifetime purchases"
-                />
-              </Box>
-            </Box>
-
-            <Card sx={{ borderRadius: 3 }}>
-              <CardContent>
-                <Typography variant="h6" sx={{ fontWeight: 600, mb: 3 }}>
-                  Recent Orders
-                </Typography>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  {[1, 2, 3].map((i) => (
-                    <Box
-                      key={i}
-                      sx={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        p: 1.5,
-                        borderRadius: 2,
-                        backgroundColor: theme.palette.mode === 'light'
-                          ? '#f8fafc'
-                          : '#334155',
-                      }}
-                    >
-                      <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                          Order #{500 + i}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {['Delivered', 'Shipped', 'Processing'][i - 1]}
-                        </Typography>
-                      </Box>
-                      <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                        ₹{3500 + i * 500}
-                      </Typography>
-                    </Box>
-                  ))}
-                </Box>
-              </CardContent>
-            </Card>
-          </Box>
+          <CustomerDashboard />
         );
       default:
         return null;
     }
   };
 
-  return renderRoleBasedDashboard();
+  return (
+    <Box>
+      <Box sx={{ mb: 4 }}>
+      <Typography variant="h4" sx={{ fontWeight: 800, mb: 1 }}>
+        Welcome back, {user?.username}!
+      </Typography>
+      <Typography variant="body1" color="text.secondary">
+        Here's what's happening with your business today.
+      </Typography>
+    </Box>
+
+    {renderRoleBasedDashboard()}
+    </Box>
+  );
+};
+
+const KPICard = ({
+  title, value, icon, trend, trendValue, subtitle, color = 'primary' }: {
+    title: string;
+    value: string;
+  icon: React.ReactNode;
+  trend: 'up' | 'down';
+  trendValue: string;
+  subtitle: string;
+  color?: 'primary' | 'success' | 'warning' | 'error' | 'info';
+}) => {
+  return (
+    <motion.div
+      whileHover={{ scale: 1.02, y: -4 }}
+      transition={{ type: 'spring', stiffness: 300 }}
+    >
+      <Card
+        sx={{
+          borderRadius: 3,
+          height: '100%',
+        overflow: 'visible',
+        borderTop: 4,
+        borderColor: color === 'primary' ? 'primary.main' : color + '.main',
+      }}
+    >
+      <CardContent sx={{ p: 3 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+          <Avatar
+            sx={{
+              bgcolor:
+                color === 'primary'
+                  ? 'primary.light'
+                  : color === 'success'
+                  ? 'success.light'
+                  : color === 'warning'
+                  ? 'warning.light'
+                  : color === 'error'
+                  ? 'error.light'
+                  : 'info.light',
+              color:
+                color === 'primary'
+                  ? 'primary.main'
+                  : color === 'success'
+                  ? 'success.main'
+                  : color === 'warning'
+                  ? 'warning.main'
+                  : color === 'error'
+                  ? 'error.main'
+                  : 'info.main',
+              width: 48,
+              height: 48,
+            }}
+          >
+            {icon}
+          </Avatar>
+          <Chip
+            label={trendValue}
+            size="small"
+            color={trend === 'up' ? 'success' : 'error'}
+            icon={trend === 'up' ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+          />
+        </Box>
+
+        <Typography
+          variant="h4"
+          sx={{ fontWeight: 800, mb: 0.5 }}
+        >
+          {value}
+        </Typography>
+
+        <Typography variant="body1" color="text.secondary" sx={{ mb: 0.5 }}>
+          {title}
+        </Typography>
+
+        <Typography variant="caption" color="text.secondary">
+          {subtitle}
+        </Typography>
+      </CardContent>
+    </Card>
+    </motion.div>
+  );
+};
+
+const SuperManagerDashboard = () => {
+  return (
+    <Box>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: {
+            xs: '1fr',
+            sm: 'repeat(2, 1fr)',
+            lg: 'repeat(4, 1fr)',
+          },
+          gap: 3,
+          mb: 4,
+        }}
+      >
+        <KPICard
+          title="Total Businesses"
+          value="284"
+          icon={<PackageOpen />}
+          trend="up"
+          trendValue="+12%"
+          subtitle="from last month"
+          color="primary"
+        />
+        <KPICard
+          title="Active Businesses"
+          value="267"
+          icon={<TrendingUpIcon />}
+          trend="up"
+          trendValue="+8%"
+          subtitle="active right now"
+          color="success"
+        />
+        <KPICard
+          title="Monthly Revenue"
+          value="₹1,24,580"
+          icon={<DollarSign />}
+          trend="up"
+          trendValue="+15%"
+          subtitle="vs last month"
+          color="primary"
+        />
+        <KPICard
+          title="Total Users"
+          value="1,240"
+          icon={<Users />}
+          trend="up"
+          trendValue="+22%"
+          subtitle="registered users"
+          color="info"
+        />
+      </Box>
+
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' }, gap: 3 }}>
+        <Card sx={{ borderRadius: 3 }}>
+          <CardContent sx={{ p: 3 }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>
+            Revenue Trend
+          </Typography>
+          <ResponsiveContainer width="100%" height={300}>
+            <AreaChart data={revenueData}>
+              <defs>
+                <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#2563EB" stopOpacity={0.1} />
+                  <stop offset="95%" stopColor="#2563EB" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.05)" />
+              <XAxis dataKey="name" stroke="text.secondary" />
+              <YAxis stroke="text.secondary" />
+              <Tooltip
+                contentStyle={{
+                  borderRadius: 12,
+                  border: 'none',
+                  boxShadow: '0 10px 40px -10px rgba(0,0,0,0.15)',
+                }}
+              />
+              <Area
+                type="monotone"
+                dataKey="revenue"
+                stroke="#2563EB"
+                strokeWidth={3}
+                fillOpacity={1}
+                fill="url(#colorRevenue)"
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </CardContent>
+        </Card>
+
+        <Card sx={{ borderRadius: 3 }}>
+          <CardContent sx={{ p: 3 }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>
+              Recent Activity
+            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {[
+                { text: 'New Admin Registered', time: '2 mins ago' },
+                { text: 'New Business Created', time: '5 mins ago' },
+                { text: 'New Payment Received', time: '10 mins ago' },
+              ].map((item, i) => (
+                <Box
+                  key={i}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 2,
+                    p: 2,
+                    borderRadius: 2,
+                    backgroundColor: 'rgba(0,0,0,0.03)',
+                  }}
+                >
+                  <Avatar
+                    sx={{
+                      width: 40,
+                      height: 40,
+                      bgcolor: 'primary.light',
+                      color: 'primary.main',
+                    }}
+                  >
+                    {i % 2 === 0 ? <Users size={20} /> : <Package size={20} />}
+                  </Avatar>
+                  <Box sx={{ flexGrow: 1 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      {item.text}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {item.time}
+                    </Typography>
+                  </Box>
+                  </Box>
+                ))}
+              </Box>
+          </CardContent>
+        </Card>
+      </Box>
+    </Box>
+  );
+};
+
+const AdminDashboard = () => {
+  return (
+    <Box>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: {
+            xs: '1fr',
+            sm: 'repeat(2, 1fr)',
+            lg: 'repeat(4, 1fr)',
+          },
+          gap: 3,
+          mb: 4,
+        }}
+      >
+        <KPICard
+          title="Today's Revenue"
+          value="₹12,450"
+          icon={<DollarSign />}
+          trend="up"
+          trendValue="+24%"
+          subtitle="vs yesterday"
+          color="primary"
+        />
+        <KPICard
+          title="Total Orders"
+          value="89"
+          icon={<Package />}
+          trend="up"
+          trendValue="+18%"
+          subtitle="today"
+          color="success"
+        />
+        <KPICard
+          title="Active Employees"
+          value="6"
+          icon={<Users />}
+          trend="up"
+          trendValue="+1"
+          subtitle="working now"
+          color="info"
+        />
+        <KPICard
+          title="Pending Bills"
+          value="12"
+          icon={<TrendingDown />}
+          trend="down"
+          trendValue="-2"
+          subtitle="from yesterday"
+          color="warning"
+        />
+      </Box>
+
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 3 }}>
+        <Card sx={{ borderRadius: 3 }}>
+          <CardContent sx={{ p: 3 }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>
+              Sales by Category
+            </Typography>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={revenueData}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.05)" />
+                <XAxis dataKey="name" stroke="text.secondary" />
+                <YAxis stroke="text.secondary" />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: 12,
+                    border: 'none',
+                    boxShadow: '0 10px 40px -10px rgba(0,0,0,0.15)',
+                  }}
+                />
+                <Bar dataKey="revenue" fill="#2563EB" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card sx={{ borderRadius: 3 }}>
+          <CardContent sx={{ p: 3 }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>
+              Revenue Trend
+            </Typography>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={revenueData}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.05)" />
+                <XAxis dataKey="name" stroke="text.secondary" />
+                <YAxis stroke="text.secondary" />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: 12,
+                    border: 'none',
+                    boxShadow: '0 10px 40px -10px rgba(0,0,0,0.15)',
+                  }}
+                />
+                <Line type="monotone" dataKey="revenue" stroke="#6366F1" strokeWidth={3} />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </Box>
+    </Box>
+  );
+};
+
+const EmployeeDashboard = () => {
+  return (
+    <Box>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: {
+            xs: '1fr',
+            sm: 'repeat(2, 1fr)',
+            lg: 'repeat(3, 1fr)',
+          },
+          gap: 3,
+          mb: 4,
+        }}
+      >
+        <KPICard
+          title="My Tasks Today"
+          value="12"
+          icon={<PackageOpen />}
+          trend="up"
+          trendValue="+3"
+          subtitle="assigned tasks"
+          color="primary"
+        />
+        <KPICard
+          title="Completed"
+          value="8"
+          icon={<TrendingUpIcon />}
+          trend="up"
+          trendValue="100%"
+          subtitle="on time"
+          color="success"
+        />
+        <KPICard
+          title="Pending"
+          value="4"
+          icon={<TrendingDown />}
+          trend="down"
+          trendValue="in progress"
+          subtitle="tasks"
+          color="warning"
+        />
+      </Box>
+
+      <Card sx={{ borderRadius: 3 }}>
+        <CardContent sx={{ p: 3 }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>
+            Today's Tasks
+          </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {[
+              { task: 'Restock Shelf A-3', status: 'pending' },
+              { task: 'Verify Inventory Count', status: 'in-progress' },
+              { task: 'Help Customer with Warranty', status: 'completed' },
+              { task: 'Process 5 Bills', status: 'pending' },
+            ].map((item, i) => (
+              <Box
+                key={i}
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  p: 2,
+                  borderRadius: 2,
+                  backgroundColor: 'rgba(0,0,0,0.03)',
+                }}
+              >
+                <Typography variant="body2">{item.task}</Typography>
+                <Chip
+                  label={item.status}
+                  size="small"
+                  color={
+                    item.status === 'completed'
+                      ? 'success'
+                      : item.status === 'in-progress'
+                      ? 'primary'
+                      : 'default'
+                  }
+                />
+              </Box>
+            ))}
+          </Box>
+        </CardContent>
+      </Card>
+    </Box>
+  );
+};
+
+const CustomerDashboard = () => {
+  return (
+    <Box>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: {
+            xs: '1fr',
+            sm: 'repeat(2, 1fr)',
+            lg: 'repeat(4, 1fr)',
+          },
+          gap: 3,
+          mb: 4,
+        }}
+      >
+        <KPICard
+          title="Total Purchases"
+          value="12"
+          icon={<PackageOpen />}
+          trend="up"
+          trendValue="+2"
+          subtitle="orders made"
+          color="primary"
+        />
+        <KPICard
+          title="Active Warranties"
+          value="3"
+          icon={<TrendingUpIcon />}
+          trend="up"
+          trendValue="active"
+          subtitle="warranties"
+          color="success"
+        />
+        <KPICard
+          title="Active EMI"
+          value="1"
+          icon={<DollarSign />}
+          trend="down"
+          trendValue="-₹8,500"
+          subtitle="remaining"
+          color="warning"
+        />
+        <KPICard
+          title="Total Spent"
+          value="₹45,800"
+          icon={<TrendingDown />}
+          trend="up"
+          trendValue="+₹2,500"
+          subtitle="lifetime"
+          color="info"
+        />
+      </Box>
+
+      <Card sx={{ borderRadius: 3 }}>
+        <CardContent sx={{ p: 3 }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>
+            Recent Orders
+          </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {[
+              { order: 'Order #501', status: 'Delivered', amount: '₹3,500' },
+              { order: 'Order #500', status: 'Shipped', amount: '₹2,800' },
+              { order: 'Order #499', status: 'Processing', amount: '₹4,200' },
+            ].map((item, i) => (
+              <Box
+                key={i}
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  p: 2,
+                  borderRadius: 2,
+                  backgroundColor: 'rgba(0,0,0,0.03)',
+                }}
+              >
+                <Box>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    {item.order}
+                  </Typography>
+                  <Chip
+                    label={item.status}
+                    size="small"
+                    color={
+                      item.status === 'Delivered'
+                        ? 'success'
+                        : item.status === 'Shipped'
+                        ? 'primary'
+                        : 'default'
+                    }
+                  />
+                </Box>
+                <Typography variant="body2" sx={{ fontWeight: 800 }}>
+                  {item.amount}
+                </Typography>
+              </Box>
+            ))}
+          </Box>
+        </CardContent>
+      </Card>
+    </Box>
+  );
 };
 
 export default Dashboard;

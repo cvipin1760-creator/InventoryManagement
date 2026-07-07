@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
-import type { RootState } from '../store';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
   Box,
   AppBar,
@@ -13,65 +12,52 @@ import {
   MenuItem,
   useTheme,
   useMediaQuery,
-  FormControl,
-  InputLabel,
-  Select,
   Alert,
   Button,
+  InputAdornment,
+  TextField,
 } from '@mui/material';
 import {
-  Notifications,
-  DarkMode,
-  LightMode,
+  Search,
+  Bell,
+  Sun,
+  Moon,
+  Plus,
   ShoppingCart,
-} from '@mui/icons-material';
-import Sidebar from './Sidebar';
+  Menu as MenuIcon,
+  User,
+  LogOut,
+  Settings,
+  Home,
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
 import { logout } from '../store/slices/authSlice';
 import { selectCurrentUser } from '../store/slices/authSlice';
 import { toggleTheme } from '../store/slices/themeSlice';
 import { api } from '../api/client';
-
-const drawerWidth = 280;
+import Sidebar from './Sidebar';
 
 const Layout = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-
-  const themeMode = useAppSelector((state: RootState) => state.theme.mode);
+  const location = useLocation();
+  const themeMode = useAppSelector((state: any) => state.theme.mode);
   const user = useAppSelector(selectCurrentUser);
   const [notificationCount, setNotificationCount] = useState(0);
   const [business, setBusiness] = useState<any>(null);
-
-  const [branches, setBranches] = useState<any[]>([]);
-  const [selectedBranch, setSelectedBranch] = useState<string>(localStorage.getItem('activeBranchId') || '');
+  const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   useEffect(() => {
     if (user && user.role !== 'SUPER_MANAGER') {
-      api.getBranches()
-        .then((data) => {
-          setBranches(data);
-          // If no activeBranchId is set, default to first branch (or user's default branch if set)
-          if (!localStorage.getItem('activeBranchId') && data.length > 0) {
-            localStorage.setItem('activeBranchId', String(data[0].id));
-            setSelectedBranch(String(data[0].id));
-          }
-        })
-        .catch(err => console.error("Error fetching branches:", err));
-
-      api.getBusiness()
-        .then(setBusiness)
-        .catch(err => console.error("Error fetching business:", err));
+      api.getBusiness().then(setBusiness).catch(() => {});
     }
-    
     if (user) {
-      api.getUnreadCount()
-        .then(setNotificationCount)
-        .catch(err => console.error("Error fetching unread count:", err));
+      api.getUnreadCount().then(setNotificationCount).catch(() => {});
     }
   }, [user]);
 
@@ -86,127 +72,269 @@ const Layout = () => {
 
   const daysLeft = calculateDaysLeft();
 
-  const handleBranchChange = (event: any) => {
-    const val = event.target.value;
-    setSelectedBranch(val);
-    if (val) {
-      localStorage.setItem('activeBranchId', val);
-    } else {
-      localStorage.removeItem('activeBranchId');
-    }
-    window.location.reload();
-  };
-
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
-  };
-
-  const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
 
-  const handleClose = () => {
+  const handleMenuClose = () => {
     setAnchorEl(null);
   };
 
   const handleLogout = () => {
+    handleMenuClose();
     dispatch(logout());
     navigate('/login');
   };
 
+  const getPageTitle = () => {
+    const pathMap: Record<string, string> = {
+      '/dashboard': 'Dashboard',
+      '/products': 'Products',
+      '/customers': 'Customers',
+      '/bills': 'Bills',
+      '/purchases': 'Purchases',
+      '/suppliers': 'Suppliers',
+      '/payments': 'Payments',
+      '/reports': 'Reports',
+      '/users': 'Users',
+      '/settings': 'Settings',
+      '/bill-templates': 'Bill Templates',
+      '/analytics': 'Analytics',
+      '/admins': 'Admins',
+      '/businesses': 'Businesses',
+      '/notifications': 'Notifications',
+    };
+    
+    for (const [path, title] of Object.entries(pathMap)) {
+      if (location.pathname.startsWith(path)) return title;
+    }
+    
+    return 'Dashboard';
+  };
+
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
-      <Sidebar
-        open={mobileOpen}
-        onToggle={handleDrawerToggle}
-        onClose={() => setMobileOpen(false)}
-      />
+    <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: 'background.default' }}>
+      {/* Sidebar */}
+      {!isMobile && (
+        <Sidebar open={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
+      )}
 
       {/* Main Content Area */}
       <Box
         component="main"
         sx={{
           flexGrow: 1,
-          p: 3,
-          width: { md: `calc(100% - ${drawerWidth}px)` },
-          backgroundColor: theme.palette.background.default,
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: '100vh',
         }}
       >
-        {/* Trial Period Notification */}
-        {business && business.subscriptionPlan === 'TRIAL' && business.isSubscriptionActive && (
-          <Alert
-            severity="warning"
-            sx={{ mb: 3, borderRadius: 2 }}
-            action={
-              <Button
-                color="inherit"
-                size="small"
-                startIcon={<ShoppingCart />}
-                onClick={() => navigate('/settings')}
+        {/* Top App Bar */}
+        <AppBar
+          position="sticky"
+          sx={{
+            backgroundColor: 'background.paper',
+            color: 'text.primary',
+            boxShadow: '0 1px 2px 0 rgba(0,0,0,0.05)',
+            borderBottom: '1px solid',
+            borderColor: 'divider',
+          }}
+        >
+          <Toolbar sx={{ py: 1, px: 3 }}>
+            {/* Mobile Menu Toggle */}
+            {isMobile && (
+              <IconButton
+                edge="start"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                sx={{ mr: 2 }}
               >
-                Upgrade Now
-              </Button>
-            }
-          >
-            {daysLeft > 0
-              ? `Your trial period ends in ${daysLeft} day${daysLeft !== 1 ? 's' : ''}! Upgrade to premium to keep using all features.`
-              : 'Your trial period has ended! Upgrade to premium to continue using the app.'}
-          </Alert>
-        )}
+                <MenuIcon size={20} />
+              </IconButton>
+            )}
 
-        {/* Desktop Top Bar */}
-        {!isMobile && (
-          <AppBar
-            position="sticky"
-            sx={{
-              backgroundColor: theme.palette.background.paper,
-              boxShadow: '0 1px 3px -1px rgba(0,0,0,0.05)',
-              mb: 3,
+            {/* Page Title */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mr: 4 }}>
+              <Home size={20} style={{ color: theme.palette.text.secondary }} />
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                {getPageTitle()}
+              </Typography>
+            </Box>
+
+            <Box sx={{ flexGrow: 1 }} />
+
+            {/* Search (Desktop) */}
+          {!isMobile && (
+            <TextField
+              placeholder="Search..."
+              size="small"
+              sx={{ mr: 3, width: 300 }}
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Search size={20} />
+                    </InputAdornment>
+                  ),
+                },
+              }}
+            />
+          )}
+
+            {/* Actions */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              {/* Quick Add */}
+              {['/bills', '/products', '/customers'].some((path) => location.pathname.startsWith(path)) && (
+                <Button
+                  variant="contained"
+                  size="small"
+                  startIcon={<Plus size={18} />}
+                  sx={{
+                    mr: 1,
+                    background: 'linear-gradient(135deg, #2563EB, #6366F1)',
+                    '&:hover': {
+                      background: 'linear-gradient(135deg, #1D4ED8, #4F46E5)',
+                    },
+                  }}
+                  onClick={() => {
+                    if (location.pathname.startsWith('/bills')) {
+                      navigate('/bills/create');
+                    } else if (location.pathname.startsWith('/products')) {
+                      // Navigate to product create when we have it
+                    } else if (location.pathname.startsWith('/customers')) {
+                      // Navigate to customer create when we have it
+                    }
+                  }}
+                >
+                  Add
+                </Button>
+              )}
+
+              {/* Notifications */}
+              <IconButton
+                sx={{ mr: 1 }}
+                onClick={() => navigate('/notifications')}
+              >
+                <Badge badgeContent={notificationCount} color="error">
+                  <Bell size={20} />
+                </Badge>
+              </IconButton>
+
+              {/* Theme Toggle */}
+              <IconButton
+                sx={{ mr: 1 }}
+                onClick={() => dispatch(toggleTheme())}
+              >
+                {themeMode === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+              </IconButton>
+
+              {/* User Avatar & Menu */}
+              <IconButton
+                onClick={handleMenuOpen}
+              >
+                <Avatar
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    backgroundColor: 'primary.main',
+                    color: 'white',
+                    fontWeight: 600,
+                    fontSize: '0.9375rem',
+                  }}
+                >
+                  {user?.username?.charAt(0).toUpperCase() || 'U'}
+                </Avatar>
+              </IconButton>
+            </Box>
+
+            {/* User Menu */}
+            <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleMenuClose}
+            slotProps={{
+              paper: {
+                sx: {
+                  borderRadius: 2,
+                  boxShadow: '0 10px 40px -10px rgba(0,0,0,0.2)',
+                },
+              },
             }}
           >
-            <Toolbar
+              <MenuItem
+                onClick={() => {
+                  handleMenuClose();
+                  navigate('/settings');
+                }}
+              >
+                <User size={18} style={{ marginRight: 8 }} />
+                Profile
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  handleMenuClose();
+                  navigate('/settings');
+                }}
+              >
+                <Settings size={18} style={{ marginRight: 8 }} />
+                Settings
+              </MenuItem>
+              <MenuItem onClick={handleLogout}>
+                <LogOut size={18} style={{ marginRight: 8 }} />
+                Logout
+              </MenuItem>
+            </Menu>
+          </Toolbar>
+        </AppBar>
+
+        {/* Trial Period Banner */}
+        {business && business.subscriptionPlan === 'TRIAL' && business.isSubscriptionActive && (
+          <Box sx={{ px: 3, pt: 2 }}>
+            <Alert
+              severity="warning"
+              variant="filled"
               sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
+                borderRadius: 2,
+                boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)',
               }}
+              action={
+                <Button
+                  color="inherit"
+                  size="small"
+                  variant="outlined"
+                  startIcon={<ShoppingCart />}
+                  onClick={() => navigate('/settings')}
+                >
+                  Upgrade
+                </Button>
+              }
             >
-              <Typography variant="h6" color="text.primary" sx={{ fontWeight: 600 }}>
-                Welcome back, {user?.username}!
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <IconButton onClick={() => dispatch(toggleTheme())}>
-                  {themeMode === 'light' ? <DarkMode /> : <LightMode />}
-                </IconButton>
-                <IconButton>
-                  <Badge badgeContent={notificationCount} color="error">
-                    <Notifications />
-                  </Badge>
-                </IconButton>
-                <IconButton
-                  onClick={handleMenu}
-                  sx={{ ml: 1 }}
-                >
-                  <Avatar sx={{ width: 40, height: 40 }}>
-                    {user?.username.charAt(0).toUpperCase()}
-                  </Avatar>
-                </IconButton>
-                <Menu
-                  anchorEl={anchorEl}
-                  open={Boolean(anchorEl)}
-                  onClose={handleClose}
-                >
-                  <MenuItem onClick={() => { handleClose(); navigate('/settings'); }}>Profile</MenuItem>
-                  <MenuItem onClick={() => { handleClose(); navigate('/settings'); }}>Settings</MenuItem>
-                  <MenuItem onClick={() => { handleClose(); handleLogout(); }}>Logout</MenuItem>
-                </Menu>
-              </Box>
-            </Toolbar>
-          </AppBar>
+              {daysLeft > 0
+                ? `Your trial period ends in ${daysLeft} day${daysLeft !== 1 ? 's' : ''}! Upgrade to premium to keep using all features.`
+                : 'Your trial period has ended! Upgrade to premium to continue using the app.'}
+            </Alert>
+          </Box>
         )}
 
-        <Outlet />
+        {/* Main Content */}
+        <Box sx={{ flexGrow: 1, p: 3, overflow: 'auto' }}>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Outlet />
+            </motion.div>
+          </AnimatePresence>
+        </Box>
       </Box>
+
+      {/* Mobile Sidebar Drawer */}
+      {isMobile && (
+        <Sidebar open={mobileMenuOpen} onToggle={() => setMobileMenuOpen(false)} />
+      )}
     </Box>
   );
 };

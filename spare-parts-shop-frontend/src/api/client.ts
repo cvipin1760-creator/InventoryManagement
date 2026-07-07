@@ -234,6 +234,39 @@ export const api = {
     a.click()
     URL.revokeObjectURL(url)
   },
+  sendBillViaWhatsApp: async (id: number, phone: string) => {
+    const res = await request<string>(`/bills/${id}/send-whatsapp?phone=${encodeURIComponent(phone)}`, {
+      method: 'POST',
+    })
+    return res
+  },
+
+  // Bill Templates
+  getBillTemplates: () => request<any[]>('/bills/templates'),
+  getBillTemplate: (id: number) => request<any>(`/bills/templates/${id}`),
+  createBillTemplate: (data: any) =>
+    request<any>('/bills/templates', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  updateBillTemplate: (id: number, data: any) =>
+    request<any>(`/bills/templates/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+  deleteBillTemplate: (id: number) => request<void>(`/bills/templates/${id}`, { method: 'DELETE' }),
+
+  // Staff & Permissions
+  createStaff: (data: any) =>
+    request<any>('/auth/staff', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  updateStaff: (id: number, data: any) =>
+    request<any>(`/auth/staff/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
 
   // Payments
   getCustomerPayments: (customerId: number) =>

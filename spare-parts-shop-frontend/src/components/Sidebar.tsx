@@ -1,316 +1,287 @@
-import { useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
-  Drawer,
   Box,
-  Typography,
+  Drawer,
   List,
   ListItem,
   ListItemButton,
   ListItemIcon,
   ListItemText,
   Avatar,
+  Typography,
   Divider,
-  IconButton,
-  useTheme,
-  useMediaQuery,
-  Badge,
+  Tooltip,
 } from '@mui/material';
 import {
-  Dashboard,
-  Inventory,
-  People,
-  ReceiptLong,
+  LayoutDashboard,
+  PackageOpen,
+  Users,
+  FileText,
   ShoppingCart,
-  LocalShipping,
-  Payments,
-  Settings,
-  Logout,
-  AdminPanelSettings,
-  Business,
-  BarChart,
-  Shield,
-  Support,
-  Menu,
-  Close,
-  Notifications,
-  Send,
-} from '@mui/icons-material';
-import { useAppSelector, useAppDispatch } from '../store/hooks';
-import { logout, selectCurrentUser } from '../store/slices/authSlice';
-import { api } from '../api/client';
+  Truck,
+  CreditCard,
+  BarChart3,
+  ChevronLeft,
+  ChevronRight,
+  UserPlus,
+  Receipt,
+  Activity,
+  Users2,
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useAppSelector } from '../store/hooks';
+import { selectCurrentUser } from '../store/slices/authSlice';
 
 const drawerWidth = 280;
+const drawerWidthCollapsed = 80;
 
-const Sidebar = ({ open, onToggle, onClose }: { open: boolean; onToggle: () => void; onClose: () => void }) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+interface MenuItem {
+  label: string;
+  path: string;
+  icon: React.ReactNode;
+  roles?: string[];
+}
+
+const Sidebar = ({
+  open,
+  onToggle,
+}: {
+  open: boolean;
+  onToggle: () => void;
+}) => {
   const location = useLocation();
-  const dispatch = useAppDispatch();
   const user = useAppSelector(selectCurrentUser);
 
-  const [notificationCount, setNotificationCount] = useState(0);
+  const menuItems = useMemo(() => {
+    const items: MenuItem[] = [
+      { label: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
+      { label: 'Products', path: '/products', icon: <PackageOpen size={20} />, roles: ['ADMIN', 'EMPLOYEE'] },
+      { label: 'Customers', path: '/customers', icon: <Users size={20} />, roles: ['ADMIN', 'EMPLOYEE'] },
+      { label: 'Bills', path: '/bills', icon: <Receipt size={20} />, roles: ['ADMIN', 'EMPLOYEE'] },
+      { label: 'Purchases', path: '/purchases', icon: <ShoppingCart size={20} />, roles: ['ADMIN', 'EMPLOYEE'] },
+      { label: 'Suppliers', path: '/suppliers', icon: <Truck size={20} />, roles: ['ADMIN', 'EMPLOYEE'] },
+      { label: 'Payments', path: '/payments', icon: <CreditCard size={20} />, roles: ['ADMIN', 'EMPLOYEE'] },
+      { label: 'Reports', path: '/reports', icon: <BarChart3 size={20} />, roles: ['ADMIN', 'EMPLOYEE', 'SUPER_MANAGER'] },
+    ];
 
-  useEffect(() => {
-    if (user) {
-      fetchUnreadCount();
+    if (user?.role === 'ADMIN') {
+      items.push({ label: 'Bill Templates', path: '/bill-templates', icon: <FileText size={20} /> });
+      items.push({ label: 'Users', path: '/users', icon: <Users2 size={20} /> });
     }
-  }, [user]);
 
-  const fetchUnreadCount = async () => {
-    try {
-      const count = await api.getUnreadCount();
-      setNotificationCount(count);
-    } catch (err) {
-      console.error('Error fetching unread count:', err);
+    if (user?.role === 'SUPER_MANAGER') {
+      items.push({ label: 'Admins', path: '/admins', icon: <UserPlus size={20} /> });
+      items.push({ label: 'Businesses', path: '/businesses', icon: <PackageOpen size={20} /> });
+      items.push({ label: 'Analytics', path: '/analytics', icon: <Activity size={20} /> });
     }
-  };
 
-  // Define menu items based on user role
-  const getMenuItems = () => {
-    switch (user?.role) {
-      case 'SUPER_MANAGER':
-        return [
-          { label: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
-          { label: 'Admin Management', icon: <AdminPanelSettings />, path: '/admins' },
-          { label: 'Business Management', icon: <Business />, path: '/businesses' },
-          { label: 'Subscriptions', icon: <Payments />, path: '/subscriptions' },
-          { label: 'Feature Permissions', icon: <Shield />, path: '/permissions' },
-          { label: 'Analytics', icon: <BarChart />, path: '/analytics' },
-          { label: 'Reports', icon: <ReceiptLong />, path: '/reports' },
-          { label: 'Send Notifications', icon: <Send />, path: '/send-notifications' },
-        ];
-      case 'CUSTOMER':
-        return [
-          { label: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
-          { label: 'My Products', icon: <Inventory />, path: '/my-products' },
-          { label: 'My Bills', icon: <ReceiptLong />, path: '/my-bills' },
-          { label: 'Warranties', icon: <Shield />, path: '/warranties' },
-          { label: 'My EMI', icon: <Payments />, path: '/my-emi' },
-          { label: 'Support', icon: <Support />, path: '/support' },
-        ];
-      default: // ADMIN, EMPLOYEE
-        const items: any[] = [
-          { label: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
-          { label: 'Products', icon: <Inventory />, path: '/products' },
-          { label: 'Customers', icon: <People />, path: '/customers' },
-          { label: 'Billing', icon: <ReceiptLong />, path: '/bills' },
-          { label: 'Purchases', icon: <ShoppingCart />, path: '/purchases' },
-          { label: 'Suppliers', icon: <LocalShipping />, path: '/suppliers' },
-          { label: 'Payments', icon: <Payments />, path: '/payments' },
-          { label: 'Reports', icon: <BarChart />, path: '/reports' },
-        ];
-        if (user?.role === 'ADMIN') {
-          items.push({ label: 'Users', icon: <People />, path: '/users' });
-        }
-        return items;
-    }
-  };
+    return items;
+  }, [user?.role]);
 
-  const menuItems = getMenuItems();
-
-  const drawer = (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      {/* Logo */}
-      <Box
-        sx={{
-          p: 3,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 2,
-        }}
-      >
-        <Avatar
-          src="/stockpilot_logo.png"
-          sx={{
-            width: 48,
-            height: 48,
-            backgroundColor: theme.palette.primary.main,
-          }}
-        />
-        <Box>
-          <Typography variant="h6" sx={{ fontWeight: 700 }}>
-            Stock Pilot
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            Enterprise Edition
-          </Typography>
-        </Box>
-      </Box>
-
-      <Divider />
-
-      {/* User Profile */}
-      <Box sx={{ p: 2 }}>
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 2,
-            p: 2,
-            borderRadius: 2,
-            backgroundColor: theme.palette.mode === 'light' ? '#f0f9ff' : '#1e293b',
-          }}
-        >
-          <Avatar
-            sx={{
-              width: 48,
-              height: 48,
-              backgroundColor: theme.palette.primary.main,
-              fontWeight: 700,
-            }}
-          >
-            {user?.username.charAt(0).toUpperCase()}
-          </Avatar>
-          <Box>
-            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-              {user?.username}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              {user?.role.replace('_', ' ')}
-            </Typography>
-          </Box>
-        </Box>
-      </Box>
-
-      <Divider />
-
-      {/* Menu */}
-      <List sx={{ flexGrow: 1, p: 2 }}>
-        {menuItems.map((item) => {
-          const isActive = location.pathname === item.path;
-          return (
-            <ListItem key={item.path} disablePadding sx={{ mb: 0.5 }}>
-              <ListItemButton
-                component={Link}
-                to={item.path}
-                onClick={isMobile ? onClose : undefined}
-                sx={{
-                  borderRadius: 1.5,
-                  backgroundColor: isActive ? theme.palette.primary.main : 'transparent',
-                  color: isActive ? 'white' : 'inherit',
-                  '&:hover': {
-                    backgroundColor: isActive
-                      ? theme.palette.primary.main
-                      : theme.palette.mode === 'light'
-                      ? '#f0f9ff'
-                      : '#334155',
-                  },
-                }}
-              >
-                <ListItemIcon sx={{ color: isActive ? 'white' : 'inherit' }}>
-                  {item.icon}
-                </ListItemIcon>
-                <ListItemText
-                  primary={item.label}
-                  sx={{
-                    '& .MuiListItemText-primary': {
-                      fontWeight: isActive ? 600 : 500,
-                    },
-                  }}
-                />
-              </ListItemButton>
-            </ListItem>
-          );
-        })}
-      </List>
-
-      <Divider />
-
-      {/* Bottom Menu */}
-      <List sx={{ p: 2 }}>
-        <ListItem disablePadding sx={{ mb: 0.5 }}>
-          <ListItemButton
-            component={Link}
-            to="/notifications"
-            onClick={isMobile ? onClose : undefined}
-            sx={{ borderRadius: 1.5 }}
-          >
-            <ListItemIcon>
-              <Badge badgeContent={notificationCount} color="error" max={99}>
-                <Notifications />
-              </Badge>
-            </ListItemIcon>
-            <ListItemText primary="Notifications" />
-          </ListItemButton>
-        </ListItem>
-        <ListItem disablePadding sx={{ mb: 0.5 }}>
-          <ListItemButton
-            component={Link}
-            to="/settings"
-            onClick={isMobile ? onClose : undefined}
-            sx={{ borderRadius: 1.5 }}
-          >
-            <ListItemIcon>
-              <Settings />
-            </ListItemIcon>
-            <ListItemText primary="Settings" />
-          </ListItemButton>
-        </ListItem>
-        <ListItem disablePadding>
-          <ListItemButton
-            sx={{
-              borderRadius: 1.5,
-              color: theme.palette.error.main,
-            }}
-            onClick={() => dispatch(logout())}
-          >
-            <ListItemIcon sx={{ color: theme.palette.error.main }}>
-              <Logout />
-            </ListItemIcon>
-            <ListItemText primary="Logout" />
-          </ListItemButton>
-        </ListItem>
-      </List>
-    </Box>
+  const visibleMenuItems = menuItems.filter((item) => 
+    !item.roles || (user && item.roles.includes(user.role))
   );
 
-  return (
-    <>
-      {/* Mobile Header */}
-      {isMobile && (
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            p: 2,
-            position: 'sticky',
-            top: 0,
-            zIndex: theme.zIndex.appBar + 1,
-            backgroundColor: theme.palette.background.paper,
-            boxShadow: 1,
-          }}
-        >
-          <IconButton onClick={onToggle} edge="start">
-            {open ? <Close /> : <Menu />}
-          </IconButton>
-          <Box component="img" src="/stockpilot_logo.png" alt="Logo" sx={{ height: 40 }} />
-          <IconButton>
-            <Badge badgeContent={notificationCount} color="error">
-              <Notifications />
-            </Badge>
-          </IconButton>
-        </Box>
-      )}
+  const isActive = (path: string) => {
+    if (path === '/dashboard') return location.pathname === path;
+    return location.pathname.startsWith(path);
+  };
 
+  return (
+    <Box
+      component="nav"
+      sx={{ width: open ? drawerWidth : drawerWidthCollapsed, flexShrink: 0 }}
+    >
       <Drawer
-        variant={isMobile ? 'temporary' : 'persistent'}
-        open={isMobile ? open : true}
-        onClose={isMobile ? onClose : undefined}
+        variant="permanent"
+        open
         sx={{
-          width: drawerWidth,
-          flexShrink: 0,
-          [`& .MuiDrawer-paper`]: {
-            width: drawerWidth,
+          '& .MuiDrawer-paper': {
             boxSizing: 'border-box',
-            borderRight: 'none',
+            width: open ? drawerWidth : drawerWidthCollapsed,
+            border: 'none',
+            backgroundColor: 'background.paper',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           },
         }}
       >
-        {drawer}
+        {/* Top Section */}
+        <Box>
+          {/* Logo & Toggle */}
+          <Box
+            sx={{
+              p: 3,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: open ? 'space-between' : 'center',
+              borderBottom: '1px solid',
+              borderColor: 'divider',
+            }}
+          >
+            <AnimatePresence>
+              {open && (
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                >
+                  <Typography
+                    variant="h5"
+                    sx={{
+                      fontWeight: 800,
+                      background: 'linear-gradient(135deg, #2563EB, #6366F1)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                    }}
+                  >
+                    StockPilot
+                  </Typography>
+                </motion.div>
+              )}
+            </AnimatePresence>
+            <Tooltip title={open ? 'Collapse' : 'Expand'}>
+              <Box
+                onClick={onToggle}
+                sx={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 10,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  '&:hover': {
+                    backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                  },
+                }}
+              >
+                {open ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
+              </Box>
+            </Tooltip>
+          </Box>
+
+          {/* Navigation */}
+          <List sx={{ py: 2, px: open ? 1.5 : 0.75 }}>
+            {visibleMenuItems.map((item) => (
+              <ListItem key={item.path} disablePadding sx={{ mb: 0.5 }}>
+                <Link
+                  to={item.path}
+                  style={{ textDecoration: 'none', width: '100%' }}
+                >
+                  <ListItemButton
+                    selected={isActive(item.path)}
+                    sx={{
+                      borderRadius: 12,
+                      px: 2,
+                      py: 1.5,
+                      '&.Mui-selected': {
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        color: 'primary.main',
+                        '&:hover': {
+                          backgroundColor: 'rgba(37, 99, 235, 0.15)',
+                        },
+                        '& .MuiListItemIcon-root': {
+                          color: 'primary.main',
+                        },
+                      },
+                    }}
+                  >
+                    <ListItemIcon
+                      sx={{
+                        minWidth: 44,
+                        color: isActive(item.path) ? 'primary.main' : 'text.secondary',
+                      }}
+                    >
+                      {item.icon}
+                    </ListItemIcon>
+                    <AnimatePresence>
+                      {open && (
+                        <motion.div
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -10 }}
+                          style={{ display: 'flex', alignItems: 'center', gap: 2 }}
+                        >
+                          <ListItemText
+                            primary={
+                              <Typography sx={{ fontWeight: 500 }}>
+                                {item.label}
+                              </Typography>
+                            }
+                          />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </ListItemButton>
+                </Link>
+              </ListItem>
+            ))}
+          </List>
+        </Box>
+
+        {/* Bottom Section - User Profile */}
+        <Box sx={{ p: open ? 2 : 1 }}>
+          <Divider sx={{ mb: 2 }} />
+          <ListItem disablePadding>
+            <ListItemButton
+              component={Link}
+              to="/settings"
+              sx={{
+                borderRadius: 12,
+                px: 2,
+                py: 1.5,
+              }}
+            >
+              <ListItemIcon
+                sx={{
+                  minWidth: 44,
+                }}
+              >
+                <Avatar
+                  sx={{
+                    width: 32,
+                    height: 32,
+                    backgroundColor: 'primary.main',
+                    color: 'white',
+                    fontWeight: 600,
+                    fontSize: '0.875rem',
+                  }}
+                >
+                  {user?.username?.charAt(0).toUpperCase() || 'U'}
+                </Avatar>
+              </ListItemIcon>
+              <AnimatePresence>
+                {open && (
+                  <motion.div
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -10 }}
+                  >
+                    <ListItemText
+                      primary={
+                        <Typography sx={{ fontWeight: 600, fontSize: '0.9375rem' }}>
+                          {user?.username}
+                        </Typography>
+                      }
+                      secondary={
+                        <Typography variant="caption" color="text.secondary">
+                          {user?.role}
+                        </Typography>
+                      }
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </ListItemButton>
+          </ListItem>
+        </Box>
       </Drawer>
-    </>
+    </Box>
   );
 };
 

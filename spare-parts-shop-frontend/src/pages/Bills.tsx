@@ -30,6 +30,7 @@ export default function Bills() {
   const [pdfLoading, setPdfLoading] = useState<number | null>(null)
   const [backupLoading, setBackupLoading] = useState(false)
   const [previewBill, setPreviewBill] = useState<Bill | null>(null)
+  const [whatsAppLoading, setWhatsAppLoading] = useState<number | null>(null)
 
   const load = () => {
     setLoading(true)
@@ -98,6 +99,24 @@ export default function Bills() {
       setError(err instanceof Error ? err.message : 'Failed to download bills backup')
     } finally {
       setBackupLoading(false)
+    }
+  }
+
+  const handleSendWhatsApp = async (bill: Bill) => {
+    const phone = bill.customer.phone
+    if (!phone) {
+      alert('Customer has no phone number')
+      return
+    }
+    
+    setWhatsAppLoading(bill.id)
+    try {
+      await api.sendBillViaWhatsApp(bill.id, phone)
+      alert('Bill sent successfully via WhatsApp!')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to send bill via WhatsApp')
+    } finally {
+      setWhatsAppLoading(null)
     }
   }
 
@@ -200,6 +219,15 @@ export default function Bills() {
                       >
                         {pdfLoading === b.id ? '...' : 'PDF'}
                       </button>
+                      <button
+                        type="button"
+                        className="btn btn-ghost btn-sm"
+                        onClick={() => handleSendWhatsApp(b)}
+                        disabled={whatsAppLoading === b.id}
+                        style={{ color: '#25D366' }}
+                      >
+                        {whatsAppLoading === b.id ? 'Sending...' : 'WhatsApp'}
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -294,6 +322,14 @@ export default function Bills() {
                 disabled={pdfLoading === previewBill.id}
               >
                 {pdfLoading === previewBill.id ? 'Downloading...' : 'Download PDF'}
+              </button>
+              <button 
+                className="btn" 
+                style={{ backgroundColor: '#25D366', color: 'white' }}
+                onClick={() => handleSendWhatsApp(previewBill)}
+                disabled={whatsAppLoading === previewBill.id}
+              >
+                {whatsAppLoading === previewBill.id ? 'Sending...' : 'Send via WhatsApp'}
               </button>
               <button className="btn btn-ghost" onClick={() => setPreviewBill(null)}>Close</button>
             </div>
