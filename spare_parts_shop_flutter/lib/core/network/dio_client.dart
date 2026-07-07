@@ -44,9 +44,11 @@ class DioClient {
             if (kDebugMode) {
               print('Error: ${error.type}');
               print('Error Message: ${error.message}');
+              print('Stack Trace: ${error.stackTrace}');
               if (error.response != null) {
                 print('Status Code: ${error.response?.statusCode}');
                 print('Response Data: ${error.response?.data}');
+                print('Response Headers: ${error.response?.headers}');
               }
             }
             return handler.next(error);

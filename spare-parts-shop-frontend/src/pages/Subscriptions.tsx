@@ -94,7 +94,7 @@ const Subscriptions = () => {
       case 'active': return <CheckCircle size={20} />;
       case 'trialing': return <RefreshCw size={20} />;
       case 'cancelled': return <XCircle size={20} />;
-      default: return null;
+      default: return <CheckCircle size={20} />;
     }
   };
 
@@ -149,7 +149,9 @@ const Subscriptions = () => {
                   <List sx={{ mb: 3 }}>
                     {plan.features.map((feature, idx) => (
                       <ListItem key={idx} disablePadding sx={{ mb: 1.5 }}>
-                        <CheckCircle size={18} sx={{ mr: 1.5, color: theme.palette.success.main, flexShrink: 0 }} />
+                        <Box sx={{ mr: 1.5, color: theme.palette.success.main, flexShrink: 0 }}>
+                          <CheckCircle size={18} />
+                        </Box>
                         <ListItemText primary={feature} />
                       </ListItem>
                     ))}

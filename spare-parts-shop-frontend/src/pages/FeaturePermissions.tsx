@@ -121,19 +121,21 @@ const FeaturePermissions = () => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           sx={{ borderRadius: 2 }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Search size={20} />
-              </InputAdornment>
-            )
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search size={20} />
+                </InputAdornment>
+              ),
+            },
           }}
         />
       </Box>
 
       {/* Permissions Grid */}
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
-        {permissions.map((perm, index) => (
+        {permissions.map((perm) => (
           <Box key={perm.role} sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(33.333% - 16px)' } }}>
             <Card
               sx={{
