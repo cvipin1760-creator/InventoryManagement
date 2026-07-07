@@ -64,7 +64,7 @@ const BarcodeScanner = ({ onScan, onClose }: BarcodeScannerProps) => {
         boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)',
       }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
-          <Typography variant="h6" fontWeight="700">Scan Barcode / QR</Typography>
+          <Typography variant="h6" sx={{ fontWeight: 700 }}>Scan Barcode / QR</Typography>
           <IconButton onClick={onClose} size="small">
             <X />
           </IconButton>

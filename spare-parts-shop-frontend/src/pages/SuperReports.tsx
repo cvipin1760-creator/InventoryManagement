@@ -231,28 +231,28 @@ const SuperReports = () => {
 
       {/* KPI Cards */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={4} lg={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
           <KpiCard title="Total Shops" value="1,245" change={12.5} trend="up" icon={Package} />
         </Grid>
-        <Grid item xs={12} sm={6} md={4} lg={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
           <KpiCard title="Active Shops" value="1,089" change={8.3} trend="up" icon={Shield} />
         </Grid>
-        <Grid item xs={12} sm={6} md={4} lg={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
           <KpiCard title="Inactive Shops" value="156" change={-4.2} trend="down" icon={AlertCircle} />
         </Grid>
-        <Grid item xs={12} sm={6} md={4} lg={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
           <KpiCard title="New Shops This Month" value="45" change={22} trend="up" icon={TrendingUp} />
         </Grid>
-        <Grid item xs={12} sm={6} md={4} lg={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
           <KpiCard title="Total Customers" value="24,856" change={15.3} trend="up" icon={Users} />
         </Grid>
-        <Grid item xs={12} sm={6} md={4} lg={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
           <KpiCard title="Total Revenue" value="₹45.2L" change={18.2} trend="up" icon={CreditCard} />
         </Grid>
-        <Grid item xs={12} sm={6} md={4} lg={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
           <KpiCard title="MRR" value="₹3.2L" change={12.5} trend="up" icon={Calendar} />
         </Grid>
-        <Grid item xs={12} sm={6} md={4} lg={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
           <KpiCard title="Low Stock Products" value="142" change={-8.5} trend="down" icon={AlertCircle} />
         </Grid>
       </Grid>
@@ -275,7 +275,7 @@ const SuperReports = () => {
       {activeTab === 0 && (
         <Grid container spacing={3}>
           {/* Revenue Trend */}
-          <Grid item xs={12} lg={8}>
+          <Grid size={{ xs: 12, lg: 8 }}>
             <Card sx={{ borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.05)', height: '100%' }}>
               <CardContent sx={{ p: 3 }}>
                 <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>
@@ -307,7 +307,7 @@ const SuperReports = () => {
           </Grid>
 
           {/* Sales by Category */}
-          <Grid item xs={12} lg={4}>
+          <Grid size={{ xs: 12, lg: 4 }}>
             <Card sx={{ borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.05)', height: '100%' }}>
               <CardContent sx={{ p: 3 }}>
                 <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>
@@ -326,7 +326,7 @@ const SuperReports = () => {
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
                       outerRadius={80}
                       fill="#8884d8"
                       dataKey="value"
@@ -337,7 +337,7 @@ const SuperReports = () => {
                         { name: 'Brakes', value: 300 },
                         { name: 'Filters', value: 200 },
                         { name: 'Electrical', value: 278 },
-                      ].map((entry, index) => (
+                      ].map((_, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
@@ -349,7 +349,7 @@ const SuperReports = () => {
           </Grid>
 
           {/* Shop Performance Table */}
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Card sx={{ borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
               <CardContent sx={{ p: 3 }}>
                 <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>
@@ -418,7 +418,7 @@ const SuperReports = () => {
           </Grid>
 
           {/* AI Insights */}
-          <Grid item xs={12} lg={6}>
+          <Grid size={{ xs: 12, lg: 6 }}>
             <Card sx={{ borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.05)', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
               <CardContent sx={{ p: 3 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
@@ -449,7 +449,7 @@ const SuperReports = () => {
           </Grid>
 
           {/* Alerts */}
-          <Grid item xs={12} lg={6}>
+          <Grid size={{ xs: 12, lg: 6 }}>
             <Card sx={{ borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
               <CardContent sx={{ p: 3 }}>
                 <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>

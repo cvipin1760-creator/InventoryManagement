@@ -111,22 +111,22 @@ const AdminDashboard = () => {
         <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>Daily Performance Tracker</Typography>
         <Grid container spacing={3}>
           {/* Revenue */}
-          <Grid item xs={12} sm={6} md={3}><KPICard title="Revenue Today" value="₹12,450" icon={<DollarSign />} trend="up" trendValue="+24%" subtitle="vs yesterday" color="success" /></Grid>
-          <Grid item xs={12} sm={6} md={3}><KPICard title="Net Profit" value="₹4,200" icon={<TrendingUp />} trend="up" trendValue="+12%" subtitle="Today" color="primary" /></Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Revenue Today" value="₹12,450" icon={<DollarSign />} trend="up" trendValue="+24%" subtitle="vs yesterday" color="success" /></Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Net Profit" value="₹4,200" icon={<TrendingUp />} trend="up" trendValue="+12%" subtitle="Today" color="primary" /></Grid>
           {/* Customer */}
-          <Grid item xs={12} sm={6} md={3}><KPICard title="Total Customers" value="854" icon={<Users />} trend="up" trendValue="+5%" subtitle="All time" color="info" /></Grid>
-          <Grid item xs={12} sm={6} md={3}><KPICard title="Repeat Customers" value="68%" icon={<RefreshCcw />} trend="up" trendValue="+2%" subtitle="This month" color="warning" /></Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Total Customers" value="854" icon={<Users />} trend="up" trendValue="+5%" subtitle="All time" color="info" /></Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Repeat Customers" value="68%" icon={<RefreshCcw />} trend="up" trendValue="+2%" subtitle="This month" color="warning" /></Grid>
           {/* Inventory */}
-          <Grid item xs={12} sm={6} md={3}><KPICard title="Total Products" value="1,450" icon={<PackageOpen />} trend="up" trendValue="+10" subtitle="Added recently" color="primary" /></Grid>
-          <Grid item xs={12} sm={6} md={3}><KPICard title="Low Stock" value="24" icon={<AlertCircle />} trend="down" trendValue="-3" subtitle="Requires attention" color="warning" /></Grid>
-          <Grid item xs={12} sm={6} md={3}><KPICard title="Out of Stock" value="8" icon={<Activity />} trend="down" trendValue="+2" subtitle="Lost revenue" color="error" /></Grid>
-          <Grid item xs={12} sm={6} md={3}><KPICard title="Inventory Value" value="₹14.2L" icon={<DollarSign />} trend="up" trendValue="+5%" subtitle="Current worth" color="success" /></Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Total Products" value="1,450" icon={<PackageOpen />} trend="up" trendValue="+10" subtitle="Added recently" color="primary" /></Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Low Stock" value="24" icon={<AlertCircle />} trend="down" trendValue="-3" subtitle="Requires attention" color="warning" /></Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Out of Stock" value="8" icon={<Activity />} trend="down" trendValue="+2" subtitle="Lost revenue" color="error" /></Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Inventory Value" value="₹14.2L" icon={<DollarSign />} trend="up" trendValue="+5%" subtitle="Current worth" color="success" /></Grid>
         </Grid>
       </Box>
 
       <Grid container spacing={3}>
         {/* 3. Financial & Customer Charts */}
-        <Grid item xs={12} lg={8}>
+        <Grid size={{ xs: 12, lg: 8 }}>
           <Card sx={{ borderRadius: 3, height: '100%' }}>
             <CardContent>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
@@ -156,7 +156,7 @@ const AdminDashboard = () => {
           </Card>
         </Grid>
 
-        <Grid item xs={12} lg={4}>
+        <Grid size={{ xs: 12, lg: 4 }}>
           <Card sx={{ borderRadius: 3, height: '100%' }}>
             <CardContent>
               <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>Customer Retention</Typography>
@@ -185,7 +185,7 @@ const AdminDashboard = () => {
 
       <Grid container spacing={3}>
         {/* 4. AI Insights */}
-        <Grid item xs={12} lg={4}>
+        <Grid size={{ xs: 12, lg: 4 }}>
           <Card sx={{ borderRadius: 3, height: '100%', background: 'linear-gradient(135deg, rgba(37,99,235,0.05) 0%, rgba(255,255,255,1) 100%)' }}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
@@ -213,7 +213,7 @@ const AdminDashboard = () => {
         </Grid>
 
         {/* 5. Recent Activity Timeline */}
-        <Grid item xs={12} lg={4}>
+        <Grid size={{ xs: 12, lg: 4 }}>
           <Card sx={{ borderRadius: 3, height: '100%' }}>
             <CardContent>
               <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>Recent Activity</Typography>
@@ -239,7 +239,7 @@ const AdminDashboard = () => {
         </Grid>
 
         {/* 6. Notifications Panel */}
-        <Grid item xs={12} lg={4}>
+        <Grid size={{ xs: 12, lg: 4 }}>
           <Card sx={{ borderRadius: 3, height: '100%' }}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>

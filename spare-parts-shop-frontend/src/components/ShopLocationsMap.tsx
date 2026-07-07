@@ -55,12 +55,12 @@ const ShopLocationsMap = () => {
                 <MuiTooltip 
                   title={
                     <Box sx={{ p: 0.5 }}>
-                      <Typography variant="subtitle2" fontWeight="bold">{name}</Typography>
-                      <Typography variant="caption" display="block">Revenue: {revenue}</Typography>
-                      <Typography variant="caption" display="block">Customers: {customers}</Typography>
-                      <Typography variant="caption" display="block">Orders: {orders}</Typography>
-                      <Typography variant="caption" display="block">Growth: {growth}</Typography>
-                      <Typography variant="caption" display="block">Health: {health}</Typography>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>{name}</Typography>
+                      <Typography variant="caption" sx={{ display: 'block' }}>Revenue: {revenue}</Typography>
+                      <Typography variant="caption" sx={{ display: 'block' }}>Customers: {customers}</Typography>
+                      <Typography variant="caption" sx={{ display: 'block' }}>Orders: {orders}</Typography>
+                      <Typography variant="caption" sx={{ display: 'block' }}>Growth: {growth}</Typography>
+                      <Typography variant="caption" sx={{ display: 'block' }}>Health: {health}</Typography>
                     </Box>
                   }
                   placement="top"
