@@ -1,0 +1,272 @@
+import {
+  Box,
+  Typography,
+  Card,
+  CardContent,
+  Avatar,
+  Chip,
+  Grid,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
+} from '@mui/material';
+import {
+  TrendingUp,
+  TrendingDown,
+  PackageOpen,
+  DollarSign,
+  Users,
+  Activity,
+  AlertCircle,
+  Clock,
+  Bell,
+  Sparkles,
+  RefreshCcw,
+  ShoppingCart,
+  Percent,
+} from 'lucide-react';
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+} from 'recharts';
+import { motion } from 'framer-motion';
+
+// Reusable KPI Card
+const KPICard = ({
+  title, value, icon, trend, trendValue, subtitle, color = 'primary' }: {
+    title: string;
+    value: string;
+  icon: React.ReactNode;
+  trend: 'up' | 'down';
+  trendValue: string;
+  subtitle: string;
+  color?: 'primary' | 'success' | 'warning' | 'error' | 'info';
+}) => (
+  <motion.div whileHover={{ scale: 1.02, y: -4 }} transition={{ type: 'spring', stiffness: 300 }}>
+    <Card sx={{ borderRadius: 3, height: '100%', borderTop: 4, borderColor: `${color}.main` }}>
+      <CardContent sx={{ p: 3 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+          <Avatar sx={{ bgcolor: `${color}.light`, color: `${color}.main`, width: 48, height: 48 }}>
+            {icon}
+          </Avatar>
+          <Chip
+            label={trendValue}
+            size="small"
+            color={trend === 'up' ? 'success' : 'error'}
+            icon={trend === 'up' ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+            sx={{ fontWeight: 600 }}
+          />
+        </Box>
+        <Typography variant="h4" sx={{ fontWeight: 800, mb: 0.5 }}>{value}</Typography>
+        <Typography variant="body1" color="text.secondary" sx={{ mb: 0.5, fontWeight: 600 }}>{title}</Typography>
+        <Typography variant="caption" color="text.secondary">{subtitle}</Typography>
+      </CardContent>
+    </Card>
+  </motion.div>
+);
+
+const revenueData = [
+  { name: 'Mon', revenue: 4000, profit: 2400 },
+  { name: 'Tue', revenue: 3000, profit: 1398 },
+  { name: 'Wed', revenue: 2000, profit: 9800 },
+  { name: 'Thu', revenue: 2780, profit: 3908 },
+  { name: 'Fri', revenue: 1890, profit: 4800 },
+  { name: 'Sat', revenue: 2390, profit: 3800 },
+  { name: 'Sun', revenue: 3490, profit: 4300 },
+];
+
+const customerData = [
+  { name: 'New', value: 400 },
+  { name: 'Returning', value: 300 },
+];
+const COLORS = ['#2563EB', '#10B981', '#F59E0B', '#EF4444'];
+
+const AdminDashboard = () => {
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      
+      {/* 1. Live Premium Widgets & Counters */}
+      <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', backgroundColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)', p: 2, borderRadius: 3, border: '1px solid rgba(16, 185, 129, 0.1)' }}>
+        <Activity size={24} color="#10B981" />
+        <Typography variant="h6" sx={{ fontWeight: 700, color: '#065F46', display: 'flex', gap: 4 }}>
+          <span>💰 Cash Flow Gauge: Healthy</span>
+          <span>📦 Inventory Score: 92/100</span>
+          <span>⭐ Customer Satisfaction: 4.8/5</span>
+        </Typography>
+      </Box>
+
+      {/* 2. KPIs (Customer, Revenue, Inventory) */}
+      <Box>
+        <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>Daily Performance Tracker</Typography>
+        <Grid container spacing={3}>
+          {/* Revenue */}
+          <Grid item xs={12} sm={6} md={3}><KPICard title="Revenue Today" value="₹12,450" icon={<DollarSign />} trend="up" trendValue="+24%" subtitle="vs yesterday" color="success" /></Grid>
+          <Grid item xs={12} sm={6} md={3}><KPICard title="Net Profit" value="₹4,200" icon={<TrendingUp />} trend="up" trendValue="+12%" subtitle="Today" color="primary" /></Grid>
+          {/* Customer */}
+          <Grid item xs={12} sm={6} md={3}><KPICard title="Total Customers" value="854" icon={<Users />} trend="up" trendValue="+5%" subtitle="All time" color="info" /></Grid>
+          <Grid item xs={12} sm={6} md={3}><KPICard title="Repeat Customers" value="68%" icon={<RefreshCcw />} trend="up" trendValue="+2%" subtitle="This month" color="warning" /></Grid>
+          {/* Inventory */}
+          <Grid item xs={12} sm={6} md={3}><KPICard title="Total Products" value="1,450" icon={<PackageOpen />} trend="up" trendValue="+10" subtitle="Added recently" color="primary" /></Grid>
+          <Grid item xs={12} sm={6} md={3}><KPICard title="Low Stock" value="24" icon={<AlertCircle />} trend="down" trendValue="-3" subtitle="Requires attention" color="warning" /></Grid>
+          <Grid item xs={12} sm={6} md={3}><KPICard title="Out of Stock" value="8" icon={<Activity />} trend="down" trendValue="+2" subtitle="Lost revenue" color="error" /></Grid>
+          <Grid item xs={12} sm={6} md={3}><KPICard title="Inventory Value" value="₹14.2L" icon={<DollarSign />} trend="up" trendValue="+5%" subtitle="Current worth" color="success" /></Grid>
+        </Grid>
+      </Box>
+
+      <Grid container spacing={3}>
+        {/* 3. Financial & Customer Charts */}
+        <Grid item xs={12} lg={8}>
+          <Card sx={{ borderRadius: 3, height: '100%' }}>
+            <CardContent>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+                <Typography variant="h6" sx={{ fontWeight: 700 }}>Financial Overview (Revenue vs Profit)</Typography>
+              </Box>
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={revenueData}>
+                  <defs>
+                    <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#2563EB" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="#2563EB" stopOpacity={0}/>
+                    </linearGradient>
+                    <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#10B981" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Area type="monotone" dataKey="revenue" stroke="#2563EB" fillOpacity={1} fill="url(#colorRev)" />
+                  <Area type="monotone" dataKey="profit" stroke="#10B981" fillOpacity={1} fill="url(#colorProfit)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} lg={4}>
+          <Card sx={{ borderRadius: 3, height: '100%' }}>
+            <CardContent>
+              <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>Customer Retention</Typography>
+              <ResponsiveContainer width="100%" height={250}>
+                <PieChart>
+                  <Pie data={customerData} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
+                    {customerData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+              <Box sx={{ display: 'flex', justifyContent: 'center', gap: 4, mt: 2 }}>
+                {customerData.map((entry, index) => (
+                  <Box key={entry.name} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: COLORS[index] }} />
+                    <Typography variant="body2">{entry.name} ({entry.value})</Typography>
+                  </Box>
+                ))}
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+
+      <Grid container spacing={3}>
+        {/* 4. AI Insights */}
+        <Grid item xs={12} lg={4}>
+          <Card sx={{ borderRadius: 3, height: '100%', background: 'linear-gradient(135deg, rgba(37,99,235,0.05) 0%, rgba(255,255,255,1) 100%)' }}>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
+                <Sparkles size={24} color="#2563EB" />
+                <Typography variant="h6" sx={{ fontWeight: 700 }}>AI Recommendations</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {[
+                  "Sales will increase by 12% next week.",
+                  "Inventory worth ₹5.6L has not moved in 90 days.",
+                  "Shop ABC is likely to churn.",
+                  "15 customers are likely to purchase again.",
+                  "Recommended products to restock: Engine Oil, Brake Pads.",
+                  "Abnormal sales detected in Shop XYZ.",
+                  "Expected monthly revenue: ₹52.8L"
+                ].map((insight, i) => (
+                  <Box key={i} sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
+                    <Box sx={{ mt: 0.5, color: '#2563EB' }}><Sparkles size={16} /></Box>
+                    <Typography variant="body2" sx={{ fontWeight: 500, color: '#334155' }}>{insight}</Typography>
+                  </Box>
+                ))}
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* 5. Recent Activity Timeline */}
+        <Grid item xs={12} lg={4}>
+          <Card sx={{ borderRadius: 3, height: '100%' }}>
+            <CardContent>
+              <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>Recent Activity</Typography>
+              <List sx={{ p: 0 }}>
+                {[
+                  { time: "09:15 AM", text: "New Admin Created", icon: <Users size={18} />, color: "#3B82F6" },
+                  { time: "09:05 AM", text: "Shop Created", icon: <PackageOpen size={18} />, color: "#10B981" },
+                  { time: "08:42 AM", text: "Premium Plan Purchased", icon: <DollarSign size={18} />, color: "#F59E0B" },
+                  { time: "08:20 AM", text: "Inventory Imported", icon: <RefreshCcw size={18} />, color: "#8B5CF6" },
+                  { time: "07:45 AM", text: "Backup Completed", icon: <Clock size={18} />, color: "#64748B" },
+                ].map((item, i) => (
+                  <ListItem key={i} sx={{ px: 0, py: 1.5, borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
+                    <ListItemIcon sx={{ minWidth: 40, color: item.color }}>{item.icon}</ListItemIcon>
+                    <ListItemText 
+                      primary={<Typography variant="body2" sx={{ fontWeight: 600 }}>{item.text}</Typography>}
+                      secondary={<Typography variant="caption">{item.time}</Typography>}
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* 6. Notifications Panel */}
+        <Grid item xs={12} lg={4}>
+          <Card sx={{ borderRadius: 3, height: '100%' }}>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
+                <Bell size={24} color="#EF4444" />
+                <Typography variant="h6" sx={{ fontWeight: 700 }}>Action Required</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {[
+                  { title: "Low Stock Alert", desc: "Engine Oil below minimum threshold", color: "warning" },
+                  { title: "Subscription Expired", desc: "Shop Alpha's basic plan expired", color: "error" },
+                  { title: "GST Pending", desc: "GST filing due in 3 days", color: "info" },
+                  { title: "Payment Failed", desc: "Invoice #1024 payment failed", color: "error" },
+                  { title: "Warranty Expiring", desc: "5 items warranty expiring this week", color: "warning" },
+                ].map((notif, i) => (
+                  <Box key={i} sx={{ display: 'flex', flexDirection: 'column', p: 1.5, borderRadius: 2, bgcolor: `${notif.color}.light`, color: `${notif.color}.dark`, border: '1px solid', borderColor: `${notif.color}.main`, opacity: 0.9 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 700 }}>{notif.title}</Typography>
+                    <Typography variant="caption">{notif.desc}</Typography>
+                  </Box>
+                ))}
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+      
+    </Box>
+  );
+};
+
+export default AdminDashboard;

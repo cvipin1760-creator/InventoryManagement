@@ -37,6 +37,7 @@ import { selectCurrentUser } from '../store/slices/authSlice';
 import { toggleTheme } from '../store/slices/themeSlice';
 import { api } from '../api/client';
 import Sidebar from './Sidebar';
+import CommandPalette from './CommandPalette';
 
 const Layout = () => {
   const theme = useTheme();
@@ -353,6 +354,9 @@ const Layout = () => {
       {isMobile && (
         <Sidebar open={mobileMenuOpen} onToggle={() => setMobileMenuOpen(false)} />
       )}
+
+      {/* Global Command Palette */}
+      <CommandPalette />
     </Box>
   );
 };

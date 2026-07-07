@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import type { Customer, Product, BillItemRequest, CustomerBalance } from '../types'
+import BarcodeScanner from '../components/BarcodeScanner'
 import './CreateBill.css'
 
 function formatCurrency(n: number) {
@@ -15,6 +16,7 @@ export default function CreateBill() {
   const [products, setProducts] = useState<Product[]>([])
   const [search, setSearch] = useState('')
   const [showDropdown, setShowDropdown] = useState(false)
+  const [showScanner, setShowScanner] = useState(false)
   const [customerId, setCustomerId] = useState<number | ''>('')
   const [customerPrices, setCustomerPrices] = useState<Record<string, number>>({})
   const [customerBalance, setCustomerBalance] = useState<CustomerBalance | null>(null)
@@ -260,9 +262,19 @@ const totalDiscount = lineDiscountTotal + percentDiscountAmount
           </div>
 
           <div className="product-search-section">
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-              Add Products
-            </label>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+              <label style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--text-muted)' }}>
+                Add Products
+              </label>
+              <button 
+                type="button" 
+                onClick={() => setShowScanner(true)}
+                style={{ background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.875rem' }}
+              >
+                📷 Scan Barcode
+              </button>
+            </div>
+            
             <input
               type="search"
               placeholder="Search product by name or part number..."
@@ -275,6 +287,16 @@ const totalDiscount = lineDiscountTotal + percentDiscountAmount
               style={{ width: '100%' }}
             />
             
+            {showScanner && (
+              <BarcodeScanner 
+                onScan={(text) => {
+                  setSearch(text);
+                  setShowScanner(false);
+                }} 
+                onClose={() => setShowScanner(false)} 
+              />
+            )}
+
             {showDropdown && products.length > 0 && (
               <div className="product-dropdown">
                 {products.map((p) => (

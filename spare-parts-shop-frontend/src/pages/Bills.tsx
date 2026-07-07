@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api/client'
 import type { Bill } from '../types'
+import { exportToPDF, exportToExcel } from '../utils/exportUtils'
 import './Bills.css'
 
 function formatCurrency(n: number) {
@@ -166,6 +167,32 @@ export default function Bills() {
               />
             </>
           )}
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => {
+              const headers = ['Invoice #', 'Customer', 'Date', 'Amount'];
+              const data = bills.map(b => [b.invoiceNumber, b.customer.name, formatDate(b.billDate), b.finalAmount]);
+              exportToPDF('Bills Report', headers, data, 'bills_report');
+            }}
+          >
+            Export PDF
+          </button>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => {
+              const data = bills.map(b => ({
+                'Invoice #': b.invoiceNumber,
+                'Customer': b.customer.name,
+                'Date': formatDate(b.billDate),
+                'Amount': b.finalAmount
+              }));
+              exportToExcel(data, 'bills_report');
+            }}
+          >
+            Export Excel
+          </button>
           <button
             type="button"
             className="btn btn-secondary"
