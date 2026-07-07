@@ -147,8 +147,25 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  token?: string
+  userId?: number
   username: string
   role: string
+  businessId?: number
+  branchId?: number
+  mustChangePassword?: boolean
+  features?: {
+    inventoryEnabled: boolean
+    billingEnabled: boolean
+    warrantyEnabled: boolean
+    emiEnabled: boolean
+    gstEnabled: boolean
+    customerPortalEnabled: boolean
+    reportsEnabled: boolean
+    whatsappNotificationsEnabled: boolean
+    smsNotificationsEnabled: boolean
+    multiUserSupportEnabled: boolean
+    employeeManagementEnabled: boolean
+  }
+  token?: string
   message: string
 }

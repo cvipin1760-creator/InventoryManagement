@@ -31,11 +31,32 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+    // Handle non-JSON responses gracefully
+    let errorMessage = 'An error occurred';
+    
+    if (error.response) {
+      if (error.response.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+      }
+      
+      // Try to get error message from response
+      if (typeof error.response.data === 'string') {
+        errorMessage = error.response.data;
+      } else if (error.response.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response.statusText) {
+        errorMessage = error.response.statusText;
+      }
+    } else if (error.request) {
+      errorMessage = 'No response from server. Please check if the backend is running.';
+    } else {
+      errorMessage = error.message || errorMessage;
     }
+    
+    // Attach the cleaned error message to the error object
+    error.userMessage = errorMessage;
     return Promise.reject(error);
   }
 );

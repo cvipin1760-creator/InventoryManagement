@@ -1,24 +1,24 @@
 class LoginResponse {
   final int? userId;
   final String? token;
-  final String username;
-  final String role;
+  final String? username;
+  final String? role;
   final int? businessId;
   final int? branchId;
-  final bool mustChangePassword;
+  final bool? mustChangePassword;
   final dynamic features;
-  final String message;
+  final String? message;
 
   LoginResponse({
     this.userId,
     this.token,
-    required this.username,
-    required this.role,
+    this.username,
+    this.role,
     this.businessId,
     this.branchId,
     this.mustChangePassword = false,
     this.features,
-    required this.message,
+    this.message,
   });
 
   factory LoginResponse.fromJson(Map<String, dynamic> json) {
@@ -27,13 +27,13 @@ class LoginResponse {
     return LoginResponse(
       userId: (json['userId'] as num?)?.toInt(),
       token: json['token'] as String?,
-      username: json['username'] as String? ?? '',
-      role: json['role'] as String? ?? '',
+      username: json['username'] as String?,
+      role: json['role'] as String?,
       businessId: (json['businessId'] as num?)?.toInt(),
       branchId: (json['branchId'] as num?)?.toInt(),
       mustChangePassword: json['mustChangePassword'] as bool? ?? false,
       features: json['features'],
-      message: json['message'] as String? ?? '',
+      message: json['message'] as String?,
     );
   }
 

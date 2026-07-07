@@ -17,10 +17,12 @@ export interface VerifyOtpCredentials {
 }
 
 export interface LoginResponse {
-  userId: number;
+  userId?: number;
   username: string;
   role: string;
   businessId?: number;
+  branchId?: number;
+  mustChangePassword?: boolean;
   features?: {
     inventoryEnabled: boolean;
     billingEnabled: boolean;
@@ -35,7 +37,6 @@ export interface LoginResponse {
     employeeManagementEnabled: boolean;
   };
   token?: string;
-  mustChangePassword?: boolean;
   message: string;
 }
 

@@ -26,6 +26,8 @@ mixin _$LoginResponseModel {
   String? get username => throw _privateConstructorUsedError;
   String? get role => throw _privateConstructorUsedError;
   int? get businessId => throw _privateConstructorUsedError;
+  int? get branchId => throw _privateConstructorUsedError;
+  bool? get mustChangePassword => throw _privateConstructorUsedError;
   FeaturePermissionsModel? get features => throw _privateConstructorUsedError;
   String? get message => throw _privateConstructorUsedError;
 
@@ -52,6 +54,8 @@ abstract class $LoginResponseModelCopyWith<$Res> {
     String? username,
     String? role,
     int? businessId,
+    int? branchId,
+    bool? mustChangePassword,
     FeaturePermissionsModel? features,
     String? message,
   });
@@ -79,6 +83,8 @@ class _$LoginResponseModelCopyWithImpl<$Res, $Val extends LoginResponseModel>
     Object? username = freezed,
     Object? role = freezed,
     Object? businessId = freezed,
+    Object? branchId = freezed,
+    Object? mustChangePassword = freezed,
     Object? features = freezed,
     Object? message = freezed,
   }) {
@@ -104,6 +110,14 @@ class _$LoginResponseModelCopyWithImpl<$Res, $Val extends LoginResponseModel>
                 ? _value.businessId
                 : businessId // ignore: cast_nullable_to_non_nullable
                       as int?,
+            branchId: freezed == branchId
+                ? _value.branchId
+                : branchId // ignore: cast_nullable_to_non_nullable
+                      as int?,
+            mustChangePassword: freezed == mustChangePassword
+                ? _value.mustChangePassword
+                : mustChangePassword // ignore: cast_nullable_to_non_nullable
+                      as bool?,
             features: freezed == features
                 ? _value.features
                 : features // ignore: cast_nullable_to_non_nullable
@@ -147,6 +161,8 @@ abstract class _$$LoginResponseModelImplCopyWith<$Res>
     String? username,
     String? role,
     int? businessId,
+    int? branchId,
+    bool? mustChangePassword,
     FeaturePermissionsModel? features,
     String? message,
   });
@@ -174,6 +190,8 @@ class __$$LoginResponseModelImplCopyWithImpl<$Res>
     Object? username = freezed,
     Object? role = freezed,
     Object? businessId = freezed,
+    Object? branchId = freezed,
+    Object? mustChangePassword = freezed,
     Object? features = freezed,
     Object? message = freezed,
   }) {
@@ -199,6 +217,14 @@ class __$$LoginResponseModelImplCopyWithImpl<$Res>
             ? _value.businessId
             : businessId // ignore: cast_nullable_to_non_nullable
                   as int?,
+        branchId: freezed == branchId
+            ? _value.branchId
+            : branchId // ignore: cast_nullable_to_non_nullable
+                  as int?,
+        mustChangePassword: freezed == mustChangePassword
+            ? _value.mustChangePassword
+            : mustChangePassword // ignore: cast_nullable_to_non_nullable
+                  as bool?,
         features: freezed == features
             ? _value.features
             : features // ignore: cast_nullable_to_non_nullable
@@ -221,6 +247,8 @@ class _$LoginResponseModelImpl implements _LoginResponseModel {
     this.username,
     this.role,
     this.businessId,
+    this.branchId,
+    this.mustChangePassword,
     this.features,
     this.message,
   });
@@ -239,13 +267,17 @@ class _$LoginResponseModelImpl implements _LoginResponseModel {
   @override
   final int? businessId;
   @override
+  final int? branchId;
+  @override
+  final bool? mustChangePassword;
+  @override
   final FeaturePermissionsModel? features;
   @override
   final String? message;
 
   @override
   String toString() {
-    return 'LoginResponseModel(userId: $userId, token: $token, username: $username, role: $role, businessId: $businessId, features: $features, message: $message)';
+    return 'LoginResponseModel(userId: $userId, token: $token, username: $username, role: $role, businessId: $businessId, branchId: $branchId, mustChangePassword: $mustChangePassword, features: $features, message: $message)';
   }
 
   @override
@@ -260,6 +292,10 @@ class _$LoginResponseModelImpl implements _LoginResponseModel {
             (identical(other.role, role) || other.role == role) &&
             (identical(other.businessId, businessId) ||
                 other.businessId == businessId) &&
+            (identical(other.branchId, branchId) ||
+                other.branchId == branchId) &&
+            (identical(other.mustChangePassword, mustChangePassword) ||
+                other.mustChangePassword == mustChangePassword) &&
             (identical(other.features, features) ||
                 other.features == features) &&
             (identical(other.message, message) || other.message == message));
@@ -274,6 +310,8 @@ class _$LoginResponseModelImpl implements _LoginResponseModel {
     username,
     role,
     businessId,
+    branchId,
+    mustChangePassword,
     features,
     message,
   );
@@ -302,6 +340,8 @@ abstract class _LoginResponseModel implements LoginResponseModel {
     final String? username,
     final String? role,
     final int? businessId,
+    final int? branchId,
+    final bool? mustChangePassword,
     final FeaturePermissionsModel? features,
     final String? message,
   }) = _$LoginResponseModelImpl;
@@ -319,6 +359,10 @@ abstract class _LoginResponseModel implements LoginResponseModel {
   String? get role;
   @override
   int? get businessId;
+  @override
+  int? get branchId;
+  @override
+  bool? get mustChangePassword;
   @override
   FeaturePermissionsModel? get features;
   @override

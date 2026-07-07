@@ -23,6 +23,8 @@ import Analytics from './pages/Analytics';
 import SendNotifications from './pages/SendNotifications';
 import Notifications from './pages/Notifications';
 import BillTemplates from './pages/BillTemplates';
+import Subscriptions from './pages/Subscriptions';
+import FeaturePermissions from './pages/FeaturePermissions';
 
 
 // Protected Route component
@@ -75,12 +77,12 @@ const App = () => {
         } />
         <Route path="subscriptions" element={
           <RoleBasedRoute allowedRoles={['SUPER_MANAGER']}>
-            <div className="p-4"><h1>Subscriptions</h1><p>Coming soon...</p></div>
+            <Subscriptions />
           </RoleBasedRoute>
         } />
         <Route path="permissions" element={
           <RoleBasedRoute allowedRoles={['SUPER_MANAGER']}>
-            <div className="p-4"><h1>Feature Permissions</h1><p>Coming soon...</p></div>
+            <FeaturePermissions />
           </RoleBasedRoute>
         } />
         <Route path="analytics" element={

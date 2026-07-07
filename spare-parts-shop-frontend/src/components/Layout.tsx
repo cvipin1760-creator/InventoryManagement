@@ -61,6 +61,22 @@ const Layout = () => {
     }
   }, [user]);
 
+  // Keep-alive ping to prevent backend
+  useEffect(() => {
+    if (!user) return;
+
+    const keepAliveInterval = setInterval(async () => {
+      try {
+        await fetch('/api');
+        console.log('Keep-alive ping sent to backend');
+      } catch (e) {
+        console.warn('Keep-alive ping failed:', e);
+      }
+    }, 4 * 60 * 1000); // Every 4 minutes
+
+    return () => clearInterval(keepAliveInterval);
+  }, [user]);
+
   const calculateDaysLeft = () => {
     if (!business || !business.subscriptionEndDate) return 0;
     const endDate = new Date(business.subscriptionEndDate);
@@ -102,6 +118,8 @@ const Layout = () => {
       '/analytics': 'Analytics',
       '/admins': 'Admins',
       '/businesses': 'Businesses',
+      '/subscriptions': 'Subscriptions',
+      '/permissions': 'Permissions',
       '/notifications': 'Notifications',
     };
     

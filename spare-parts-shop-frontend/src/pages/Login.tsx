@@ -62,6 +62,10 @@ const LoginPage = () => {
         setTempLoginData(data);
         setMustChangePassword(true);
       } else {
+        if (!data.userId) {
+          setError('Login failed: Missing user ID');
+          return;
+        }
         dispatch(setCredentials({
           user: {
             id: data.userId,
@@ -76,7 +80,7 @@ const LoginPage = () => {
       }
     },
     onError: (err: any) => {
-      setError(err.response?.data?.message || err.message || 'Login failed');
+      setError(err.userMessage || err.response?.data?.message || err.message || 'Login failed');
     },
   });
 
@@ -84,6 +88,10 @@ const LoginPage = () => {
     mutationFn: authApi.changePassword,
     onSuccess: () => {
       if (tempLoginData) {
+        if (!tempLoginData.userId) {
+          setChangePasswordError('Login failed: Missing user ID');
+          return;
+        }
         dispatch(setCredentials({
           user: {
             id: tempLoginData.userId,

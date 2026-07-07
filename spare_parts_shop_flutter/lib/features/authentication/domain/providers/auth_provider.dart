@@ -30,6 +30,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     final username = await _storage.read(key: 'username');
     final role = await _storage.read(key: 'role');
     final businessIdStr = await _storage.read(key: 'businessId');
+    final branchIdStr = await _storage.read(key: 'branchId');
     final featuresStr = await _storage.read(key: 'features');
 
     if (userStr != null) {
@@ -63,8 +64,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final response = await _dioClient.dio.post(
         '/auth/login',
         data: {
-          'username': username,
-          'password': password,
+          'username': username.trim(),
+          'password': password.trim(),
         },
       );
 
@@ -93,6 +94,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
       await _storage.write(key: 'role', value: user.role);
       if (user.businessId != null) {
         await _storage.write(key: 'businessId', value: user.businessId.toString());
+      }
+      if (loginResponse.branchId != null) {
+        await _storage.write(key: 'branchId', value: loginResponse.branchId.toString());
       }
       if (loginResponse.features != null) {
         await _storage.write(
@@ -123,6 +127,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       }
       state = AuthError(errorMessage);
     } catch (e) {
+      print('Login Error: $e');
       state = AuthError('An unexpected error occurred. Please try again.');
     }
   }
@@ -133,6 +138,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     await _storage.delete(key: 'username');
     await _storage.delete(key: 'role');
     await _storage.delete(key: 'businessId');
+    await _storage.delete(key: 'branchId');
     await _storage.delete(key: 'features');
     state = AuthUnauthenticated();
   }

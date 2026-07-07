@@ -28,6 +28,8 @@ import {
   Receipt,
   Activity,
   Users2,
+  Shield,
+  CreditCard as CreditCardIcon,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppSelector } from '../store/hooks';
@@ -73,6 +75,8 @@ const Sidebar = ({
     if (user?.role === 'SUPER_MANAGER') {
       items.push({ label: 'Admins', path: '/admins', icon: <UserPlus size={20} /> });
       items.push({ label: 'Businesses', path: '/businesses', icon: <PackageOpen size={20} /> });
+      items.push({ label: 'Subscriptions', path: '/subscriptions', icon: <CreditCardIcon size={20} /> });
+      items.push({ label: 'Permissions', path: '/permissions', icon: <Shield size={20} /> });
       items.push({ label: 'Analytics', path: '/analytics', icon: <Activity size={20} /> });
     }
 

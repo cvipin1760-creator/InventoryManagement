@@ -49,4 +49,13 @@ public class Business {
 
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @PrePersist
+    @PreUpdate
+    public void prePersistUpdate() {
+        // Convert empty string to null for gstNumber to avoid unique constraint violations
+        if (gstNumber != null && gstNumber.trim().isEmpty()) {
+            gstNumber = null;
+        }
+    }
 }

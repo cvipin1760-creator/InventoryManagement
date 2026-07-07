@@ -25,6 +25,11 @@ class DioClient {
             if (token != null && token.isNotEmpty) {
               options.headers['Authorization'] = 'Bearer $token';
             }
+            // Add Branch ID to Headers
+            final branchId = await _storage.read(key: 'branchId');
+            if (branchId != null && branchId.isNotEmpty) {
+              options.headers['X-Branch-ID'] = branchId;
+            }
             options.headers['Content-Type'] = 'application/json';
             return handler.next(options);
           },
