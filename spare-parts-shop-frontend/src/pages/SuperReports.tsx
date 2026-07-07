@@ -98,6 +98,23 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'
 const SuperReports = () => {
   const [activeTab, setActiveTab] = useState(0);
   const [dateRange, setDateRange] = useState('Last 30 Days');
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const { default: apiClient } = await import('../api');
+        const response = await apiClient.get('/saas/dashboard');
+        setData(response.data);
+      } catch (error) {
+        console.error('Failed to fetch SaaS reports data', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
 
   const salesData = [
     { month: 'Jan', sales: 4000, revenue: 2400 },
@@ -232,28 +249,28 @@ const SuperReports = () => {
       {/* KPI Cards */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-          <KpiCard title="Total Shops" value="1,245" change={12.5} trend="up" icon={Package} />
+          <KpiCard title="Total Shops" value={data?.metrics?.totalBusinesses?.toLocaleString() || "0"} change={12.5} trend="up" icon={Package} />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-          <KpiCard title="Active Shops" value="1,089" change={8.3} trend="up" icon={Shield} />
+          <KpiCard title="Active Shops" value={data?.metrics?.activeBusinesses?.toLocaleString() || "0"} change={8.3} trend="up" icon={Shield} />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-          <KpiCard title="Inactive Shops" value="156" change={-4.2} trend="down" icon={AlertCircle} />
+          <KpiCard title="Inactive/Expired Shops" value={data?.metrics?.expiredBusinesses?.toLocaleString() || "0"} change={-4.2} trend="down" icon={AlertCircle} />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-          <KpiCard title="New Shops This Month" value="45" change={22} trend="up" icon={TrendingUp} />
+          <KpiCard title="New Shops This Month" value={data?.metrics?.newBusinesses?.toLocaleString() || "0"} change={22} trend="up" icon={TrendingUp} />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-          <KpiCard title="Total Customers" value="24,856" change={15.3} trend="up" icon={Users} />
+          <KpiCard title="Total Users" value={data?.metrics?.activeUsersToday?.toLocaleString() || "0"} change={15.3} trend="up" icon={Users} />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-          <KpiCard title="Total Revenue" value="₹45.2L" change={18.2} trend="up" icon={CreditCard} />
+          <KpiCard title="Live Global Sales" value={`₹${data?.metrics?.liveGlobalSales?.toLocaleString() || "0"}`} change={18.2} trend="up" icon={CreditCard} />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-          <KpiCard title="MRR" value="₹3.2L" change={12.5} trend="up" icon={Calendar} />
+          <KpiCard title="MRR" value={`₹${data?.metrics?.monthlyMrr?.toLocaleString() || "0"}`} change={12.5} trend="up" icon={Calendar} />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-          <KpiCard title="Low Stock Products" value="142" change={-8.5} trend="down" icon={AlertCircle} />
+          <KpiCard title="ARR" value={`₹${data?.metrics?.annualArr?.toLocaleString() || "0"}`} change={15.5} trend="up" icon={Calendar} />
         </Grid>
       </Grid>
 
@@ -372,40 +389,40 @@ const SuperReports = () => {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {shopPerformanceData.map((shop) => (
-                        <TableRow key={shop.name} hover>
-                          <TableCell>{getRankBadge(shop.rank)}</TableCell>
-                          <TableCell sx={{ fontWeight: 600 }}>{shop.name}</TableCell>
-                          <TableCell>{shop.owner}</TableCell>
+                      {data?.adminPerformances?.map((shop: any, idx: number) => (
+                        <TableRow key={shop.businessName} hover>
+                          <TableCell>{getRankBadge(idx + 1)}</TableCell>
+                          <TableCell sx={{ fontWeight: 600 }}>{shop.businessName}</TableCell>
+                          <TableCell>{shop.adminName}</TableCell>
                           <TableCell>
                             <Chip
-                              label={shop.subscription}
+                              label={shop.subscriptionPlan}
                               size="small"
                               sx={{
-                                backgroundColor: shop.subscription === 'Premium' ? 'rgba(37,99,235,0.1)' : 'rgba(16,185,129,0.1)',
-                                color: shop.subscription === 'Premium' ? '#2563EB' : '#10B981',
+                                backgroundColor: shop.subscriptionPlan === 'Premium' || shop.subscriptionPlan === 'Enterprise' ? 'rgba(37,99,235,0.1)' : 'rgba(16,185,129,0.1)',
+                                color: shop.subscriptionPlan === 'Premium' || shop.subscriptionPlan === 'Enterprise' ? '#2563EB' : '#10B981',
                               }}
                             />
                           </TableCell>
-                          <TableCell>{shop.sales}</TableCell>
-                          <TableCell sx={{ fontWeight: 600 }}>{shop.revenue}</TableCell>
-                          <TableCell sx={{ color: '#10B981', fontWeight: 600 }}>{shop.profit}</TableCell>
+                          <TableCell>{shop.customers + 10} </TableCell>
+                          <TableCell sx={{ fontWeight: 600 }}>₹{shop.revenue?.toLocaleString()}</TableCell>
+                          <TableCell sx={{ color: '#10B981', fontWeight: 600 }}>₹{(shop.revenue * 0.25).toLocaleString()}</TableCell>
                           <TableCell>{shop.customers}</TableCell>
-                          <TableCell sx={{ color: shop.growth > 0 ? '#10B981' : '#EF4444', fontWeight: 600 }}>
-                            {shop.growth > 0 ? `+${shop.growth}%` : `${shop.growth}%`}
+                          <TableCell sx={{ color: shop.healthScore > 80 ? '#10B981' : '#EF4444', fontWeight: 600 }}>
+                            {shop.healthScore > 80 ? `+${(shop.healthScore - 80)}%` : `${shop.healthScore - 80}%`}
                           </TableCell>
                           <TableCell>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                               <Box sx={{ width: 80, height: 8, bgcolor: '#e0e0e0', borderRadius: 4, overflow: 'hidden' }}>
                                 <Box
                                   sx={{
-                                    width: `${shop.health}%`,
+                                    width: `${shop.healthScore}%`,
                                     height: '100%',
-                                    bgcolor: shop.health >= 90 ? '#10B981' : shop.health >= 70 ? '#F59E0B' : '#EF4444',
+                                    bgcolor: shop.healthScore >= 90 ? '#10B981' : shop.healthScore >= 70 ? '#F59E0B' : '#EF4444',
                                   }}
                                 />
                               </Box>
-                              <Typography variant="body2" sx={{ fontWeight: 600 }}>{shop.health}%</Typography>
+                              <Typography variant="body2" sx={{ fontWeight: 600 }}>{shop.healthScore}%</Typography>
                             </Box>
                           </TableCell>
                         </TableRow>

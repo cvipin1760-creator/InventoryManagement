@@ -41,6 +41,29 @@ import {
   Cell,
 } from 'recharts';
 import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import apiClient from '../../api';
+import { CircularProgress } from '@mui/material';
+
+interface DashboardStats {
+  todaySales: number;
+  weeklySales: number;
+  monthlySales: number;
+  todayBillsCount: number;
+  lowStockCount: number;
+  totalProducts: number;
+  
+  outOfStockCount: number;
+  deadStockCount: number;
+  fastMovingProductsCount: number;
+  netProfit: number;
+  gstCollected: number;
+  
+  totalCustomers: number;
+  newCustomers: number;
+  activeCustomers: number;
+  customerGrowthPercent: number;
+}
 
 // Reusable KPI Card
 const KPICard = ({
@@ -93,6 +116,27 @@ const customerData = [
 const COLORS = ['#2563EB', '#10B981', '#F59E0B', '#EF4444'];
 
 const AdminDashboard = () => {
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await apiClient.get('/bills/dashboard');
+        setStats(response.data);
+      } catch (error) {
+        console.error('Failed to fetch dashboard stats', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStats();
+  }, []);
+
+  if (loading) {
+    return <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><CircularProgress /></Box>;
+  }
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
       
@@ -111,16 +155,16 @@ const AdminDashboard = () => {
         <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>Daily Performance Tracker</Typography>
         <Grid container spacing={3}>
           {/* Revenue */}
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Revenue Today" value="₹12,450" icon={<DollarSign />} trend="up" trendValue="+24%" subtitle="vs yesterday" color="success" /></Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Net Profit" value="₹4,200" icon={<TrendingUp />} trend="up" trendValue="+12%" subtitle="Today" color="primary" /></Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Revenue Today" value={`₹${stats?.todaySales?.toLocaleString() || 0}`} icon={<DollarSign />} trend="up" trendValue="+24%" subtitle="vs yesterday" color="success" /></Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Net Profit" value={`₹${stats?.netProfit?.toLocaleString() || 0}`} icon={<TrendingUp />} trend="up" trendValue="+12%" subtitle="Today" color="primary" /></Grid>
           {/* Customer */}
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Total Customers" value="854" icon={<Users />} trend="up" trendValue="+5%" subtitle="All time" color="info" /></Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Repeat Customers" value="68%" icon={<RefreshCcw />} trend="up" trendValue="+2%" subtitle="This month" color="warning" /></Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Total Customers" value={stats?.totalCustomers?.toString() || "0"} icon={<Users />} trend="up" trendValue={`+${stats?.customerGrowthPercent || 0}%`} subtitle="All time" color="info" /></Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="New Customers" value={stats?.newCustomers?.toString() || "0"} icon={<RefreshCcw />} trend="up" trendValue="+2%" subtitle="This month" color="warning" /></Grid>
           {/* Inventory */}
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Total Products" value="1,450" icon={<PackageOpen />} trend="up" trendValue="+10" subtitle="Added recently" color="primary" /></Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Low Stock" value="24" icon={<AlertCircle />} trend="down" trendValue="-3" subtitle="Requires attention" color="warning" /></Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Out of Stock" value="8" icon={<Activity />} trend="down" trendValue="+2" subtitle="Lost revenue" color="error" /></Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Inventory Value" value="₹14.2L" icon={<DollarSign />} trend="up" trendValue="+5%" subtitle="Current worth" color="success" /></Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Total Products" value={stats?.totalProducts?.toString() || "0"} icon={<PackageOpen />} trend="up" trendValue="+10" subtitle="Added recently" color="primary" /></Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Low Stock" value={stats?.lowStockCount?.toString() || "0"} icon={<AlertCircle />} trend="down" trendValue="-3" subtitle="Requires attention" color="warning" /></Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Out of Stock" value={stats?.outOfStockCount?.toString() || "0"} icon={<Activity />} trend="down" trendValue="+2" subtitle="Lost revenue" color="error" /></Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Dead Stock" value={stats?.deadStockCount?.toString() || "0"} icon={<PackageOpen />} trend="up" trendValue="+5%" subtitle="Requires attention" color="success" /></Grid>
         </Grid>
       </Box>
 

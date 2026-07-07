@@ -48,6 +48,43 @@ import {
 } from 'recharts';
 import { motion } from 'framer-motion';
 import ShopLocationsMap from '../../components/ShopLocationsMap';
+import { useEffect, useState } from 'react';
+import apiClient from '../../api';
+
+interface SaaSData {
+  metrics: {
+    liveGlobalSales: number;
+    businessGrowth: number;
+    activeUsersToday: number;
+    totalBusinesses: number;
+    activeBusinesses: number;
+    newBusinesses: number;
+    trialBusinesses: number;
+    premiumBusinesses: number;
+    expiredBusinesses: number;
+    monthlyMrr: number;
+    annualArr: number;
+  };
+  platformHealth: {
+    serverStatus: string;
+    databaseStatus: string;
+    apiResponseTimeMs: number;
+    storageUsagePercent: number;
+    backupStatus: string;
+    emailServiceStatus: string;
+    whatsappServiceStatus: string;
+    paymentGatewayStatus: string;
+  };
+  adminPerformances: {
+    adminName: string;
+    businessName: string;
+    revenue: number;
+    customers: number;
+    subscriptionPlan: string;
+    healthScore: number;
+    status: string;
+  }[];
+}
 
 // Reusable KPI Card
 const KPICard = ({
@@ -84,6 +121,30 @@ const KPICard = ({
 );
 
 const SuperAdminDashboard = () => {
+  const [data, setData] = useState<SaaSData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await apiClient.get('/saas/dashboard');
+        setData(response.data);
+      } catch (error) {
+        console.error('Failed to fetch SaaS dashboard data', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return <LinearProgress />;
+  }
+
+  const metrics = data?.metrics;
+  const health = data?.platformHealth;
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
       
@@ -91,9 +152,9 @@ const SuperAdminDashboard = () => {
       <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', backgroundColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)', p: 2, borderRadius: 3, border: '1px solid rgba(37, 99, 235, 0.1)' }}>
         <Zap size={24} color="#2563EB" />
         <Typography variant="h6" sx={{ fontWeight: 700, color: '#1E40AF', display: 'flex', gap: 4 }}>
-          <span>🔥 Live Global Sales: ₹1,42,50,000</span>
-          <span>🚀 Business Growth: +24% YoY</span>
-          <span>🌟 Active Users Today: 1,420</span>
+          <span>🔥 Live Global Sales: ₹{metrics?.liveGlobalSales.toLocaleString()}</span>
+          <span>🚀 Business Growth: +{metrics?.businessGrowth}% YoY</span>
+          <span>🌟 Active Users Today: {metrics?.activeUsersToday.toLocaleString()}</span>
         </Typography>
       </Box>
 
@@ -101,14 +162,14 @@ const SuperAdminDashboard = () => {
       <Box>
         <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>Business Metrics</Typography>
         <Grid container spacing={3}>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Total Businesses" value="1,248" icon={<PackageOpen />} trend="up" trendValue="+12%" subtitle="All time registered" color="primary" /></Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Active Businesses" value="1,102" icon={<Activity />} trend="up" trendValue="+5%" subtitle="Logged in this week" color="success" /></Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="New Businesses" value="45" icon={<TrendingUp />} trend="up" trendValue="+18%" subtitle="This month" color="info" /></Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Trial Businesses" value="124" icon={<DollarSign />} trend="down" trendValue="-2%" subtitle="Ending soon" color="warning" /></Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Premium Businesses" value="854" icon={<ShieldCheck />} trend="up" trendValue="+8%" subtitle="Paid subscriptions" color="success" /></Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Expired Businesses" value="25" icon={<TrendingDown />} trend="up" trendValue="+1%" subtitle="Needs follow-up" color="error" /></Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Monthly MRR" value="₹85.2L" icon={<DollarSign />} trend="up" trendValue="+15%" subtitle="Current month" color="primary" /></Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Annual ARR" value="₹10.2Cr" icon={<TrendingUp />} trend="up" trendValue="+22%" subtitle="Projected" color="success" /></Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Total Businesses" value={metrics?.totalBusinesses.toString() || "0"} icon={<PackageOpen />} trend="up" trendValue="+12%" subtitle="All time registered" color="primary" /></Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Active Businesses" value={metrics?.activeBusinesses.toString() || "0"} icon={<Activity />} trend="up" trendValue="+5%" subtitle="Logged in this week" color="success" /></Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="New Businesses" value={metrics?.newBusinesses.toString() || "0"} icon={<TrendingUp />} trend="up" trendValue="+18%" subtitle="This month" color="info" /></Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Trial Businesses" value={metrics?.trialBusinesses.toString() || "0"} icon={<DollarSign />} trend="down" trendValue="-2%" subtitle="Ending soon" color="warning" /></Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Premium Businesses" value={metrics?.premiumBusinesses.toString() || "0"} icon={<ShieldCheck />} trend="up" trendValue="+8%" subtitle="Paid subscriptions" color="success" /></Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Expired Businesses" value={metrics?.expiredBusinesses.toString() || "0"} icon={<TrendingDown />} trend="up" trendValue="+1%" subtitle="Needs follow-up" color="error" /></Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Monthly MRR" value={`₹${metrics?.monthlyMrr.toLocaleString()}`} icon={<DollarSign />} trend="up" trendValue="+15%" subtitle="Current month" color="primary" /></Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Annual ARR" value={`₹${metrics?.annualArr.toLocaleString()}`} icon={<TrendingUp />} trend="up" trendValue="+22%" subtitle="Projected" color="success" /></Grid>
         </Grid>
       </Box>
 
@@ -120,14 +181,14 @@ const SuperAdminDashboard = () => {
               <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>Platform Health ────────────────────────────</Typography>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
                 {[
-                  { name: 'Server Status', icon: <Server size={20}/>, status: 'Operational', color: '#10B981', uptime: '99.99%' },
-                  { name: 'Database', icon: <Database size={20}/>, status: 'Healthy', color: '#10B981', uptime: '12ms ping' },
-                  { name: 'API Response Time', icon: <Globe size={20}/>, status: 'Fast', color: '#10B981', uptime: '45ms avg' },
-                  { name: 'Storage Usage', icon: <HardDrive size={20}/>, status: 'Warning', color: '#F59E0B', uptime: '82% Full' },
-                  { name: 'Backup Completed', icon: <ShieldCheck size={20}/>, status: 'Success', color: '#10B981', uptime: '2 hrs ago' },
-                  { name: 'Email Service', icon: <Mail size={20}/>, status: 'Operational', color: '#10B981', uptime: '100%' },
-                  { name: 'WhatsApp Service', icon: <MessageSquare size={20}/>, status: 'Operational', color: '#10B981', uptime: '100%' },
-                  { name: 'Payment Gateway', icon: <CreditCard size={20}/>, status: 'Operational', color: '#10B981', uptime: '100%' },
+                  { name: 'Server Status', icon: <Server size={20}/>, status: health?.serverStatus || 'Operational', color: '#10B981', uptime: '99.99%' },
+                  { name: 'Database', icon: <Database size={20}/>, status: health?.databaseStatus || 'Healthy', color: '#10B981', uptime: 'Live' },
+                  { name: 'API Response Time', icon: <Globe size={20}/>, status: 'Fast', color: '#10B981', uptime: `${health?.apiResponseTimeMs}ms avg` },
+                  { name: 'Storage Usage', icon: <HardDrive size={20}/>, status: (health?.storageUsagePercent || 0) > 80 ? 'Warning' : 'Healthy', color: (health?.storageUsagePercent || 0) > 80 ? '#F59E0B' : '#10B981', uptime: `${health?.storageUsagePercent.toFixed(1)}% Full` },
+                  { name: 'Backup Completed', icon: <ShieldCheck size={20}/>, status: 'Success', color: '#10B981', uptime: health?.backupStatus },
+                  { name: 'Email Service', icon: <Mail size={20}/>, status: health?.emailServiceStatus || 'Operational', color: '#10B981', uptime: '100%' },
+                  { name: 'WhatsApp Service', icon: <MessageSquare size={20}/>, status: health?.whatsappServiceStatus || 'Operational', color: '#10B981', uptime: '100%' },
+                  { name: 'Payment Gateway', icon: <CreditCard size={20}/>, status: health?.paymentGatewayStatus || 'Operational', color: '#10B981', uptime: '100%' },
                 ].map((item, i) => (
                   <Box key={i} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.5, borderRadius: 2, bgcolor: 'rgba(0,0,0,0.02)' }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -199,28 +260,24 @@ const SuperAdminDashboard = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {[
-                  { name: "John Doe", biz: "AutoParts Pro", rev: "₹12.5L", cust: 450, sub: "Premium", health: 95, status: "Active" },
-                  { name: "Jane Smith", biz: "Engine Hub", rev: "₹10.2L", cust: 320, sub: "Enterprise", health: 88, status: "Active" },
-                  { name: "Amit Patel", biz: "Wheels & Co", rev: "₹4.1L", cust: 150, sub: "Basic", health: 65, status: "Warning" },
-                ].map((row, i) => (
+                {data?.adminPerformances?.map((row, i) => (
                   <TableRow key={i} hover>
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Avatar sx={{ width: 32, height: 32 }}>{row.name[0]}</Avatar>
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>{row.name}</Typography>
+                        <Avatar sx={{ width: 32, height: 32 }}>{row.adminName[0]}</Avatar>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>{row.adminName}</Typography>
                       </Box>
                     </TableCell>
-                    <TableCell>{row.biz}</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>{row.rev}</TableCell>
-                    <TableCell>{row.cust}</TableCell>
-                    <TableCell><Chip label={row.sub} size="small" color={row.sub === 'Premium' || row.sub === 'Enterprise' ? 'primary' : 'default'} /></TableCell>
+                    <TableCell>{row.businessName}</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>₹{row.revenue.toLocaleString()}</TableCell>
+                    <TableCell>{row.customers}</TableCell>
+                    <TableCell><Chip label={row.subscriptionPlan} size="small" color={row.subscriptionPlan === 'Premium' || row.subscriptionPlan === 'Enterprise' ? 'primary' : 'default'} /></TableCell>
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Box sx={{ width: '100%', mr: 1 }}>
-                          <LinearProgress variant="determinate" value={row.health} color={row.health > 80 ? 'success' : 'warning'} sx={{ height: 6, borderRadius: 3 }} />
+                          <LinearProgress variant="determinate" value={row.healthScore} color={row.healthScore > 80 ? 'success' : 'warning'} sx={{ height: 6, borderRadius: 3 }} />
                         </Box>
-                        <Typography variant="caption">{row.health}%</Typography>
+                        <Typography variant="caption">{row.healthScore}%</Typography>
                       </Box>
                     </TableCell>
                     <TableCell><Chip label={row.status} size="small" color={row.status === 'Active' ? 'success' : 'warning'} /></TableCell>
