@@ -61,6 +61,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> login(String username, String password) async {
     state = AuthLoading();
     try {
+      print('========== LOGIN ATTEMPT ==========');
+      print('Username: ${username.trim()}');
+      
       final response = await _dioClient.dio.post(
         '/auth/login',
         data: {
@@ -68,7 +71,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
           'password': password.trim(),
         },
       );
-
+      
+      print('Login Response Type: ${response.data.runtimeType}');
+      print('Login Response Data: ${response.data}');
+      
       final loginResponse = LoginResponseModel.fromJson(response.data);
       
       // Create UserModel from the loginResponse

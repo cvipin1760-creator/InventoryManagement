@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -12,13 +13,17 @@ class DioClient {
       ..options.baseUrl = AppConstants.baseUrl
       ..options.connectTimeout = AppConstants.apiTimeout
       ..options.receiveTimeout = AppConstants.apiTimeout
+      ..options.responseType = ResponseType.plain
       ..interceptors.add(
         InterceptorsWrapper(
           onRequest: (options, handler) async {
             if (kDebugMode) {
-              print('Request: ${options.method} ${options.uri}');
-              print('Headers: ${options.headers}');
-              print('Data: ${options.data}');
+              print('========== API REQUEST ==========');
+              print('Method: ${options.method}');
+              print('URL: ${options.uri}');
+              print('Headers: ${jsonEncode(options.headers)}');
+              print('Data: ${jsonEncode(options.data)}');
+              print('=================================');
             }
             // Add Token to Headers
             final token = await _storage.read(key: AppConstants.storageKeyToken);
@@ -35,21 +40,39 @@ class DioClient {
           },
           onResponse: (response, handler) {
             if (kDebugMode) {
-              print('Response: ${response.statusCode}');
-              print('Data: ${response.data}');
+              print('========== API RESPONSE ==========');
+              print('Status Code: ${response.statusCode}');
+              print('Raw Response: ${response.data}');
+              print('Headers: ${response.headers}');
+              print('==================================');
+            }
+            // Try to parse as JSON
+            try {
+              final jsonData = jsonDecode(response.data);
+              response.data = jsonData;
+              if (kDebugMode) {
+                print('Parsed JSON: $jsonData');
+              }
+            } catch (e) {
+              if (kDebugMode) {
+                print('Failed to parse JSON: $e');
+                print('Response was not valid JSON!');
+              }
             }
             return handler.next(response);
           },
           onError: (error, handler) async {
             if (kDebugMode) {
-              print('Error: ${error.type}');
-              print('Error Message: ${error.message}');
+              print('========== API ERROR ==========');
+              print('Type: ${error.type}');
+              print('Message: ${error.message}');
               print('Stack Trace: ${error.stackTrace}');
               if (error.response != null) {
                 print('Status Code: ${error.response?.statusCode}');
-                print('Response Data: ${error.response?.data}');
-                print('Response Headers: ${error.response?.headers}');
+                print('Raw Error Response: ${error.response?.data}');
+                print('Error Headers: ${error.response?.headers}');
               }
+              print('================================');
             }
             return handler.next(error);
           },

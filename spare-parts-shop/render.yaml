@@ -5,7 +5,7 @@ services:
     plan: free
     rootDir: spare-parts-shop
     buildCommand: ./mvnw clean package -DskipTests
-    startCommand: java -jar target/spare-parts-shop-1.0.0.jar
+    startCommand: java -jar target/stockpilot-1.0.0.jar
     envVars:
       - key: SPRING_DATASOURCE_URL
         fromDatabase:
