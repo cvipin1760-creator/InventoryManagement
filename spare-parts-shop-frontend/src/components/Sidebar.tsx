@@ -64,7 +64,7 @@ const Sidebar = ({
 
     if (user?.role === 'SUPER_MANAGER') {
       items.push({ label: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} />, roles: ['SUPER_MANAGER'] });
-      items.push({ label: 'Reports', path: '/super-reports', icon: <FileSpreadsheet size={20} />, roles: ['SUPER_MANAGER'] });
+      items.push({ label: 'Reports', path: '/reports', icon: <FileSpreadsheet size={20} />, roles: ['SUPER_MANAGER'] });
       items.push({ label: 'Users', path: '/users', icon: <Users size={20} />, roles: ['SUPER_MANAGER'] });
       items.push({ label: 'Admins', path: '/admins', icon: <UserPlus size={20} />, roles: ['SUPER_MANAGER'] });
       items.push({ label: 'Businesses', path: '/businesses', icon: <PackageOpen size={20} />, roles: ['SUPER_MANAGER'] });

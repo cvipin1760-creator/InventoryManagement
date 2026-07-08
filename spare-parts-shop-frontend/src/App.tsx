@@ -42,7 +42,13 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 // Role-Based Route component
 const RoleBasedRoute = ({ children, allowedRoles }: { children: React.ReactNode; allowedRoles: string[] }) => {
   const user = useAppSelector(selectCurrentUser);
-  if (!user || !allowedRoles.includes(user.role)) {
+  if (!user) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  if (user.role === 'SUPER_MANAGER') {
+    return <>{children}</>;
+  }
+  if (!allowedRoles.includes(user.role)) {
     return <Navigate to="/dashboard" replace />;
   }
   return <>{children}</>;
