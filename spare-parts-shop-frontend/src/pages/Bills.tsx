@@ -253,7 +253,7 @@ export default function Bills() {
                       <button
                         type="button"
                         className="btn btn-ghost btn-sm"
-                        onClick={() => handleSendWhatsApp(b.id, b.customer.phone)}
+                        onClick={() => handleSendWhatsApp(b)}
                         disabled={whatsAppLoading === b.id}
                       >
                         {whatsAppLoading === b.id ? '...' : 'WhatsApp'}

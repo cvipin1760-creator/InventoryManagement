@@ -1,6 +1,6 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 
 export const exportToPDF = (
   title: string,
@@ -29,13 +29,33 @@ export const exportToPDF = (
   doc.save(`${filename}.pdf`);
 };
 
-export const exportToExcel = (
+export const exportToExcel = async (
   data: any[],
   filename: string
 ) => {
-  const worksheet = XLSX.utils.json_to_sheet(data);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+  if (!data || data.length === 0) return;
   
-  XLSX.writeFile(workbook, `${filename}.xlsx`);
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet('Sheet1');
+  
+  const firstItem = data[0];
+  worksheet.columns = Object.keys(firstItem).map(key => ({
+    header: key.charAt(0).toUpperCase() + key.slice(1),
+    key: key,
+    width: 20
+  }));
+  
+  data.forEach(item => {
+    worksheet.addRow(item);
+  });
+  
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `${filename}.xlsx`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 };
