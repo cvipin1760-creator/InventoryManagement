@@ -1,6 +1,5 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import ExcelJS from 'exceljs';
 
 export const exportToPDF = (
   title: string,
@@ -29,32 +28,36 @@ export const exportToPDF = (
   doc.save(`${filename}.pdf`);
 };
 
-export const exportToExcel = async (
+export const exportToExcel = (
   data: any[],
   filename: string
 ) => {
   if (!data || data.length === 0) return;
   
-  const workbook = new ExcelJS.Workbook();
-  const worksheet = workbook.addWorksheet('Sheet1');
+  const headers = Object.keys(data[0]);
+  const csvContent = [
+    headers.join(','),
+    ...data.map(row => 
+      headers.map(fieldName => {
+        let value = row[fieldName];
+        if (value === null || value === undefined) value = '';
+        // Escape quotes
+        if (typeof value === 'string') {
+          value = value.replace(/"/g, '""');
+          if (value.includes(',') || value.includes('\\n') || value.includes('"')) {
+            value = `"${value}"`;
+          }
+        }
+        return value;
+      }).join(',')
+    )
+  ].join('\n');
   
-  const firstItem = data[0];
-  worksheet.columns = Object.keys(firstItem).map(key => ({
-    header: key.charAt(0).toUpperCase() + key.slice(1),
-    key: key,
-    width: 20
-  }));
-  
-  data.forEach(item => {
-    worksheet.addRow(item);
-  });
-  
-  const buffer = await workbook.xlsx.writeBuffer();
-  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `${filename}.xlsx`;
+  link.download = `${filename}.csv`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
