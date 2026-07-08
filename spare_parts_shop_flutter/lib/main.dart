@@ -14,8 +14,11 @@ import 'package:stock_pilot/screens/products_screen.dart';
 import 'package:stock_pilot/screens/purchases_screen.dart';
 import 'package:stock_pilot/screens/register_screen.dart';
 import 'package:stock_pilot/screens/suppliers_screen.dart';
+import 'package:stock_pilot/services/api_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await ApiService.loadBaseUrl();
   runApp(const MyApp());
 }
 

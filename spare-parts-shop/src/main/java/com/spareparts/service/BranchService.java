@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import com.spareparts.aspect.EnforceUsageLimit;
+import com.spareparts.aspect.UsageLimitType;
 
 @Service
 public class BranchService {
@@ -36,6 +38,7 @@ public class BranchService {
         return branch;
     }
 
+    @EnforceUsageLimit(UsageLimitType.BRANCHES)
     public Branch createBranch(Branch branch) {
         Long businessId = TenantContext.getBusinessId();
         if (businessId == null) {

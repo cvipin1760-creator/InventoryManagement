@@ -134,4 +134,36 @@ public class SuperManagerController {
     public Business toggleSubscriptionStatus(@PathVariable Long id, @RequestBody Map<String, Boolean> body) {
         return businessService.toggleSubscriptionStatus(id, body.get("isActive"));
     }
+
+    // ==================== Feature Permissions ====================
+    @GetMapping("/businesses/{id}/features")
+    public com.spareparts.model.FeaturePermissions getFeaturePermissions(@PathVariable Long id) {
+        return featurePermissionsRepository.findByBusinessId(id)
+                .orElseThrow(() -> new RuntimeException("Feature permissions not found for business"));
+    }
+
+    @PutMapping("/businesses/{id}/features")
+    public com.spareparts.model.FeaturePermissions updateFeaturePermissions(@PathVariable Long id, @RequestBody com.spareparts.model.FeaturePermissions features) {
+        com.spareparts.model.FeaturePermissions existing = featurePermissionsRepository.findByBusinessId(id)
+                .orElseThrow(() -> new RuntimeException("Feature permissions not found for business"));
+        
+        existing.setInventoryEnabled(features.getInventoryEnabled());
+        existing.setBillingEnabled(features.getBillingEnabled());
+        existing.setWarrantyEnabled(features.getWarrantyEnabled());
+        existing.setEmiEnabled(features.getEmiEnabled());
+        existing.setGstEnabled(features.getGstEnabled());
+        existing.setCustomerPortalEnabled(features.getCustomerPortalEnabled());
+        existing.setReportsEnabled(features.getReportsEnabled());
+        existing.setWhatsappNotificationsEnabled(features.getWhatsappNotificationsEnabled());
+        existing.setSmsNotificationsEnabled(features.getSmsNotificationsEnabled());
+        existing.setMultiUserSupportEnabled(features.getMultiUserSupportEnabled());
+        existing.setEmployeeManagementEnabled(features.getEmployeeManagementEnabled());
+        existing.setMultiBranchEnabled(features.getMultiBranchEnabled());
+        existing.setWebSocketsEnabled(features.getWebSocketsEnabled());
+        existing.setAiAnalyticsEnabled(features.getAiAnalyticsEnabled());
+        existing.setAccountingExportEnabled(features.getAccountingExportEnabled());
+        existing.setMarketingEnabled(features.getMarketingEnabled());
+        
+        return featurePermissionsRepository.save(existing);
+    }
 }

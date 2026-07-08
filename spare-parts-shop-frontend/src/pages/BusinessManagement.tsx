@@ -20,7 +20,8 @@ import {
   Snackbar,
   Alert,
 } from '@mui/material';
-import { Edit, Delete, Add, Refresh } from '@mui/icons-material';
+import { Edit, Delete, Add, Refresh, Settings as SettingsIcon } from '@mui/icons-material';
+import { Shield } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 // Types
@@ -47,6 +48,27 @@ const BusinessManagement: React.FC = () => {
     contactNumber: '',
     email: '',
     businessType: '',
+  });
+
+  const [openFeatureDialog, setOpenFeatureDialog] = useState(false);
+  const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
+  const [featureData, setFeatureData] = useState({
+    inventoryEnabled: true,
+    billingEnabled: true,
+    warrantyEnabled: false,
+    emiEnabled: false,
+    gstEnabled: true,
+    customerPortalEnabled: false,
+    reportsEnabled: true,
+    whatsappNotificationsEnabled: false,
+    smsNotificationsEnabled: false,
+    multiUserSupportEnabled: false,
+    employeeManagementEnabled: false,
+    multiBranchEnabled: false,
+    webSocketsEnabled: false,
+    aiAnalyticsEnabled: false,
+    accountingExportEnabled: false,
+    marketingEnabled: false,
   });
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
@@ -112,6 +134,27 @@ const BusinessManagement: React.FC = () => {
     },
   });
 
+  // Fetch Features Query
+  const fetchFeatures = async (businessId: number) => {
+    const res = await apiClient.get(`/super-manager/businesses/${businessId}/features`);
+    return res.data;
+  };
+
+  // Update Features mutation
+  const updateFeaturesMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: typeof featureData }) => {
+      const res = await apiClient.put(`/super-manager/businesses/${id}/features`, data);
+      return res.data;
+    },
+    onSuccess: () => {
+      setSnackbar({ open: true, message: 'Feature permissions updated successfully', severity: 'success' });
+      setOpenFeatureDialog(false);
+    },
+    onError: (err) => {
+      setSnackbar({ open: true, message: (err as any).response?.data?.message || (err as Error).message, severity: 'error' });
+    },
+  });
+
   const handleOpenDialog = (business?: Business) => {
     if (business) {
       setEditingBusiness(business);
@@ -148,6 +191,44 @@ const BusinessManagement: React.FC = () => {
       email: '',
       businessType: '',
     });
+  };
+
+  const handleOpenFeatureDialog = async (business: Business) => {
+    setSelectedBusiness(business);
+    try {
+      const data = await fetchFeatures(business.id);
+      setFeatureData({
+        inventoryEnabled: data.inventoryEnabled || false,
+        billingEnabled: data.billingEnabled || false,
+        warrantyEnabled: data.warrantyEnabled || false,
+        emiEnabled: data.emiEnabled || false,
+        gstEnabled: data.gstEnabled || false,
+        customerPortalEnabled: data.customerPortalEnabled || false,
+        reportsEnabled: data.reportsEnabled || false,
+        whatsappNotificationsEnabled: data.whatsappNotificationsEnabled || false,
+        smsNotificationsEnabled: data.smsNotificationsEnabled || false,
+        multiUserSupportEnabled: data.multiUserSupportEnabled || false,
+        employeeManagementEnabled: data.employeeManagementEnabled || false,
+        multiBranchEnabled: data.multiBranchEnabled || false,
+        webSocketsEnabled: data.webSocketsEnabled || false,
+        aiAnalyticsEnabled: data.aiAnalyticsEnabled || false,
+        accountingExportEnabled: data.accountingExportEnabled || false,
+        marketingEnabled: data.marketingEnabled || false,
+      });
+      setOpenFeatureDialog(true);
+    } catch (err) {
+      setSnackbar({ open: true, message: 'Failed to fetch features', severity: 'error' });
+    }
+  };
+
+  const handleFeatureToggle = (field: keyof typeof featureData) => {
+    setFeatureData(prev => ({ ...prev, [field]: !prev[field] }));
+  };
+
+  const handleSaveFeatures = () => {
+    if (selectedBusiness) {
+      updateFeaturesMutation.mutate({ id: selectedBusiness.id, data: featureData });
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -217,6 +298,11 @@ const BusinessManagement: React.FC = () => {
                     {new Date(business.createdAt).toLocaleDateString()}
                   </TableCell>
                   <TableCell>
+                    <Tooltip title="Features">
+                      <IconButton onClick={() => handleOpenFeatureDialog(business)}>
+                        <Shield size={20} />
+                      </IconButton>
+                    </Tooltip>
                     <Tooltip title="Edit">
                       <IconButton onClick={() => handleOpenDialog(business)}>
                         <Edit />
@@ -296,6 +382,40 @@ const BusinessManagement: React.FC = () => {
             </Button>
           </DialogActions>
         </form>
+      </Dialog>
+
+      {/* Feature Permissions Dialog */}
+      <Dialog open={openFeatureDialog} onClose={() => setOpenFeatureDialog(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>
+          Feature Permissions - {selectedBusiness?.businessName}
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mt: 2 }}>
+            {Object.entries(featureData).map(([key, value]) => (
+              <Box key={key} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1, border: '1px solid #eee', borderRadius: 2 }}>
+                <Typography variant="body2">{key}</Typography>
+                <Button 
+                  size="small" 
+                  variant={value ? 'contained' : 'outlined'} 
+                  color={value ? 'success' : 'inherit'}
+                  onClick={() => handleFeatureToggle(key as keyof typeof featureData)}
+                >
+                  {value ? 'ON' : 'OFF'}
+                </Button>
+              </Box>
+            ))}
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenFeatureDialog(false)}>Cancel</Button>
+          <Button
+            variant="contained"
+            onClick={handleSaveFeatures}
+            disabled={updateFeaturesMutation.isPending}
+          >
+            Save Features
+          </Button>
+        </DialogActions>
       </Dialog>
 
       {/* Snackbar */}

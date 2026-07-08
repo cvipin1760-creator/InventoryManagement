@@ -3,6 +3,7 @@ export interface Customer {
   name: string
   phone: string
   address?: string
+  loyaltyPoints?: number
   createdAt: string
 }
 

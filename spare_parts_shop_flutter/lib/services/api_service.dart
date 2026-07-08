@@ -16,8 +16,20 @@ import '../models/login_response.dart';
 
 class ApiService {
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
-  
   String get baseUrl => AppConstants.baseUrl;
+
+  static Future<void> loadBaseUrl() async {
+    const storage = FlutterSecureStorage();
+    final url = await storage.read(key: 'custom_base_url');
+    if (url != null && url.isNotEmpty) {
+      AppConstants.baseUrl = url;
+    }
+  }
+
+  Future<void> setBaseUrl(String newUrl) async {
+    await _storage.write(key: 'custom_base_url', value: newUrl);
+    AppConstants.baseUrl = newUrl;
+  }
 
   Future<Map<String, String>> _getHeaders() async {
     final token = await _storage.read(key: AppConstants.storageKeyToken);

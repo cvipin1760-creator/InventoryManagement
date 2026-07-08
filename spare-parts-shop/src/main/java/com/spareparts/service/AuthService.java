@@ -11,6 +11,8 @@ import com.spareparts.model.User;
 import com.spareparts.repository.BusinessRepository;
 import com.spareparts.repository.FeaturePermissionsRepository;
 import com.spareparts.repository.UserRepository;
+import com.spareparts.aspect.EnforceUsageLimit;
+import com.spareparts.aspect.UsageLimitType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -68,7 +70,12 @@ public class AuthService {
                         fp.getWhatsappNotificationsEnabled(),
                         fp.getSmsNotificationsEnabled(),
                         fp.getMultiUserSupportEnabled(),
-                        fp.getEmployeeManagementEnabled()
+                        fp.getEmployeeManagementEnabled(),
+                        fp.getMultiBranchEnabled(),
+                        fp.getWebSocketsEnabled(),
+                        fp.getAiAnalyticsEnabled(),
+                        fp.getAccountingExportEnabled(),
+                        fp.getMarketingEnabled()
                 );
             }
         }
@@ -280,7 +287,12 @@ public class AuthService {
                         fp.getWhatsappNotificationsEnabled(),
                         fp.getSmsNotificationsEnabled(),
                         fp.getMultiUserSupportEnabled(),
-                        fp.getEmployeeManagementEnabled()
+                        fp.getEmployeeManagementEnabled(),
+                        fp.getMultiBranchEnabled(),
+                        fp.getWebSocketsEnabled(),
+                        fp.getAiAnalyticsEnabled(),
+                        fp.getAccountingExportEnabled(),
+                        fp.getMarketingEnabled()
                 );
             }
         }
@@ -428,6 +440,7 @@ public class AuthService {
         userRepository.save(user);
     }
 
+    @EnforceUsageLimit(UsageLimitType.USERS)
     public User createUser(String username, String email, String password, String role, Boolean enabled) {
         if (userRepository.findByUsername(username).isPresent()) {
             throw new RuntimeException("Username already exists");

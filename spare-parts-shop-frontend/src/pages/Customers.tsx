@@ -62,6 +62,19 @@ export default function Customers() {
     }
   }
 
+  const handleSendWhatsApp = async (customerId: number, customerName: string) => {
+    try {
+      await api.sendWhatsAppMessage({
+        customerId,
+        message: `Hi ${customerName}, here is a special 10% discount on your next purchase at StockPilot. Use code: PROMO10`
+      });
+      alert(`WhatsApp promo sent to ${customerName}`);
+    } catch (err) {
+      console.error('Failed to send WhatsApp message', err);
+      alert('Failed to send message');
+    }
+  };
+
   return (
     <div className="page">
       <div className="page-header">
@@ -90,6 +103,7 @@ export default function Customers() {
                 <th>Name</th>
                 <th>Phone</th>
                 <th>Address</th>
+                <th>Loyalty Points</th>
                 <th></th>
               </tr>
             </thead>
@@ -99,7 +113,9 @@ export default function Customers() {
                   <td>{c.name}</td>
                   <td>{c.phone}</td>
                   <td>{c.address || '-'}</td>
+                  <td><span className="badge badge-success" style={{ padding: '4px 8px', borderRadius: '12px', background: '#dcfce7', color: '#166534', fontWeight: 600 }}>{c.loyaltyPoints || 0} pts</span></td>
                   <td>
+                    <button type="button" className="btn btn-ghost btn-sm" onClick={() => handleSendWhatsApp(c.id, c.name)}>Promo</button>
                     <button type="button" className="btn btn-ghost btn-sm" onClick={() => openEdit(c)}>Edit</button>
                     <button type="button" className="btn btn-ghost btn-sm btn-danger" onClick={() => handleDelete(c.id)}>Delete</button>
                   </td>

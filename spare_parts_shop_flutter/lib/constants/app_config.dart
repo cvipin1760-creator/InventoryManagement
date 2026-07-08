@@ -1,7 +1,9 @@
 
+import 'package:stock_pilot/core/constants/app_constants.dart';
+
 class AppConfig {
   static const String appName = 'StockPilot';
   static const String tagline = 'Smart Inventory & Billing Management';
   static const String version = '1.0.0';
-  static const String baseUrl = 'https://spare-parts-shop-backend.onrender.com/api';
+  static String get baseUrl => AppConstants.baseUrl;
 }

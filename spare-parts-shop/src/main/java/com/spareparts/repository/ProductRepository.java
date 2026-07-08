@@ -32,4 +32,12 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     
     @Query("SELECT p FROM Product p WHERE p.quantity <= p.lowStockThreshold ORDER BY p.quantity ASC")
     List<Product> findLowStockProducts();
+
+    // Dead Stock: Products with quantity > 0 that have not been sold (no BillItem) in the last :days days
+    @Query("SELECT p FROM Product p WHERE p.business.id = :businessId AND (:branchId IS NULL OR p.branch.id = :branchId) AND p.quantity > 0 AND p.id NOT IN (SELECT i.product.id FROM BillItem i JOIN i.bill b WHERE b.business.id = :businessId AND (:branchId IS NULL OR b.branch.id = :branchId) AND b.billDate >= :thresholdDate)")
+    List<Product> findDeadStock(@Param("businessId") Long businessId, @Param("branchId") Long branchId, @Param("thresholdDate") java.time.LocalDateTime thresholdDate);
+
+    // Fast-Moving: Top products by quantity sold in the last :days days
+    @Query("SELECT p, SUM(i.quantity) as totalSold FROM BillItem i JOIN i.product p JOIN i.bill b WHERE b.business.id = :businessId AND (:branchId IS NULL OR b.branch.id = :branchId) AND b.billDate >= :thresholdDate GROUP BY p.id ORDER BY totalSold DESC")
+    List<Object[]> findFastMovingProducts(@Param("businessId") Long businessId, @Param("branchId") Long branchId, @Param("thresholdDate") java.time.LocalDateTime thresholdDate);
 }

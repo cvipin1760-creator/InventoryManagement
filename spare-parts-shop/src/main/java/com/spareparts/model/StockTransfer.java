@@ -9,37 +9,43 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "customers")
+@Table(name = "stock_transfers")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class Customer implements BelongsToBusiness {
+public class StockTransfer implements BelongsToBusiness {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "business_id", nullable = false)
     @JsonIgnore
     private Business business;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "branch_id")
-    private Branch branch;
-    
-    @Column(nullable = false)
-    private String name;
-    
-    @Column(nullable = false)
-    private String phone;
-    
-    @Column(columnDefinition = "TEXT")
-    private String address;
+    @JoinColumn(name = "source_branch_id", nullable = false)
+    private Branch sourceBranch;
 
-    @Column(name = "loyalty_points", nullable = false, columnDefinition = "integer default 0")
-    private Integer loyaltyPoints = 0;
-    
-    @Column(name = "created_at")
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "destination_branch_id", nullable = false)
+    private Branch destinationBranch;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
+
+    @Column(nullable = false)
+    private Integer quantity;
+
+    // PENDING, COMPLETED, CANCELLED
+    @Column(nullable = false)
+    private String status = "PENDING";
+
+    @Column(name = "transfer_date")
+    private LocalDateTime transferDate = LocalDateTime.now();
+
+    @Column(columnDefinition = "TEXT")
+    private String notes;
 }

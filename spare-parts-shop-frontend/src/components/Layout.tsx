@@ -38,6 +38,7 @@ import { toggleTheme } from '../store/slices/themeSlice';
 import { api } from '../api/client';
 import Sidebar from './Sidebar';
 import CommandPalette from './CommandPalette';
+import { useInventoryWebSocket } from '../hooks/useInventoryWebSocket';
 
 const Layout = () => {
   const theme = useTheme();
@@ -52,6 +53,8 @@ const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+  useInventoryWebSocket();
 
   useEffect(() => {
     if (user && user.role !== 'SUPER_MANAGER') {

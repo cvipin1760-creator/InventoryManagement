@@ -10,6 +10,8 @@ import com.spareparts.dto.BillItemRequest;
 import com.spareparts.dto.BillRequest;
 import com.spareparts.dto.DashboardStats;
 import com.spareparts.model.Bill;
+import com.spareparts.aspect.EnforceUsageLimit;
+import com.spareparts.aspect.UsageLimitType;
 import com.spareparts.model.BillItem;
 import com.spareparts.model.Customer;
 import com.spareparts.model.Payment;
@@ -75,6 +77,7 @@ public class BillService {
     }
     
     @Transactional
+    @EnforceUsageLimit(UsageLimitType.INVOICES)
     public Bill createBill(BillRequest request) {
         Long businessId = com.spareparts.config.TenantContext.getBusinessId();
         if (businessId == null) {
@@ -151,6 +154,11 @@ public class BillService {
         bill.setFinalAmount(finalAmount);
         bill.setBillDate(LocalDateTime.now());
  
+        // Award Loyalty Points (1 point per 100 spent)
+        int pointsEarned = (int) (finalAmount / 100);
+        customer.setLoyaltyPoints(customer.getLoyaltyPoints() + pointsEarned);
+        customerService.updateCustomer(customer.getId(), customer);
+
         Bill savedBill = billRepository.save(bill);
         if (request.getPaidAmount() != null && request.getPaidAmount() > 0) {
             Payment payment = new Payment();

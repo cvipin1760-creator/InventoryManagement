@@ -69,5 +69,10 @@ public class LoginResponse {
         private Boolean smsNotificationsEnabled;
         private Boolean multiUserSupportEnabled;
         private Boolean employeeManagementEnabled;
+        private Boolean multiBranchEnabled;
+        private Boolean webSocketsEnabled;
+        private Boolean aiAnalyticsEnabled;
+        private Boolean accountingExportEnabled;
+        private Boolean marketingEnabled;
     }
 }

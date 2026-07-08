@@ -12,7 +12,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import com.spareparts.Config.InventoryWebSocketHandler;
 
 @Service
 public class ProductService {
@@ -25,6 +28,9 @@ public class ProductService {
 
     @Autowired
     private com.spareparts.repository.BranchRepository branchRepository;
+
+    @Autowired
+    private InventoryWebSocketHandler inventoryWebSocketHandler;
 
     public List<Product> getAllProducts() {
         Long businessId = com.spareparts.config.TenantContext.getBusinessId();
@@ -60,7 +66,16 @@ public class ProductService {
 
         product.setCreatedAt(LocalDateTime.now());
         product.setUpdatedAt(LocalDateTime.now());
-        return productRepository.save(product);
+        Product saved = productRepository.save(product);
+        broadcastUpdate(businessId, saved);
+        return saved;
+    }
+
+    private void broadcastUpdate(Long businessId, Product product) {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("type", "INVENTORY_UPDATE");
+        payload.put("product", product);
+        inventoryWebSocketHandler.broadcastInventoryUpdate(businessId, payload);
     }
     
     public Product updateProduct(Long id, Product productDetails) {
@@ -74,7 +89,9 @@ public class ProductService {
         product.setLowStockThreshold(productDetails.getLowStockThreshold());
         product.setAttachmentPath(productDetails.getAttachmentPath());
         product.setUpdatedAt(LocalDateTime.now());
-        return productRepository.save(product);
+        Product saved = productRepository.save(product);
+        broadcastUpdate(saved.getBusiness().getId(), saved);
+        return saved;
     }
     
     public void deleteProduct(Long id) {
@@ -163,7 +180,9 @@ public class ProductService {
                     }
                     product.setUpdatedAt(LocalDateTime.now());
                     
-                    products.add(productRepository.save(product));
+                    Product saved = productRepository.save(product);
+                    products.add(saved);
+                    broadcastUpdate(businessId, saved);
                 } catch (Exception e) {
                     throw new RuntimeException("Error in row " + (i + 1) + ": " + e.getMessage());
                 }

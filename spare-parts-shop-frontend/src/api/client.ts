@@ -107,6 +107,16 @@ export const api = {
   deleteCustomer: (id: number) =>
     request<void>(`/customers/${id}`, { method: 'DELETE' }),
 
+  // Analytics
+  getPredictiveAnalytics: () => request<any>('/analytics/predictive'),
+
+  // Marketing
+  sendWhatsAppMessage: (data: { customerId: number; message: string }) =>
+    request<any>('/marketing/whatsapp/send', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
   // Suppliers
   getSuppliers: () => request<import('../types').Supplier[]>('/suppliers'),
   getSupplier: (id: number) => request<import('../types').Supplier>(`/suppliers/${id}`),

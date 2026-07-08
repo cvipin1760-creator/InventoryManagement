@@ -25,6 +25,9 @@ import Notifications from './pages/Notifications';
 import BillTemplates from './pages/BillTemplates';
 import Subscriptions from './pages/Subscriptions';
 import FeaturePermissions from './pages/FeaturePermissions';
+import SubscriptionBilling from './pages/SubscriptionBilling';
+import StockTransfers from './pages/StockTransfers';
+import PredictiveAnalytics from './pages/PredictiveAnalytics';
 
 
 // Protected Route component
@@ -65,6 +68,11 @@ const App = () => {
         <Route path="dashboard" element={<Dashboard />} />
 
         {/* Super Admin Routes */}
+        <Route path="predictive-analytics" element={
+          <RoleBasedRoute allowedRoles={['SUPER_MANAGER', 'MANAGER']}>
+            <PredictiveAnalytics />
+          </RoleBasedRoute>
+        } />
         <Route path="admins" element={
           <RoleBasedRoute allowedRoles={['SUPER_MANAGER']}>
             <AdminManagement />
@@ -155,6 +163,16 @@ const App = () => {
         <Route path="users" element={
           <RoleBasedRoute allowedRoles={['ADMIN']}>
             <Users />
+          </RoleBasedRoute>
+        } />
+        <Route path="billing" element={
+          <RoleBasedRoute allowedRoles={['ADMIN']}>
+            <SubscriptionBilling />
+          </RoleBasedRoute>
+        } />
+        <Route path="stock-transfers" element={
+          <RoleBasedRoute allowedRoles={['ADMIN', 'EMPLOYEE']}>
+            <StockTransfers />
           </RoleBasedRoute>
         } />
         <Route path="reports" element={

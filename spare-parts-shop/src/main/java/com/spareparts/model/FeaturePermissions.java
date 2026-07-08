@@ -57,6 +57,21 @@ public class FeaturePermissions implements BelongsToBusiness {
     @Column(name = "employee_management_enabled")
     private Boolean employeeManagementEnabled = false;
 
+    @Column(name = "multi_branch_enabled")
+    private Boolean multiBranchEnabled = false;
+
+    @Column(name = "web_sockets_enabled")
+    private Boolean webSocketsEnabled = false;
+
+    @Column(name = "ai_analytics_enabled")
+    private Boolean aiAnalyticsEnabled = false;
+
+    @Column(name = "accounting_export_enabled")
+    private Boolean accountingExportEnabled = false;
+
+    @Column(name = "marketing_enabled")
+    private Boolean marketingEnabled = false;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 

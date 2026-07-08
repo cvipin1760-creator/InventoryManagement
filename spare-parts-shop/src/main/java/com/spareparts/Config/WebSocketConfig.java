@@ -10,14 +10,18 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 public class WebSocketConfig implements WebSocketConfigurer {
 
     private final KeepAliveWebSocketHandler keepAliveWebSocketHandler;
+    private final InventoryWebSocketHandler inventoryWebSocketHandler;
 
-    public WebSocketConfig(KeepAliveWebSocketHandler keepAliveWebSocketHandler) {
+    public WebSocketConfig(KeepAliveWebSocketHandler keepAliveWebSocketHandler, InventoryWebSocketHandler inventoryWebSocketHandler) {
         this.keepAliveWebSocketHandler = keepAliveWebSocketHandler;
+        this.inventoryWebSocketHandler = inventoryWebSocketHandler;
     }
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(keepAliveWebSocketHandler, "/ws/keep-alive")
+                .setAllowedOrigins("*");
+        registry.addHandler(inventoryWebSocketHandler, "/ws/inventory")
                 .setAllowedOrigins("*");
     }
 }
