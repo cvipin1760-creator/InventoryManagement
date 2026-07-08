@@ -1,0 +1,87 @@
+.receipt-printer-container {
+  display: none;
+}
+
+@media print {
+  /* Hide everything else on the page */
+  body * {
+    visibility: hidden;
+  }
+  
+  /* Show only the receipt container */
+  .receipt-printer-container, .receipt-printer-container * {
+    visibility: visible;
+  }
+  
+  .receipt-printer-container {
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 0;
+    margin: 0;
+    padding: 0;
+    background: white;
+  }
+  
+  .receipt-content {
+    font-family: monospace;
+    font-size: 12px;
+    line-height: 1.2;
+    color: black;
+  }
+  
+  /* Receipt sizes */
+  .size-58mm .receipt-content {
+    width: 58mm;
+    margin: 0 auto;
+  }
+  
+  .size-80mm .receipt-content {
+    width: 80mm;
+    margin: 0 auto;
+  }
+  
+  .size-A4 .receipt-content {
+    width: 210mm;
+    margin: 0 auto;
+    font-size: 14px;
+    font-family: sans-serif;
+  }
+  
+  .receipt-title {
+    text-align: center;
+    font-size: 1.5em;
+    margin: 10px 0;
+  }
+  
+  .receipt-divider {
+    border-bottom: 1px dashed black;
+    margin: 10px 0;
+  }
+  
+  .receipt-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .receipt-table th, .receipt-table td {
+    padding: 2px 0;
+  }
+  
+  .receipt-row {
+    display: flex;
+    justify-content: space-between;
+    margin: 2px 0;
+  }
+  
+  .receipt-grand-total {
+    font-weight: bold;
+    font-size: 1.2em;
+    margin-top: 5px;
+  }
+  
+  .receipt-footer {
+    text-align: center;
+    margin-top: 15px;
+  }
+}

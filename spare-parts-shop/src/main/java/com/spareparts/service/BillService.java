@@ -32,6 +32,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 
 @Service
 public class BillService {
@@ -78,6 +80,7 @@ public class BillService {
     
     @Transactional
     @EnforceUsageLimit(UsageLimitType.INVOICES)
+    @CacheEvict(value = "dashboardStats", key = "T(java.lang.String).valueOf(T(com.spareparts.config.TenantContext).getBusinessId()) + '-' + T(java.lang.String).valueOf(T(com.spareparts.config.BranchContext).getBranchId())")
     public Bill createBill(BillRequest request) {
         Long businessId = com.spareparts.config.TenantContext.getBusinessId();
         if (businessId == null) {
@@ -178,6 +181,7 @@ public class BillService {
     }
     
     @Transactional
+    @CacheEvict(value = "dashboardStats", key = "T(java.lang.String).valueOf(T(com.spareparts.config.TenantContext).getBusinessId()) + '-' + T(java.lang.String).valueOf(T(com.spareparts.config.BranchContext).getBranchId())")
     public Bill updateBill(Long id, BillRequest request) {
         Bill existingBill = getBillById(id);
         
@@ -288,6 +292,7 @@ public class BillService {
         return latestPrices;
     }
     
+    @Cacheable(value = "dashboardStats", key = "T(java.lang.String).valueOf(T(com.spareparts.config.TenantContext).getBusinessId()) + '-' + T(java.lang.String).valueOf(T(com.spareparts.config.BranchContext).getBranchId())")
     public DashboardStats getDashboardStats() {
         Long businessId = com.spareparts.config.TenantContext.getBusinessId();
         LocalDateTime now = LocalDateTime.now();

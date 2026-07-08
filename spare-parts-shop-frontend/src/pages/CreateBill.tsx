@@ -181,19 +181,23 @@ const totalDiscount = lineDiscountTotal + percentDiscountAmount
        discount: (i.price * i.quantity * i.discount) / 100,
       }))
 
-      await api.createBill({
+      // Optimistic navigation: instantly take user to bills list
+      // Backend cache will ensure the subsequent load is instant.
+      api.createBill({
         customerId: Number(customerId),
         items: billItems,
         discount,
         gstType,
         paidAmount,
+      }).catch(err => {
+         console.error('Failed to create bill:', err)
+         // In a real app with a toast library, show an error here
+         alert('Failed to create bill: ' + (err instanceof Error ? err.message : 'Unknown error'))
       })
 
       navigate('/bills')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create bill')
-    } finally {
-      setLoading(false)
     }
   }
 

@@ -16,6 +16,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import com.spareparts.Config.InventoryWebSocketHandler;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 
 @Service
 public class ProductService {
@@ -32,6 +35,7 @@ public class ProductService {
     @Autowired
     private InventoryWebSocketHandler inventoryWebSocketHandler;
 
+    @Cacheable(value = "products", key = "T(java.lang.String).valueOf(T(com.spareparts.config.TenantContext).getBusinessId()) + '-' + T(java.lang.String).valueOf(T(com.spareparts.config.BranchContext).getBranchId())")
     public List<Product> getAllProducts() {
         Long businessId = com.spareparts.config.TenantContext.getBusinessId();
         if (businessId == null) {
@@ -48,6 +52,10 @@ public class ProductService {
         return product;
     }
     
+    @Caching(evict = {
+        @CacheEvict(value = "products", key = "T(java.lang.String).valueOf(T(com.spareparts.config.TenantContext).getBusinessId()) + '-' + T(java.lang.String).valueOf(T(com.spareparts.config.BranchContext).getBranchId())"),
+        @CacheEvict(value = "dashboardStats", key = "T(java.lang.String).valueOf(T(com.spareparts.config.TenantContext).getBusinessId()) + '-' + T(java.lang.String).valueOf(T(com.spareparts.config.BranchContext).getBranchId())")
+    })
     public Product createProduct(Product product) {
         Long businessId = com.spareparts.config.TenantContext.getBusinessId();
         if (businessId == null) {
@@ -78,6 +86,10 @@ public class ProductService {
         inventoryWebSocketHandler.broadcastInventoryUpdate(businessId, payload);
     }
     
+    @Caching(evict = {
+        @CacheEvict(value = "products", key = "T(java.lang.String).valueOf(T(com.spareparts.config.TenantContext).getBusinessId()) + '-' + T(java.lang.String).valueOf(T(com.spareparts.config.BranchContext).getBranchId())"),
+        @CacheEvict(value = "dashboardStats", key = "T(java.lang.String).valueOf(T(com.spareparts.config.TenantContext).getBusinessId()) + '-' + T(java.lang.String).valueOf(T(com.spareparts.config.BranchContext).getBranchId())")
+    })
     public Product updateProduct(Long id, Product productDetails) {
         Product product = getProductById(id); // Already validates tenant
         product.setName(productDetails.getName());
@@ -94,6 +106,10 @@ public class ProductService {
         return saved;
     }
     
+    @Caching(evict = {
+        @CacheEvict(value = "products", key = "T(java.lang.String).valueOf(T(com.spareparts.config.TenantContext).getBusinessId()) + '-' + T(java.lang.String).valueOf(T(com.spareparts.config.BranchContext).getBranchId())"),
+        @CacheEvict(value = "dashboardStats", key = "T(java.lang.String).valueOf(T(com.spareparts.config.TenantContext).getBusinessId()) + '-' + T(java.lang.String).valueOf(T(com.spareparts.config.BranchContext).getBranchId())")
+    })
     public void deleteProduct(Long id) {
         Product product = getProductById(id); // Already validates tenant
         productRepository.delete(product);
@@ -117,6 +133,10 @@ public class ProductService {
         return productRepository.findLowStockProducts(businessId, branchId);
     }
     
+    @Caching(evict = {
+        @CacheEvict(value = "products", key = "T(java.lang.String).valueOf(T(com.spareparts.config.TenantContext).getBusinessId()) + '-' + T(java.lang.String).valueOf(T(com.spareparts.config.BranchContext).getBranchId())"),
+        @CacheEvict(value = "dashboardStats", key = "T(java.lang.String).valueOf(T(com.spareparts.config.TenantContext).getBusinessId()) + '-' + T(java.lang.String).valueOf(T(com.spareparts.config.BranchContext).getBranchId())")
+    })
     public List<Product> uploadFromExcel(MultipartFile file) throws IOException {
         Long businessId = com.spareparts.config.TenantContext.getBusinessId();
         if (businessId == null) {

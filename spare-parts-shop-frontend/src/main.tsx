@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { ThemeProvider } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
+import { OfflineSyncService } from './utils/offlineSync';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { store, RootState } from './store';
@@ -13,6 +14,8 @@ import { useAppSelector, useAppDispatch } from './store/hooks';
 import App from './App';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import './index.css';
+
+OfflineSyncService.init();
 
 // Create a QueryClient instance
 const queryClient = new QueryClient({

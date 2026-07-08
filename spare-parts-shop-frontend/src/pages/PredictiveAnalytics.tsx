@@ -81,7 +81,7 @@ const PredictiveAnalytics = () => {
 
       <Grid container spacing={3}>
         {/* Dead Stock */}
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
             <Card sx={{ height: '100%', borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
               <CardContent>
@@ -90,7 +90,7 @@ const PredictiveAnalytics = () => {
                     <TrendingDown size={24} />
                   </Box>
                   <Box>
-                    <Typography variant="h6" fontWeight="600">Dead Stock</Typography>
+                    <Typography variant="h6" sx={{ fontWeight: '600' }}>Dead Stock</Typography>
                     <Typography variant="body2" color="text.secondary">No sales in last 60 days</Typography>
                   </Box>
                 </Box>
@@ -136,7 +136,7 @@ const PredictiveAnalytics = () => {
         </Grid>
 
         {/* Fast Moving */}
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
             <Card sx={{ height: '100%', borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
               <CardContent>
@@ -145,7 +145,7 @@ const PredictiveAnalytics = () => {
                     <TrendingUp size={24} />
                   </Box>
                   <Box>
-                    <Typography variant="h6" fontWeight="600">Fast Moving</Typography>
+                    <Typography variant="h6" sx={{ fontWeight: '600' }}>Fast Moving</Typography>
                     <Typography variant="body2" color="text.secondary">Top sellers in last 30 days</Typography>
                   </Box>
                 </Box>
@@ -187,7 +187,7 @@ const PredictiveAnalytics = () => {
         </Grid>
 
         {/* Churned Customers */}
-        <Grid item xs={12}>
+        <Grid size={{ xs: 12 }}>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
             <Card sx={{ borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
               <CardContent>
@@ -196,7 +196,7 @@ const PredictiveAnalytics = () => {
                     <Users size={24} />
                   </Box>
                   <Box>
-                    <Typography variant="h6" fontWeight="600">Churned Customers</Typography>
+                    <Typography variant="h6" sx={{ fontWeight: '600' }}>Churned Customers</Typography>
                     <Typography variant="body2" color="text.secondary">No purchases in last 90 days</Typography>
                   </Box>
                 </Box>
@@ -208,9 +208,9 @@ const PredictiveAnalytics = () => {
                 ) : (
                   <Grid container spacing={2}>
                     {churnedCustomers.map((customer: any) => (
-                      <Grid item xs={12} sm={6} md={4} key={customer.id}>
+                      <Grid size={{ xs: 12, sm: 6, md: 4 }} key={customer.id}>
                         <Box sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
-                          <Typography variant="subtitle1" fontWeight="600">{customer.name}</Typography>
+                          <Typography variant="subtitle1" sx={{ fontWeight: '600' }}>{customer.name}</Typography>
                           <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>{customer.phone}</Typography>
                           <Button size="small" variant="outlined" color="primary" onClick={() => handleSendWhatsApp(customer.id, customer.name)}>
                             Send Follow-up

@@ -62,18 +62,21 @@ class _CustomersScreenState extends State<CustomersScreen> {
                     return ListTile(
                       title: Text(customer.name),
                       subtitle: Text(customer.phone),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.edit),
-                            onPressed: () => _showCustomerDialog(customer: customer),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete, color: Colors.red),
-                            onPressed: () => _deleteCustomer(customer.id),
-                          ),
-                        ],
+                      trailing: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit),
+                              onPressed: () => _showCustomerDialog(customer: customer),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              onPressed: () => _deleteCustomer(customer.id),
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   },

@@ -16,12 +16,14 @@ import {
   Tooltip,
   CircularProgress,
 } from '@mui/material';
-import { MarkEmailRead, Person } from '@mui/icons-material';
+import { MarkEmailRead, Person, NotificationsActive } from '@mui/icons-material';
 import { api } from '../api/client';
+import { requestNotificationPermission } from '../utils/firebase';
 
 const Notifications = () => {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fcmToken, setFcmToken] = useState<string | null>(null);
 
   useEffect(() => {
     fetchNotifications();
@@ -63,9 +65,22 @@ const Notifications = () => {
 
   return (
     <Box sx={{ p: 0 }}>
-      <Typography variant="h4" sx={{ fontWeight: 700, mb: 4 }}>
-        Notifications
-      </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+        <Typography variant="h4" sx={{ fontWeight: 700 }}>
+          Notifications
+        </Typography>
+        <Tooltip title="Enable Push Notifications on this device">
+          <IconButton 
+            color={fcmToken ? 'success' : 'primary'} 
+            onClick={async () => {
+              const token = await requestNotificationPermission();
+              if (token) setFcmToken(token);
+            }}
+          >
+            <NotificationsActive />
+          </IconButton>
+        </Tooltip>
+      </Box>
 
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>

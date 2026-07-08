@@ -9,6 +9,10 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
+
 @Service
 public class CustomerService {
     
@@ -21,6 +25,7 @@ public class CustomerService {
     @Autowired
     private com.spareparts.repository.BranchRepository branchRepository;
     
+    @Cacheable(value = "customers", key = "T(java.lang.String).valueOf(T(com.spareparts.config.TenantContext).getBusinessId()) + '-' + T(java.lang.String).valueOf(T(com.spareparts.config.BranchContext).getBranchId())")
     public List<Customer> getAllCustomers() {
         Long businessId = com.spareparts.config.TenantContext.getBusinessId();
         if (businessId == null) {
@@ -37,6 +42,10 @@ public class CustomerService {
         return customer;
     }
     
+    @Caching(evict = {
+        @CacheEvict(value = "customers", key = "T(java.lang.String).valueOf(T(com.spareparts.config.TenantContext).getBusinessId()) + '-' + T(java.lang.String).valueOf(T(com.spareparts.config.BranchContext).getBranchId())"),
+        @CacheEvict(value = "dashboardStats", key = "T(java.lang.String).valueOf(T(com.spareparts.config.TenantContext).getBusinessId()) + '-' + T(java.lang.String).valueOf(T(com.spareparts.config.BranchContext).getBranchId())")
+    })
     public Customer createCustomer(Customer customer) {
         Long businessId = com.spareparts.config.TenantContext.getBusinessId();
         if (businessId == null) {
@@ -57,6 +66,10 @@ public class CustomerService {
         return customerRepository.save(customer);
     }
     
+    @Caching(evict = {
+        @CacheEvict(value = "customers", key = "T(java.lang.String).valueOf(T(com.spareparts.config.TenantContext).getBusinessId()) + '-' + T(java.lang.String).valueOf(T(com.spareparts.config.BranchContext).getBranchId())"),
+        @CacheEvict(value = "dashboardStats", key = "T(java.lang.String).valueOf(T(com.spareparts.config.TenantContext).getBusinessId()) + '-' + T(java.lang.String).valueOf(T(com.spareparts.config.BranchContext).getBranchId())")
+    })
     public Customer updateCustomer(Long id, Customer customerDetails) {
         Customer customer = getCustomerById(id); // Already validates tenant
         customer.setName(customerDetails.getName());
@@ -65,6 +78,10 @@ public class CustomerService {
         return customerRepository.save(customer);
     }
     
+    @Caching(evict = {
+        @CacheEvict(value = "customers", key = "T(java.lang.String).valueOf(T(com.spareparts.config.TenantContext).getBusinessId()) + '-' + T(java.lang.String).valueOf(T(com.spareparts.config.BranchContext).getBranchId())"),
+        @CacheEvict(value = "dashboardStats", key = "T(java.lang.String).valueOf(T(com.spareparts.config.TenantContext).getBusinessId()) + '-' + T(java.lang.String).valueOf(T(com.spareparts.config.BranchContext).getBranchId())")
+    })
     public void deleteCustomer(Long id) {
         Customer customer = getCustomerById(id); // Already validates tenant
         customerRepository.delete(customer);

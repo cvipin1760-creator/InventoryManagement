@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../models/product.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
+import 'dart:io';
+import 'barcode_scanner_screen.dart';
 
 class ProductsScreen extends StatefulWidget {
   const ProductsScreen({super.key});
@@ -39,12 +44,80 @@ class _ProductsScreenState extends State<ProductsScreen> {
     }
   }
 
+  Future<void> _exportExcel() async {
+    try {
+      final data = await _apiService.exportExcel();
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/Products_Export_${DateTime.now().millisecondsSinceEpoch}.csv'); // or xlsx
+      await file.writeAsString(data);
+      if (mounted) {
+        await Share.shareXFiles([XFile(file.path)], text: 'Products Export');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Export failed: $e')));
+      }
+    }
+  }
+
+  Future<void> _uploadExcel() async {
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['xls', 'xlsx', 'csv'],
+      );
+      if (result != null) {
+        final path = result.files.single.path;
+        if (path != null) {
+          await _apiService.uploadExcel(XFile(path));
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Upload successful')));
+          }
+          _loadProducts();
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Upload failed: $e')));
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Products'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.qr_code_scanner),
+            onPressed: () async {
+              final barcode = await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const BarcodeScannerScreen()),
+              );
+              if (barcode != null && mounted) {
+                // Find product by barcode (partNumber) or open create dialog
+                final existingProduct = _products.where((p) => p.partNumber == barcode || p.id.toString() == barcode).firstOrNull;
+                if (existingProduct != null) {
+                  _showProductDialog(product: existingProduct);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Scanned: $barcode. No product found.')));
+                }
+              }
+            },
+            tooltip: 'Scan Barcode',
+          ),
+          IconButton(
+            icon: const Icon(Icons.upload_file),
+            onPressed: _uploadExcel,
+            tooltip: 'Upload Excel',
+          ),
+          IconButton(
+            icon: const Icon(Icons.download),
+            onPressed: _exportExcel,
+            tooltip: 'Export Excel',
+          ),
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: () => _showProductDialog(),
@@ -62,22 +135,25 @@ class _ProductsScreenState extends State<ProductsScreen> {
                     return ListTile(
                       title: Text(product.name),
                       subtitle: Text('Part: ${product.partNumber} | Stock: ${product.quantity}'),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            '₹${product.price.toStringAsFixed(2)}',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.edit),
-                            onPressed: () => _showProductDialog(product: product),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete, color: Colors.red),
-                            onPressed: () => _deleteProduct(product.id),
-                          ),
-                        ],
+                      trailing: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '₹${product.price.toStringAsFixed(2)}',
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.edit),
+                              onPressed: () => _showProductDialog(product: product),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              onPressed: () => _deleteProduct(product.id),
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   },

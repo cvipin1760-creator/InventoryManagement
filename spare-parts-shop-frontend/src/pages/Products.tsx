@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { api } from '../api/client'
 import type { Product } from '../types'
+import BarcodeScanner from '../components/BarcodeScanner'
+import { ScanBarcode } from 'lucide-react'
 import './Products.css'
 
 function formatCurrency(n: number) {
@@ -15,6 +17,7 @@ export default function Products() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
+  const [isScanning, setIsScanning] = useState(false)
   const [modal, setModal] = useState<'add' | 'edit' | 'bulk' | null>(null)
   const [editing, setEditing] = useState<Product | null>(null)
   const [bulkText, setBulkText] = useState('')
@@ -95,13 +98,17 @@ export default function Products() {
 
       const data = { ...form, attachmentPath }
 
+      // Optimistic update
       if (editing) {
-        await api.updateProduct(editing.id, data)
+        setProducts(prev => prev.map(p => p.id === editing.id ? { ...p, ...data, id: editing.id } as Product : p))
+        api.updateProduct(editing.id, data).catch(() => load()) // revert on failure
       } else {
-        await api.createProduct(data)
+        const tempId = Date.now()
+        setProducts(prev => [{ ...data, id: tempId } as Product, ...prev])
+        api.createProduct(data).then(() => load()).catch(() => load()) // revert on failure
       }
+      
       setModal(null)
-      load()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed')
     } finally {
@@ -189,6 +196,15 @@ export default function Products() {
                 onChange={(e) => setSearch(e.target.value)}
                 className="search-input"
               />
+              <button 
+                type="button" 
+                className="btn btn-secondary" 
+                onClick={() => setIsScanning(true)}
+                title="Scan Barcode"
+                style={{ padding: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                <ScanBarcode size={20} />
+              </button>
               <label className="btn btn-secondary" style={{ cursor: 'pointer' }}>
                 {excelLoading ? 'Uploading...' : 'Import Excel'}
                 <input type="file" accept=".xlsx,.xls" hidden onChange={handleExcelUpload} />
@@ -348,6 +364,13 @@ export default function Products() {
             )}
           </div>
         </div>
+      )}
+      
+      {isScanning && (
+        <BarcodeScanner 
+          onScan={(code) => setSearch(code)} 
+          onClose={() => setIsScanning(false)} 
+        />
       )}
     </div>
   )

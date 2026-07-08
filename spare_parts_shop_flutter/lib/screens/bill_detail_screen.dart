@@ -4,29 +4,38 @@ import '../constants/app_theme.dart';
 import '../services/api_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
+import 'edit_bill_screen.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 
-class BillDetailScreen extends StatelessWidget {
+class BillDetailScreen extends StatefulWidget {
   final Bill bill;
-  final ApiService _apiService = ApiService();
+  const BillDetailScreen({super.key, required this.bill});
 
-  BillDetailScreen({super.key, required this.bill});
+  @override
+  State<BillDetailScreen> createState() => _BillDetailScreenState();
+}
+
+class _BillDetailScreenState extends State<BillDetailScreen> {
+  final ApiService _apiService = ApiService();
+  bool _isUploading = false;
 
   Future<void> _sendBillToWhatsApp(BuildContext context) async {
-    String message = "Hello ${bill.customer.name},\n\n";
-    message += "Your Bill: ${bill.invoiceNumber}\n";
-    message += "Date: ${DateFormat.yMMMMd().format(DateTime.parse(bill.billDate))}\n";
+    String message = "Hello ${widget.bill.customer.name},\n\n";
+    message += "Your Bill: ${widget.bill.invoiceNumber}\n";
+    message += "Date: ${DateFormat.yMMMMd().format(DateTime.parse(widget.bill.billDate))}\n";
     message += "------------------------\n";
-    for (var item in bill.items) {
+    for (var item in widget.bill.items) {
       message += "${item.product.name} x ${item.quantity} = ₹${(item.price * item.quantity).toStringAsFixed(2)}\n";
     }
     message += "------------------------\n";
-    message += "Gross Total: ₹${bill.subtotal.toStringAsFixed(2)}\n";
-    message += "Discount: -₹${bill.discount.toStringAsFixed(2)}\n";
-    message += "GST (${bill.gstType}): ₹${bill.gstAmount.toStringAsFixed(2)}\n";
-    message += "Grand Total: ₹${bill.finalAmount.toStringAsFixed(2)}\n";
+    message += "Gross Total: ₹${widget.bill.subtotal.toStringAsFixed(2)}\n";
+    message += "Discount: -₹${widget.bill.discount.toStringAsFixed(2)}\n";
+    message += "GST (${widget.bill.gstType}): ₹${widget.bill.gstAmount.toStringAsFixed(2)}\n";
+    message += "Grand Total: ₹${widget.bill.finalAmount.toStringAsFixed(2)}\n";
     message += "\nThank you for your business!";
 
-    final phone = bill.customer.phone.replaceAll(RegExp(r'[^0-9]'), '');
+    final phone = widget.bill.customer.phone.replaceAll(RegExp(r'[^0-9]'), '');
     final url = "https://wa.me/$phone?text=${Uri.encodeComponent(message)}";
     try {
       final uri = Uri.parse(url);
@@ -48,21 +57,110 @@ class BillDetailScreen extends StatelessWidget {
     }
   }
 
+  Future<void> _printReceipt() async {
+    BlueThermalPrinter bluetooth = BlueThermalPrinter.instance;
+    bool? isConnected = await bluetooth.isConnected;
+    
+    if (isConnected == null || !isConnected) {
+      List<BluetoothDevice> devices = await bluetooth.getBondedDevices();
+      if (devices.isEmpty) {
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No bonded Bluetooth printers found.')));
+        return;
+      }
+      
+      // Attempt to connect to the first bonded device (usually the thermal printer)
+      try {
+        await bluetooth.connect(devices.first);
+      } catch (e) {
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to connect to printer: $e')));
+        return;
+      }
+    }
+
+    bluetooth.printCustom("Stock Pilot", 3, 1);
+    bluetooth.printNewLine();
+    bluetooth.printCustom("Invoice: ${widget.bill.invoiceNumber}", 1, 0);
+    bluetooth.printCustom("Date: ${DateFormat.yMMMMd().format(DateTime.parse(widget.bill.billDate))}", 1, 0);
+    bluetooth.printCustom("Customer: ${widget.bill.customer.name}", 1, 0);
+    bluetooth.printNewLine();
+    bluetooth.printCustom("--------------------------------", 1, 1);
+    for (var item in widget.bill.items) {
+      bluetooth.printCustom("${item.product.name} x ${item.quantity}", 1, 0);
+      bluetooth.printCustom("Rs ${(item.price * item.quantity).toStringAsFixed(2)}", 1, 2);
+    }
+    bluetooth.printCustom("--------------------------------", 1, 1);
+    bluetooth.printCustom("Gross: Rs ${widget.bill.subtotal.toStringAsFixed(2)}", 1, 2);
+    bluetooth.printCustom("Disc: Rs ${widget.bill.discount.toStringAsFixed(2)}", 1, 2);
+    bluetooth.printCustom("GST: Rs ${widget.bill.gstAmount.toStringAsFixed(2)}", 1, 2);
+    bluetooth.printCustom("TOTAL: Rs ${widget.bill.finalAmount.toStringAsFixed(2)}", 2, 2);
+    bluetooth.printNewLine();
+    bluetooth.printCustom("Thank you for your business!", 1, 1);
+    bluetooth.printNewLine();
+    bluetooth.printNewLine();
+    bluetooth.paperCut();
+  }
+
+  Future<void> _uploadAttachment() async {
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles();
+      if (result != null) {
+        final path = result.files.single.path;
+        if (path != null) {
+          setState(() => _isUploading = true);
+          await _apiService.uploadBillAttachment(path);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Attachment uploaded successfully!')));
+          }
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to upload attachment: $e')));
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isUploading = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        title: Text(bill.invoiceNumber),
+        title: Text(widget.bill.invoiceNumber),
         backgroundColor: AppTheme.primaryColor,
         foregroundColor: Colors.white,
         actions: [
+          if (_isUploading)
+            const Center(child: Padding(padding: EdgeInsets.all(16.0), child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)))),
+          IconButton(
+            icon: const Icon(Icons.attach_file),
+            onPressed: _isUploading ? null : _uploadAttachment,
+            tooltip: 'Upload Attachment',
+          ),
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => EditBillScreen(bill: widget.bill)),
+              );
+            },
+            tooltip: 'Edit Bill',
+          ),
           IconButton(
             icon: const Icon(Icons.download),
             onPressed: () {
-              _apiService.downloadInvoicePdf(bill.id);
+              _apiService.downloadInvoicePdf(widget.bill.id);
             },
             tooltip: 'Download Invoice',
+          ),
+          IconButton(
+            icon: const Icon(Icons.print),
+            onPressed: _printReceipt,
+            tooltip: 'Print Receipt (Bluetooth)',
           ),
           IconButton(
             icon: const Icon(Icons.send),
@@ -93,8 +191,8 @@ class BillDetailScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    _buildDetailRow('Invoice Number', bill.invoiceNumber),
-                    _buildDetailRow('Date', DateFormat.yMMMMd().format(DateTime.parse(bill.billDate))),
+                    _buildDetailRow('Invoice Number', widget.bill.invoiceNumber),
+                    _buildDetailRow('Date', DateFormat.yMMMMd().format(DateTime.parse(widget.bill.billDate))),
                     const SizedBox(height: 12),
                     const Divider(),
                     const SizedBox(height: 12),
@@ -106,8 +204,8 @@ class BillDetailScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    _buildDetailRow('Name', bill.customer.name),
-                    _buildDetailRow('Phone', bill.customer.phone),
+                    _buildDetailRow('Name', widget.bill.customer.name),
+                    _buildDetailRow('Phone', widget.bill.customer.phone),
                   ],
                 ),
               ),
@@ -129,7 +227,7 @@ class BillDetailScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    ...bill.items.map((item) => Padding(
+                    ...widget.bill.items.map((item) => Padding(
                       padding: const EdgeInsets.only(bottom: 12),
                       child: Row(
                         children: [
@@ -165,19 +263,16 @@ class BillDetailScreen extends StatelessWidget {
             const SizedBox(height: 20),
             Card(
               elevation: 0,
-              color: AppTheme.primaryColor.withOpacity(0.08),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: Column(
                   children: [
-                    _buildSummaryRow('Subtotal', '₹${bill.subtotal.toStringAsFixed(2)}'),
-                    const SizedBox(height: 8),
-                    _buildSummaryRow('Discount', '-₹${bill.discount.toStringAsFixed(2)}'),
-                    const SizedBox(height: 8),
-                    _buildSummaryRow('GST (${bill.gstType})', '₹${bill.gstAmount.toStringAsFixed(2)}'),
-                    const Divider(height: 24),
-                    _buildSummaryRow('Grand Total', '₹${bill.finalAmount.toStringAsFixed(2)}', isTotal: true),
+                    _buildSummaryRow('Subtotal:', '₹${widget.bill.subtotal.toStringAsFixed(2)}'),
+                    _buildSummaryRow('Discount:', '-₹${widget.bill.discount.toStringAsFixed(2)}'),
+                    _buildSummaryRow('GST (${widget.bill.gstType}):', '₹${widget.bill.gstAmount.toStringAsFixed(2)}'),
+                    const Divider(height: 32),
+                    _buildSummaryRow('Grand Total:', '₹${widget.bill.finalAmount.toStringAsFixed(2)}', isTotal: true),
                   ],
                 ),
               ),

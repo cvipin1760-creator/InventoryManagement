@@ -13,6 +13,8 @@ import '../models/payment.dart';
 import '../models/customer_balance.dart';
 import '../models/dashboard_stats.dart';
 import '../models/login_response.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'sqlite_service.dart';
 
 class ApiService {
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
@@ -98,10 +100,17 @@ class ApiService {
   }
 
   Future<List<Customer>> getCustomers() async {
+    final connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult.isNotEmpty && connectivityResult.first == ConnectivityResult.none) {
+      final cached = await SqliteService().getCachedCustomers();
+      return cached.map((dynamic item) => Customer.fromJson(item)).toList();
+    }
+    
     final response = await http.get(Uri.parse('$baseUrl/customers'), headers: await _getHeaders());
 
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
+      await SqliteService().cacheCustomers(body);
       return body.map((dynamic item) => Customer.fromJson(item)).toList();
     } else {
       throw Exception('Failed to load customers');
@@ -203,6 +212,42 @@ class ApiService {
     }
   }
 
+  Future<Bill> createBill(Bill bill) async {
+    final body = jsonEncode(bill.toJson()..remove('id')..remove('createdAt'));
+    final headers = await _getHeaders();
+    final url = '$baseUrl/bills';
+    
+    final connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult.isNotEmpty && connectivityResult.first == ConnectivityResult.none) {
+      await SqliteService().queueRequest('POST', url, jsonDecode(body), headers);
+      // Return a dummy bill to keep the UI happy
+      return Bill(
+        id: DateTime.now().millisecondsSinceEpoch,
+        invoiceNumber: 'OFFLINE-${DateTime.now().millisecondsSinceEpoch}',
+        billDate: DateTime.now().toIso8601String(),
+        customer: bill.customer,
+        items: bill.items,
+        subtotal: bill.subtotal,
+        discount: bill.discount,
+        gstType: bill.gstType,
+        gstAmount: bill.gstAmount,
+        finalAmount: bill.finalAmount,
+      );
+    }
+
+    final response = await http.post(
+      Uri.parse(url),
+      headers: headers,
+      body: body,
+    );
+
+    if (response.statusCode == 200) {
+      return Bill.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception('Failed to create bill: ${response.body}');
+    }
+  }
+
   Future<Supplier> createSupplier(Supplier supplier) async {
     final response = await http.post(
       Uri.parse('$baseUrl/suppliers'),
@@ -240,10 +285,17 @@ class ApiService {
   }
 
   Future<List<Product>> getProducts() async {
+    final connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult.isNotEmpty && connectivityResult.first == ConnectivityResult.none) {
+      final cached = await SqliteService().getCachedProducts();
+      return cached.map((dynamic item) => Product.fromJson(item)).toList();
+    }
+    
     final response = await http.get(Uri.parse('$baseUrl/products'), headers: await _getHeaders());
 
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
+      await SqliteService().cacheProducts(body);
       return body.map((dynamic item) => Product.fromJson(item)).toList();
     } else {
       throw Exception('Failed to load products');
@@ -398,7 +450,7 @@ class ApiService {
     }
   }
 
-  Future<Bill> createBill(Map<String, dynamic> billData) async {
+  Future<Bill> createBillFromMap(Map<String, dynamic> billData) async {
     final response = await http.post(
       Uri.parse('$baseUrl/bills'),
       headers: await _getHeaders(),
@@ -428,6 +480,197 @@ class ApiService {
 
   Future<void> downloadInvoicePdf(int id) async {
     // TODO: Implement PDF download
+  }
+
+  Future<void> sendBillViaWhatsApp(int id, String phone) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/bills/$id/send-whatsapp?phone=${Uri.encodeComponent(phone)}'),
+      headers: await _getHeaders(),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Failed to send WhatsApp message: ${response.body}');
+    }
+  }
+
+  Future<String> exportExcel() async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/products/export-excel'),
+      headers: await _getHeaders(),
+    );
+    if (response.statusCode == 200) {
+      return response.body; // or save bytes to file
+    } else {
+      throw Exception('Failed to export Excel');
+    }
+  }
+
+  Future<String> uploadExcel(dynamic file) async {
+    final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/products/upload-excel'));
+    final token = await _storage.read(key: AppConstants.storageKeyToken);
+    if (token != null && token.isNotEmpty) {
+      request.headers['Authorization'] = 'Bearer $token';
+    }
+    
+    if (file is XFile) {
+      request.files.add(await http.MultipartFile.fromPath('file', file.path));
+    } else if (file is PlatformFile) {
+      if (file.path != null) {
+        request.files.add(await http.MultipartFile.fromPath('file', file.path!));
+      } else if (file.bytes != null) {
+        request.files.add(http.MultipartFile.fromBytes('file', file.bytes!, filename: file.name));
+      }
+    }
+    
+    final response = await request.send();
+    if (response.statusCode == 200) {
+      final resBody = await response.stream.bytesToString();
+      return resBody;
+    } else {
+      throw Exception('Failed to upload Excel');
+    }
+  }
+
+  Future<List<dynamic>> getBillTemplates() async {
+    final response = await http.get(Uri.parse('$baseUrl/bills/templates'), headers: await _getHeaders());
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to load bill templates');
+    }
+  }
+
+  Future<dynamic> createBillTemplate(Map<String, dynamic> data) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/bills/templates'),
+      headers: await _getHeaders(),
+      body: jsonEncode(data),
+    );
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to create bill template');
+    }
+  }
+
+  Future<dynamic> updateBillTemplate(int id, Map<String, dynamic> data) async {
+    final response = await http.put(
+      Uri.parse('$baseUrl/bills/templates/$id'),
+      headers: await _getHeaders(),
+      body: jsonEncode(data),
+    );
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to update bill template');
+    }
+  }
+
+  Future<void> deleteBillTemplate(int id) async {
+    final response = await http.delete(Uri.parse('$baseUrl/bills/templates/$id'), headers: await _getHeaders());
+    if (response.statusCode != 200) {
+      throw Exception('Failed to delete bill template');
+    }
+  }
+
+  // --- BRANCHES ---
+  Future<List<dynamic>> getBranches() async {
+    final response = await http.get(Uri.parse('$baseUrl/branches'), headers: await _getHeaders());
+    if (response.statusCode == 200) return jsonDecode(response.body);
+    throw Exception('Failed to load branches');
+  }
+
+  Future<dynamic> createBranch(Map<String, dynamic> data) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/branches'),
+      headers: await _getHeaders(),
+      body: jsonEncode(data),
+    );
+    if (response.statusCode == 200) return jsonDecode(response.body);
+    throw Exception('Failed to create branch');
+  }
+
+  Future<dynamic> updateBranch(int id, Map<String, dynamic> data) async {
+    final response = await http.put(
+      Uri.parse('$baseUrl/branches/$id'),
+      headers: await _getHeaders(),
+      body: jsonEncode(data),
+    );
+    if (response.statusCode == 200) return jsonDecode(response.body);
+    throw Exception('Failed to update branch');
+  }
+
+  Future<void> deleteBranch(int id) async {
+    final response = await http.delete(Uri.parse('$baseUrl/branches/$id'), headers: await _getHeaders());
+    if (response.statusCode != 200) throw Exception('Failed to delete branch');
+  }
+
+  // --- STAFF ---
+  Future<dynamic> createStaff(Map<String, dynamic> data) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/auth/staff'),
+      headers: await _getHeaders(),
+      body: jsonEncode(data),
+    );
+    if (response.statusCode == 200) return jsonDecode(response.body);
+    throw Exception('Failed to create staff');
+  }
+
+  Future<dynamic> updateStaff(int id, Map<String, dynamic> data) async {
+    final response = await http.put(
+      Uri.parse('$baseUrl/auth/staff/$id'),
+      headers: await _getHeaders(),
+      body: jsonEncode(data),
+    );
+    if (response.statusCode == 200) return jsonDecode(response.body);
+    throw Exception('Failed to update staff');
+  }
+
+  // --- BUSINESS ---
+  Future<dynamic> getBusiness() async {
+    final response = await http.get(Uri.parse('$baseUrl/business'), headers: await _getHeaders());
+    if (response.statusCode == 200) return jsonDecode(response.body);
+    throw Exception('Failed to get business info');
+  }
+
+  Future<dynamic> updateSubscription(int id, String subscriptionPlan) async {
+    final response = await http.put(
+      Uri.parse('$baseUrl/super-manager/businesses/$id/subscription'),
+      headers: await _getHeaders(),
+      body: jsonEncode({'subscriptionPlan': subscriptionPlan}),
+    );
+    if (response.statusCode == 200) return jsonDecode(response.body);
+    throw Exception('Failed to update subscription');
+  }
+
+  Future<dynamic> toggleSubscriptionStatus(int id, bool isActive) async {
+    final response = await http.put(
+      Uri.parse('$baseUrl/super-manager/businesses/$id/subscription/status'),
+      headers: await _getHeaders(),
+      body: jsonEncode({'isActive': isActive}),
+    );
+    if (response.statusCode == 200) return jsonDecode(response.body);
+    throw Exception('Failed to toggle subscription status');
+  }
+
+  // --- NOTIFICATIONS ---
+  Future<List<dynamic>> getNotifications() async {
+    final response = await http.get(Uri.parse('$baseUrl/notifications'), headers: await _getHeaders());
+    if (response.statusCode == 200) return jsonDecode(response.body);
+    throw Exception('Failed to load notifications');
+  }
+
+  Future<int> getUnreadNotificationCount() async {
+    final response = await http.get(Uri.parse('$baseUrl/notifications/unread/count'), headers: await _getHeaders());
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data is int ? data : (data['count'] ?? 0);
+    }
+    return 0; // Silently fail for badge
+  }
+
+  Future<void> markNotificationAsRead(int id) async {
+    final response = await http.put(Uri.parse('$baseUrl/notifications/$id/read'), headers: await _getHeaders());
+    if (response.statusCode != 200) throw Exception('Failed to mark notification as read');
   }
 
   Future<String> uploadBillAttachment(dynamic file) async {
@@ -687,6 +930,35 @@ class ApiService {
 
     if (response.statusCode != 200) {
       throw Exception(response.body);
+    }
+  }
+
+  // SaaS Features
+
+  Future<Map<String, dynamic>> getPredictiveAnalytics() async {
+    final response = await http.get(Uri.parse('$baseUrl/predictive-analytics'), headers: await _getHeaders());
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to load predictive analytics');
+    }
+  }
+
+  Future<Map<String, dynamic>> getLoyaltyAccount(int customerId) async {
+    final response = await http.get(Uri.parse('$baseUrl/loyalty/account/$customerId'), headers: await _getHeaders());
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to load loyalty account');
+    }
+  }
+
+  Future<String> exportTallyXml() async {
+    final response = await http.get(Uri.parse('$baseUrl/exports/tally-xml'), headers: await _getHeaders());
+    if (response.statusCode == 200) {
+      return response.body;
+    } else {
+      throw Exception('Failed to export Tally XML');
     }
   }
 }

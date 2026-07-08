@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { api } from '../api/client'
 import type { Bill } from '../types'
 import { exportToPDF, exportToExcel } from '../utils/exportUtils'
+import ReceiptPrinter from '../components/ReceiptPrinter'
 import './Bills.css'
 
 function formatCurrency(n: number) {
@@ -32,6 +33,9 @@ export default function Bills() {
   const [backupLoading, setBackupLoading] = useState(false)
   const [previewBill, setPreviewBill] = useState<Bill | null>(null)
   const [whatsAppLoading, setWhatsAppLoading] = useState<number | null>(null)
+  
+  const [printBill, setPrintBill] = useState<Bill | null>(null)
+  const [receiptSize, setReceiptSize] = useState<'58mm' | '80mm' | 'A4'>('80mm')
 
   const load = () => {
     setLoading(true)
@@ -249,12 +253,30 @@ export default function Bills() {
                       <button
                         type="button"
                         className="btn btn-ghost btn-sm"
-                        onClick={() => handleSendWhatsApp(b)}
+                        onClick={() => handleSendWhatsApp(b.id, b.customer.phone)}
                         disabled={whatsAppLoading === b.id}
-                        style={{ color: '#25D366' }}
                       >
-                        {whatsAppLoading === b.id ? 'Sending...' : 'WhatsApp'}
+                        {whatsAppLoading === b.id ? '...' : 'WhatsApp'}
                       </button>
+                      <div className="dropdown" style={{ display: 'flex', alignItems: 'center', marginLeft: '4px' }}>
+                        <select 
+                          className="btn btn-ghost btn-sm" 
+                          value={receiptSize}
+                          onChange={(e) => setReceiptSize(e.target.value as any)}
+                          style={{ marginRight: '4px', padding: '0 4px' }}
+                        >
+                          <option value="58mm">58mm</option>
+                          <option value="80mm">80mm</option>
+                          <option value="A4">A4</option>
+                        </select>
+                        <button
+                          type="button"
+                          className="btn btn-ghost btn-sm"
+                          onClick={() => setPrintBill(b)}
+                        >
+                          Print
+                        </button>
+                      </div>
                     </div>
                   </td>
                 </tr>
@@ -363,6 +385,13 @@ export default function Bills() {
           </div>
         </div>
       )}
+
+      {/* Print Overlay */}
+      <ReceiptPrinter 
+        bill={printBill} 
+        size={receiptSize} 
+        onClose={() => setPrintBill(null)} 
+      />
     </div>
   )
 }

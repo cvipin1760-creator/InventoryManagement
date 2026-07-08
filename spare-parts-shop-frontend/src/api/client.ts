@@ -23,6 +23,21 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     ...(options.headers as Record<string, string>),
   }
   
+  if (!navigator.onLine && (method === 'POST' || method === 'PUT' || method === 'DELETE')) {
+    import('../utils/offlineSync').then(({ OfflineSyncService }) => {
+      OfflineSyncService.queueRequest({
+        url: `${API_BASE}${path}`,
+        method,
+        headers: headers as Record<string, string>,
+        body: (options.body as string) || '',
+        timestamp: Date.now(),
+      })
+    })
+    // Return a mocked success for offline mutations
+    return { id: Date.now(), offline: true } as unknown as T
+  }
+  
+  try {
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
     headers,
@@ -38,11 +53,26 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     }
     throw new Error(errMsg)
   }
-  const contentType = res.headers.get('content-type')
-  if (contentType?.includes('application/json')) {
-    return res.json()
+    const contentType = res.headers.get('content-type')
+    if (contentType?.includes('application/json')) {
+      return res.json()
+    }
+    return res.blob() as unknown as T
+  } catch (error) {
+    if (error instanceof TypeError && (method === 'POST' || method === 'PUT' || method === 'DELETE')) {
+      import('../utils/offlineSync').then(({ OfflineSyncService }) => {
+        OfflineSyncService.queueRequest({
+          url: `${API_BASE}${path}`,
+          method,
+          headers: headers as Record<string, string>,
+          body: (options.body as string) || '',
+          timestamp: Date.now(),
+        })
+      })
+      return { id: Date.now(), offline: true } as unknown as T
+    }
+    throw error
   }
-  return res.blob() as unknown as T
 }
 
 export const api = {

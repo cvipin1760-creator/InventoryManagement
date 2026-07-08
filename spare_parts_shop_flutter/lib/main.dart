@@ -14,10 +14,29 @@ import 'package:stock_pilot/screens/products_screen.dart';
 import 'package:stock_pilot/screens/purchases_screen.dart';
 import 'package:stock_pilot/screens/register_screen.dart';
 import 'package:stock_pilot/screens/suppliers_screen.dart';
+import 'package:stock_pilot/screens/predictive_analytics_screen.dart';
+import 'package:stock_pilot/screens/accounting_screen.dart';
+import 'package:stock_pilot/screens/bill_templates_screen.dart';
+import 'package:stock_pilot/screens/branches_screen.dart';
+import 'package:stock_pilot/screens/staff_screen.dart';
+import 'package:stock_pilot/screens/business_settings_screen.dart';
+import 'package:stock_pilot/screens/notifications_screen.dart';
 import 'package:stock_pilot/services/api_service.dart';
+import 'package:stock_pilot/services/fcm_service.dart';
+import 'package:stock_pilot/services/offline_sync_service.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await Firebase.initializeApp();
+    await FCMService().init();
+  } catch (e) {
+    debugPrint("Firebase init error (likely missing google-services.json): $e");
+  }
+  
+  OfflineSyncService().startListening();
+  
   await ApiService.loadBaseUrl();
   runApp(const MyApp());
 }
@@ -39,7 +58,7 @@ class MyApp extends StatelessWidget {
             debugShowCheckedModeBanner: false,
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
-            themeMode: themeProvider.themeMode,
+            themeMode: ThemeMode.system,
             initialRoute: '/',
             routes: {
               '/': (context) => const AuthWrapper(),
@@ -54,6 +73,13 @@ class MyApp extends StatelessWidget {
               '/create-bill': (context) => const CreateBillScreen(),
               '/create-purchase': (context) => const CreatePurchaseScreen(),
               '/register': (context) => const RegisterScreen(),
+              '/predictive-analytics': (context) => const PredictiveAnalyticsScreen(),
+              '/accounting': (context) => const AccountingScreen(),
+              '/bill-templates': (context) => const BillTemplatesScreen(),
+              '/branches': (context) => const BranchesScreen(),
+              '/staff': (context) => const StaffScreen(),
+              '/business-settings': (context) => const BusinessSettingsScreen(),
+              '/notifications': (context) => const NotificationsScreen(),
             },
           );
         },

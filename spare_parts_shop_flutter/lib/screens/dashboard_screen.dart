@@ -18,25 +18,39 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   final ApiService _apiService = ApiService();
   DashboardStats? _stats;
+  List<dynamic> _branches = [];
+  dynamic _selectedBranch;
+  int _unreadNotifications = 0;
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _loadStats();
+    _loadData();
   }
 
-  Future<void> _loadStats() async {
+  Future<void> _loadData() async {
     try {
       final stats = await _apiService.getDashboardStats();
-      setState(() {
-        _stats = stats;
-        _isLoading = false;
-      });
+      final branches = await _apiService.getBranches();
+      final unreadCount = await _apiService.getUnreadNotificationCount();
+      if (mounted) {
+        setState(() {
+          _stats = stats;
+          _branches = branches;
+          _unreadNotifications = unreadCount;
+          if (_branches.isNotEmpty) {
+            _selectedBranch = _branches.firstWhere((b) => b['isMain'] == true, orElse: () => _branches.first);
+          }
+          _isLoading = false;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to load stats: $e')),
@@ -52,8 +66,50 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Stock Pilot'),
+        title: _branches.isEmpty 
+          ? const Text('Stock Pilot')
+          : DropdownButtonHideUnderline(
+              child: DropdownButton<dynamic>(
+                value: _selectedBranch,
+                dropdownColor: AppTheme.primaryColor,
+                icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
+                style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                items: _branches.map((b) => DropdownMenuItem(value: b, child: Text(b['name']))).toList(),
+                onChanged: (val) {
+                  if (val != null) setState(() => _selectedBranch = val);
+                },
+              ),
+            ),
         actions: [
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.notifications),
+                onPressed: () {
+                  Navigator.pushNamed(context, '/notifications').then((_) => _loadData());
+                },
+              ),
+              if (_unreadNotifications > 0)
+                Positioned(
+                  right: 8,
+                  top: 8,
+                  child: Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                    child: Text(
+                      '$_unreadNotifications',
+                      style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
+          ),
           PopupMenuButton<dynamic>(
             itemBuilder: (context) => [
               PopupMenuItem<dynamic>(
@@ -92,6 +148,141 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ],
           ),
         ],
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: AppTheme.primaryColor,
+              ),
+              child: const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text(
+                    'Stock Pilot',
+                    style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Enterprise Edition',
+                    style: TextStyle(color: Colors.white70, fontSize: 14),
+                  ),
+                ],
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.dashboard),
+              title: const Text('Dashboard'),
+              onTap: () => Navigator.pop(context),
+            ),
+            ListTile(
+              leading: const Icon(FontAwesomeIcons.chartLine),
+              title: const Text('Predictive Analytics'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/predictive-analytics');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.inventory),
+              title: const Text('Products'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/products');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.people),
+              title: const Text('Customers'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/customers');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.local_shipping),
+              title: const Text('Suppliers'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/suppliers');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.receipt),
+              title: const Text('Bills'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/bills');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.document_scanner),
+              title: const Text('Bill Templates'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/bill-templates');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.shopping_cart),
+              title: const Text('Purchases'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/purchases');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.payment),
+              title: const Text('Payments'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/payments');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.account_balance),
+              title: const Text('Accounting Exports'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/accounting');
+              },
+            ),
+            const Divider(),
+            if (isAdmin) ...[
+              const Padding(
+                padding: EdgeInsets.only(left: 16.0, top: 8.0, bottom: 8.0),
+                child: Text('Administration', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+              ),
+              ListTile(
+                leading: const Icon(Icons.store),
+                title: const Text('Branches'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/branches');
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.badge),
+                title: const Text('Staff & Permissions'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/staff');
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.settings),
+                title: const Text('Business Settings'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/business-settings');
+                },
+              ),
+            ],
+          ],
+        ),
       ),
       body: SafeArea(
         child: _isLoading

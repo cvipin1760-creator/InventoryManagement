@@ -4,6 +4,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:stock_pilot/constants/app_theme.dart';
 import 'package:stock_pilot/providers/auth_provider.dart';
 import 'package:stock_pilot/services/api_service.dart';
+import 'package:local_auth/local_auth.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -22,10 +24,13 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   bool _isLoading = false;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
+  final LocalAuthentication auth = LocalAuthentication();
+  bool _canCheckBiometrics = false;
 
   @override
   void initState() {
     super.initState();
+    _checkBiometrics();
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1000),
@@ -34,6 +39,39 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       CurvedAnimation(parent: _animationController, curve: Curves.easeIn),
     );
     _animationController.forward();
+  }
+
+  Future<void> _checkBiometrics() async {
+    bool canCheckBiometrics;
+    try {
+      canCheckBiometrics = await auth.canCheckBiometrics;
+    } catch (e) {
+      canCheckBiometrics = false;
+    }
+    if (!mounted) return;
+    setState(() {
+      _canCheckBiometrics = canCheckBiometrics;
+    });
+  }
+
+  Future<void> _authenticate() async {
+    bool authenticated = false;
+    try {
+      setState(() => _isLoading = true);
+      authenticated = await auth.authenticate(
+        localizedReason: 'Let OS determine authentication method',
+        persistAcrossBackgrounding: true,
+      );
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error using biometrics: $e')));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+
+    if (authenticated) {
+      // In a real app, retrieve securely stored credentials here.
+      if (mounted) Navigator.pushReplacementNamed(context, '/dashboard');
+    }
   }
 
   @override
@@ -263,6 +301,23 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                   ),
                           ),
                         ),
+                        if (_canCheckBiometrics) ...[
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 56,
+                            child: OutlinedButton.icon(
+                              onPressed: _isLoading ? null : _authenticate,
+                              icon: const Icon(Icons.fingerprint, size: 28),
+                              label: const Text('Login with Biometrics', style: TextStyle(fontSize: 16)),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: AppTheme.primaryColor,
+                                side: const BorderSide(color: AppTheme.primaryColor),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              ),
+                            ),
+                          ),
+                        ],
                         const SizedBox(height: 16),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,

@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:provider/provider.dart';
 import '../services/api_service.dart';
 import '../models/customer.dart';
 import '../models/product.dart';
 import '../models/customer_balance.dart';
-import '../providers/auth_provider.dart';
-import 'barcode_scanner_screen.dart';
 
-class CreateBillScreen extends StatefulWidget {
-  const CreateBillScreen({super.key});
+import '../models/bill.dart';
+
+class EditBillScreen extends StatefulWidget {
+  final Bill bill;
+  const EditBillScreen({super.key, required this.bill});
 
   @override
-  State<CreateBillScreen> createState() => _CreateBillScreenState();
+  State<EditBillScreen> createState() => _EditBillScreenState();
 }
 
 class BillItem {
@@ -51,7 +51,7 @@ class BillItem {
   }
 }
 
-class _CreateBillScreenState extends State<CreateBillScreen> {
+class _EditBillScreenState extends State<EditBillScreen> {
   final ApiService _apiService = ApiService();
   List<Customer> _customers = [];
   Customer? _selectedCustomer;
@@ -72,7 +72,30 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
   @override
   void initState() {
     super.initState();
-    _loadCustomers();
+    _gstType = widget.bill.gstType;
+    _discount = widget.bill.discount;
+    _paidAmount = 0;
+    _invoiceNumber = widget.bill.invoiceNumber;
+    
+    // Add existing items
+    for (var item in widget.bill.items) {
+      _items.add(BillItem(
+        productId: item.product.id,
+        product: item.product,
+        quantity: item.quantity,
+        price: item.price,
+        gstPercent: item.product.gstPercent,
+        discount: (item.discount / (item.price * item.quantity)) * 100, // Recover percentage
+      ));
+    }
+    
+    _loadCustomers().then((_) {
+      // Find and select the customer
+      final customer = _customers.where((c) => c.id == widget.bill.customer.id).firstOrNull;
+      if (customer != null) {
+        _onCustomerSelected(customer);
+      }
+    });
   }
 
   Future<void> _loadCustomers() async {
@@ -212,7 +235,7 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
     return total - loyaltyDiscount;
   }
 
-  Future<void> _createBill() async {
+  Future<void> _updateBill() async {
     if (_selectedCustomer == null || _items.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select a customer and add at least one item')),
@@ -228,18 +251,18 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
         'paidAmount': _paidAmount,
         'redeemPoints': _useLoyaltyPoints ? (_loyaltyAccount!['points'] ?? 0) : 0,
       };
-      final bill = await _apiService.createBillFromMap(billData);
+      final bill = await _apiService.updateBill(widget.bill.id, billData);
       setState(() {
         _billCreated = true;
         _invoiceNumber = bill.invoiceNumber;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Bill created successfully!')),
+        const SnackBar(content: Text('Bill updated successfully!')),
       );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to create bill: $e')),
+          SnackBar(content: Text('Failed to update bill: $e')),
         );
       }
     }
@@ -288,12 +311,13 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         onPressed: () {
+          // Focus on search field
+          // For now, just show a snackbar
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Search for products above to add!')),
           );
@@ -330,7 +354,7 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
                           const Text('Customer Details', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                           const SizedBox(height: 16),
                           DropdownButtonFormField<Customer>(
-                            value: _selectedCustomer,
+                            initialValue: _selectedCustomer,
                             decoration: const InputDecoration(
                               labelText: 'Select Customer',
                             ),
@@ -413,7 +437,7 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
                           const Text('Bill Details', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                           const SizedBox(height: 16),
                           DropdownButtonFormField<String>(
-                            value: _gstType,
+                            initialValue: _gstType,
                             decoration: const InputDecoration(
                               labelText: 'GST Type',
                             ),
@@ -476,44 +500,18 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
                         children: [
                           const Text('Add Products', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                           const SizedBox(height: 16),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: TextField(
-                                  decoration: InputDecoration(
-                                    hintText: 'Search product by name or part number...',
-                                    prefixIcon: const Icon(Icons.search),
-                                    suffixIcon: _isSearching
-                                        ? const Padding(
-                                            padding: EdgeInsets.all(12.0),
-                                            child: CircularProgressIndicator(strokeWidth: 2),
-                                          )
-                                        : null,
-                                  ),
-                                  onChanged: _searchProducts,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              IconButton(
-                                icon: const Icon(Icons.qr_code_scanner, size: 28),
-                                color: Colors.blue,
-                                onPressed: () async {
-                                  final barcode = await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(builder: (context) => const BarcodeScannerScreen()),
-                                  );
-                                  if (barcode != null && mounted) {
-                                    await _searchProducts(barcode);
-                                    if (_searchResults.length == 1) {
-                                      _addItem(_searchResults.first);
-                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Added ${_searchResults.first.name}')));
-                                    } else if (_searchResults.isEmpty) {
-                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('No product found for $barcode')));
-                                    }
-                                  }
-                                },
-                              ),
-                            ],
+                          TextField(
+                            decoration: InputDecoration(
+                              hintText: 'Search product by name or part number...',
+                              prefixIcon: const Icon(Icons.search),
+                              suffixIcon: _isSearching
+                                  ? const Padding(
+                                      padding: EdgeInsets.all(12.0),
+                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                    )
+                                  : null,
+                            ),
+                            onChanged: _searchProducts,
                           ),
                           if (_searchResults.isNotEmpty) ...[
                             const SizedBox(height: 12),
@@ -703,7 +701,7 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
                   ],
                   if (!_billCreated)
                     ElevatedButton(
-                      onPressed: _createBill,
+                      onPressed: _updateBill,
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
