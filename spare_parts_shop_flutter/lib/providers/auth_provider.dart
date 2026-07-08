@@ -142,6 +142,6 @@ class AuthProvider with ChangeNotifier {
     await apiService.initAdmin();
   }
 
-  bool get isAdmin => _role == 'ADMIN' || _username == 'admin';
   bool get isSuperAdmin => _role == 'SUPER_ADMIN' || _role == 'SUPER_MANAGER';
+  bool get isAdmin => _role == 'ADMIN' || _username == 'admin' || isSuperAdmin;
 }
