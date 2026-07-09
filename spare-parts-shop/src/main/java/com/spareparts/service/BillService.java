@@ -80,7 +80,7 @@ public class BillService {
     
     @Transactional
     @EnforceUsageLimit(UsageLimitType.INVOICES)
-    @CacheEvict(value = "dashboardStats", key = "T(java.lang.String).valueOf(T(com.spareparts.config.TenantContext).getBusinessId()) + '-' + T(java.lang.String).valueOf(T(com.spareparts.config.BranchContext).getBranchId())")
+    @CacheEvict(value = "dashboardStats", key = "'' + T(com.spareparts.config.TenantContext).getBusinessId() + '-' + T(com.spareparts.config.BranchContext).getBranchId()")
     public Bill createBill(BillRequest request) {
         Long businessId = com.spareparts.config.TenantContext.getBusinessId();
         if (businessId == null) {
@@ -181,7 +181,7 @@ public class BillService {
     }
     
     @Transactional
-    @CacheEvict(value = "dashboardStats", key = "T(java.lang.String).valueOf(T(com.spareparts.config.TenantContext).getBusinessId()) + '-' + T(java.lang.String).valueOf(T(com.spareparts.config.BranchContext).getBranchId())")
+    @CacheEvict(value = "dashboardStats", key = "'' + T(com.spareparts.config.TenantContext).getBusinessId() + '-' + T(com.spareparts.config.BranchContext).getBranchId()")
     public Bill updateBill(Long id, BillRequest request) {
         Bill existingBill = getBillById(id);
         
@@ -292,7 +292,7 @@ public class BillService {
         return latestPrices;
     }
     
-    @Cacheable(value = "dashboardStats", key = "T(java.lang.String).valueOf(T(com.spareparts.config.TenantContext).getBusinessId()) + '-' + T(java.lang.String).valueOf(T(com.spareparts.config.BranchContext).getBranchId())")
+    @Cacheable(value = "dashboardStats", key = "'' + T(com.spareparts.config.TenantContext).getBusinessId() + '-' + T(com.spareparts.config.BranchContext).getBranchId()")
     public DashboardStats getDashboardStats() {
         Long businessId = com.spareparts.config.TenantContext.getBusinessId();
         LocalDateTime now = LocalDateTime.now();
@@ -426,3 +426,4 @@ public class BillService {
         return "INV-" + timestamp;
     }
 }
+
