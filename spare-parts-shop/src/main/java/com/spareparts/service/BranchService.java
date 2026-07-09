@@ -23,10 +23,20 @@ public class BranchService {
     @Autowired
     private BusinessRepository businessRepository;
 
-    public List<Branch> getAllBranches() {
+    @Autowired
+    private com.spareparts.repository.UserRepository userRepository;
+
+    public List<Branch> getAllBranches(String currentUsername) {
+        if (currentUsername != null) {
+            com.spareparts.model.User user = userRepository.findByUsername(currentUsername).orElse(null);
+            if (user != null && ("SUPER_ADMIN".equals(user.getRole()) || "SUPER_MANAGER".equals(user.getRole()))) {
+                return branchRepository.findAll();
+            }
+        }
+        
         Long businessId = TenantContext.getBusinessId();
         if (businessId == null) {
-            throw new TenantAccessException("No business context found");
+            throw new TenantAccessException("No business context found and user is not a Super Admin");
         }
         return branchRepository.findByBusinessId(businessId);
     }

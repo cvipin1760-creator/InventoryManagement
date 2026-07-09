@@ -17,8 +17,8 @@ public class BranchController {
     private BranchService branchService;
 
     @GetMapping
-    public List<Branch> getAllBranches() {
-        return branchService.getAllBranches();
+    public List<Branch> getAllBranches(java.security.Principal principal) {
+        return branchService.getAllBranches(principal != null ? principal.getName() : null);
     }
 
     @GetMapping("/{id}")

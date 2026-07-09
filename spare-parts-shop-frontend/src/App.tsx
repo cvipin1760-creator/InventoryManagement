@@ -50,10 +50,11 @@ const RoleBasedRoute = ({ children, allowedRoles }: { children: React.ReactNode;
   if (!user) {
     return <Navigate to="/dashboard" replace />;
   }
-  if (user.role === 'SUPER_MANAGER') {
+  const role = user.role === 'SUPER_ADMIN' ? 'SUPER_MANAGER' : user.role === 'STAFF' ? 'EMPLOYEE' : user.role;
+  if (role === 'SUPER_MANAGER') {
     return <>{children}</>;
   }
-  if (!allowedRoles.includes(user.role)) {
+  if (!allowedRoles.includes(role)) {
     return <Navigate to="/dashboard" replace />;
   }
   return <>{children}</>;
@@ -219,7 +220,22 @@ const App = () => {
           </RoleBasedRoute>
         } />
 
-        <Route path="settings" element={<Settings />} />
+        {/* Admin Routes */}
+        <Route path="users" element={
+          <RoleBasedRoute allowedRoles={['SUPER_MANAGER', 'ADMIN']}>
+            <Users />
+          </RoleBasedRoute>
+        } />
+        <Route path="settings" element={
+          <RoleBasedRoute allowedRoles={['SUPER_MANAGER', 'ADMIN']}>
+            <Settings />
+          </RoleBasedRoute>
+        } />
+        <Route path="billing" element={
+          <RoleBasedRoute allowedRoles={['SUPER_MANAGER']}>
+            <SubscriptionBilling />
+          </RoleBasedRoute>
+        } />
       </Route>
 
       {/* Catch-all */}

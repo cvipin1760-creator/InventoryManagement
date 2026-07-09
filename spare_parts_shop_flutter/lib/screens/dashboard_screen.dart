@@ -22,6 +22,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   dynamic _selectedBranch;
   int _unreadNotifications = 0;
   bool _isLoading = true;
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -43,18 +44,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
             _selectedBranch = _branches.firstWhere((b) => b['isMain'] == true, orElse: () => _branches.first);
           }
           _isLoading = false;
+          _errorMessage = null;
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
+          _stats = null;
+          _branches = [];
           _isLoading = false;
+          _errorMessage = e.toString().replaceFirst('Exception: ', '');
         });
-      }
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load stats: $e')),
-        );
       }
     }
   }
@@ -287,19 +287,48 @@ class _DashboardScreenState extends State<DashboardScreen> {
       body: SafeArea(
         child: _isLoading
             ? const Center(child: CircularProgressIndicator())
-            : _stats == null
-                ? const Center(child: Text('No data available'))
-                : SingleChildScrollView(
-                    padding: const EdgeInsets.all(24.0),
+            : _errorMessage != null || _stats == null
+                ? Center(
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        _buildQuickActions(isAdmin),
+                        Icon(Icons.error_outline, size: 60, color: Colors.red[300]),
+                        const SizedBox(height: 16),
+                        Text(
+                          _errorMessage ?? 'No data available',
+                          style: const TextStyle(fontSize: 16, color: Colors.red),
+                          textAlign: TextAlign.center,
+                        ),
                         const SizedBox(height: 24),
-                        _buildStatsGrid(),
-                        const SizedBox(height: 24),
-                        _buildChartsSection(),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            setState(() => _isLoading = true);
+                            _loadData();
+                          },
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('Tap to Retry'),
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                          ),
+                        ),
                       ],
+                    ),
+                  )
+                : RefreshIndicator(
+                    onRefresh: _loadData,
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _buildQuickActions(isAdmin),
+                          const SizedBox(height: 24),
+                          _buildStatsGrid(),
+                          const SizedBox(height: 24),
+                          _buildChartsSection(),
+                        ],
+                      ),
                     ),
                   ),
       ),

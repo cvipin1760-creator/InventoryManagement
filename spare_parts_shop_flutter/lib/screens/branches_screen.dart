@@ -13,6 +13,7 @@ class _BranchesScreenState extends State<BranchesScreen> {
   final ApiService _apiService = ApiService();
   List<dynamic> _branches = [];
   bool _isLoading = true;
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -26,11 +27,14 @@ class _BranchesScreenState extends State<BranchesScreen> {
       setState(() {
         _branches = branches;
         _isLoading = false;
+        _errorMessage = null;
       });
     } catch (e) {
-      setState(() => _isLoading = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to load branches: $e')));
+        setState(() {
+          _isLoading = false;
+          _errorMessage = e.toString().replaceFirst('Exception: ', '');
+        });
       }
     }
   }
@@ -112,45 +116,94 @@ class _BranchesScreenState extends State<BranchesScreen> {
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : _branches.isEmpty
-              ? const Center(child: Text('No branches found'))
-              : ListView.builder(
-                  itemCount: _branches.length,
-                  itemBuilder: (context, index) {
-                    final branch = _branches[index];
-                    return Card(
-                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
-                          child: const Icon(Icons.store, color: AppTheme.primaryColor),
-                        ),
-                        title: Text(branch['name'], style: const TextStyle(fontWeight: FontWeight.bold)),
-                        subtitle: Text('${branch['location']}\n${branch['contactPhone']}'),
-                        isThreeLine: true,
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (branch['isMain'])
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(color: Colors.green, borderRadius: BorderRadius.circular(12)),
-                                child: const Text('MAIN', style: TextStyle(color: Colors.white, fontSize: 10)),
-                              ),
-                            IconButton(icon: const Icon(Icons.edit), onPressed: () => _showBranchDialog(branch)),
-                            IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () async {
-                                await _apiService.deleteBranch(branch['id']);
-                                _loadBranches();
-                              },
-                            ),
-                          ],
+          : _errorMessage != null
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.error_outline, size: 60, color: Colors.red[300]),
+                      const SizedBox(height: 16),
+                      Text(
+                        _errorMessage!,
+                        style: const TextStyle(fontSize: 16, color: Colors.red),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 24),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          setState(() => _isLoading = true);
+                          _loadBranches();
+                        },
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Tap to Retry'),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                         ),
                       ),
-                    );
-                  },
-                ),
+                    ],
+                  ),
+                )
+              : _branches.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.storefront, size: 64, color: Colors.grey[400]),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No branches found',
+                            style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                          ),
+                          const SizedBox(height: 24),
+                          ElevatedButton.icon(
+                            onPressed: () => _showBranchDialog(),
+                            icon: const Icon(Icons.add),
+                            label: const Text('Create Your First Branch'),
+                          ),
+                        ],
+                      ),
+                    )
+                  : RefreshIndicator(
+                      onRefresh: _loadBranches,
+                      child: ListView.builder(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: _branches.length,
+                        itemBuilder: (context, index) {
+                          final branch = _branches[index];
+                          return Card(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            child: ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
+                                child: const Icon(Icons.store, color: AppTheme.primaryColor),
+                              ),
+                              title: Text(branch['name'], style: const TextStyle(fontWeight: FontWeight.bold)),
+                              subtitle: Text('${branch['location']}\n${branch['contactPhone']}'),
+                              isThreeLine: true,
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (branch['isMain'] == true)
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(color: Colors.green, borderRadius: BorderRadius.circular(12)),
+                                      child: const Text('MAIN', style: TextStyle(color: Colors.white, fontSize: 10)),
+                                    ),
+                                  IconButton(icon: const Icon(Icons.edit), onPressed: () => _showBranchDialog(branch)),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete, color: Colors.red),
+                                    onPressed: () async {
+                                      await _apiService.deleteBranch(branch['id']);
+                                      _loadBranches();
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
     );
   }
 }

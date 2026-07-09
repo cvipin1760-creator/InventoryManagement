@@ -49,53 +49,16 @@ class ApiService {
   }
   
   Future<LoginResponse> login(String username, String password) async {
-    print('=== Login Attempt ===');
-    print('Base URL: $baseUrl');
-    print('Username: $username');
     final url = Uri.parse('$baseUrl/auth/login');
-    print('Request URL: $url');
     final requestBody = {'username': username.trim(), 'password': password.trim()};
-    print('Request Body: $requestBody');
-    final headers = await _getHeaders();
-    print('Headers: $headers');
     
-    try {
-      final response = await http.post(
-        url,
-        headers: headers,
-        body: jsonEncode(requestBody),
-      );
-
-      print('Response Status Code: ${response.statusCode}');
-      print('Response Body: ${response.body}');
-
-      if (response.statusCode == 200) {
-        return LoginResponse.fromJson(jsonDecode(response.body));
-      } else {
-        try {
-          final Map<String, dynamic> errorBody = jsonDecode(response.body);
-          if (errorBody['message'] != null) {
-            throw Exception(errorBody['message']);
-          }
-          throw Exception('Login failed with status code: ${response.statusCode}');
-        } catch (e) {
-          if (e is Exception) {
-            rethrow;
-          }
-          throw Exception('Login failed with status code: ${response.statusCode}');
-        }
-      }
-    } catch (e) {
-      print('Login Error: $e');
-      if (e.toString().contains('SocketException')) {
-        throw Exception('Could not connect to server. Please check your internet connection.');
-      }
-      rethrow;
-    }
+    // _post automatically handles logging, headers, and error checking
+    final response = await _post(url, body: jsonEncode(requestBody));
+    return LoginResponse.fromJson(jsonDecode(response.body));
   }
 
   Future<void> initAdmin() async {
-    await http.post(
+    await _post(
       Uri.parse('$baseUrl/auth/init-admin'),
       headers: await _getHeaders(),
     );
@@ -108,7 +71,7 @@ class ApiService {
       return cached.map((dynamic item) => Customer.fromJson(item)).toList();
     }
     
-    final response = await http.get(Uri.parse('$baseUrl/customers'), headers: await _getHeaders());
+    final response = await _get(Uri.parse('$baseUrl/customers'), headers: await _getHeaders());
 
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
@@ -120,7 +83,7 @@ class ApiService {
   }
 
   Future<Customer> getCustomer(int id) async {
-    final response = await http.get(Uri.parse('$baseUrl/customers/$id'), headers: await _getHeaders());
+    final response = await _get(Uri.parse('$baseUrl/customers/$id'), headers: await _getHeaders());
 
     if (response.statusCode == 200) {
       return Customer.fromJson(jsonDecode(response.body));
@@ -130,7 +93,7 @@ class ApiService {
   }
 
   Future<List<Customer>> searchCustomers(String keyword) async {
-    final response = await http.get(
+    final response = await _get(
       Uri.parse('$baseUrl/customers/search?keyword=${Uri.encodeComponent(keyword)}'),
       headers: await _getHeaders(),
     );
@@ -144,7 +107,7 @@ class ApiService {
   }
 
   Future<Customer> createCustomer(Customer customer) async {
-    final response = await http.post(
+    final response = await _post(
       Uri.parse('$baseUrl/customers'),
       headers: await _getHeaders(),
       body: jsonEncode(customer.toJson()..remove('id')..remove('createdAt')),
@@ -158,7 +121,7 @@ class ApiService {
   }
 
   Future<Customer> updateCustomer(int id, Customer customer) async {
-    final response = await http.put(
+    final response = await _put(
       Uri.parse('$baseUrl/customers/$id'),
       headers: await _getHeaders(),
       body: jsonEncode(customer.toJson()),
@@ -172,7 +135,7 @@ class ApiService {
   }
 
   Future<void> deleteCustomer(int id) async {
-    final response = await http.delete(Uri.parse('$baseUrl/customers/$id'), headers: await _getHeaders());
+    final response = await _delete(Uri.parse('$baseUrl/customers/$id'), headers: await _getHeaders());
 
     if (response.statusCode != 200) {
       throw Exception('Failed to delete customer');
@@ -180,7 +143,7 @@ class ApiService {
   }
 
   Future<List<Supplier>> getSuppliers() async {
-    final response = await http.get(Uri.parse('$baseUrl/suppliers'), headers: await _getHeaders());
+    final response = await _get(Uri.parse('$baseUrl/suppliers'), headers: await _getHeaders());
 
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
@@ -191,7 +154,7 @@ class ApiService {
   }
 
   Future<Supplier> getSupplier(int id) async {
-    final response = await http.get(Uri.parse('$baseUrl/suppliers/$id'), headers: await _getHeaders());
+    final response = await _get(Uri.parse('$baseUrl/suppliers/$id'), headers: await _getHeaders());
 
     if (response.statusCode == 200) {
       return Supplier.fromJson(jsonDecode(response.body));
@@ -201,7 +164,7 @@ class ApiService {
   }
 
   Future<List<Supplier>> searchSuppliers(String keyword) async {
-    final response = await http.get(
+    final response = await _get(
       Uri.parse('$baseUrl/suppliers/search?keyword=${Uri.encodeComponent(keyword)}'),
       headers: await _getHeaders(),
     );
@@ -237,7 +200,7 @@ class ApiService {
       );
     }
 
-    final response = await http.post(
+    final response = await _post(
       Uri.parse(url),
       headers: headers,
       body: body,
@@ -251,7 +214,7 @@ class ApiService {
   }
 
   Future<Supplier> createSupplier(Supplier supplier) async {
-    final response = await http.post(
+    final response = await _post(
       Uri.parse('$baseUrl/suppliers'),
       headers: await _getHeaders(),
       body: jsonEncode(supplier.toJson()..remove('id')..remove('createdAt')),
@@ -265,7 +228,7 @@ class ApiService {
   }
 
   Future<Supplier> updateSupplier(int id, Supplier supplier) async {
-    final response = await http.put(
+    final response = await _put(
       Uri.parse('$baseUrl/suppliers/$id'),
       headers: await _getHeaders(),
       body: jsonEncode(supplier.toJson()),
@@ -279,7 +242,7 @@ class ApiService {
   }
 
   Future<void> deleteSupplier(int id) async {
-    final response = await http.delete(Uri.parse('$baseUrl/suppliers/$id'), headers: await _getHeaders());
+    final response = await _delete(Uri.parse('$baseUrl/suppliers/$id'), headers: await _getHeaders());
 
     if (response.statusCode != 200) {
       throw Exception('Failed to delete supplier');
@@ -293,7 +256,7 @@ class ApiService {
       return cached.map((dynamic item) => Product.fromJson(item)).toList();
     }
     
-    final response = await http.get(Uri.parse('$baseUrl/products'), headers: await _getHeaders());
+    final response = await _get(Uri.parse('$baseUrl/products'), headers: await _getHeaders());
 
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
@@ -305,7 +268,7 @@ class ApiService {
   }
 
   Future<Product> getProduct(int id) async {
-    final response = await http.get(Uri.parse('$baseUrl/products/$id'), headers: await _getHeaders());
+    final response = await _get(Uri.parse('$baseUrl/products/$id'), headers: await _getHeaders());
 
     if (response.statusCode == 200) {
       return Product.fromJson(jsonDecode(response.body));
@@ -315,7 +278,7 @@ class ApiService {
   }
 
   Future<List<Product>> getLowStockProducts() async {
-    final response = await http.get(Uri.parse('$baseUrl/products/low-stock'), headers: await _getHeaders());
+    final response = await _get(Uri.parse('$baseUrl/products/low-stock'), headers: await _getHeaders());
 
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
@@ -326,7 +289,7 @@ class ApiService {
   }
 
   Future<List<Product>> searchProducts(String keyword) async {
-    final response = await http.get(
+    final response = await _get(
       Uri.parse('$baseUrl/products/search?keyword=${Uri.encodeComponent(keyword)}'),
       headers: await _getHeaders(),
     );
@@ -340,7 +303,7 @@ class ApiService {
   }
 
   Future<Product> createProduct(Product product) async {
-    final response = await http.post(
+    final response = await _post(
       Uri.parse('$baseUrl/products'),
       headers: await _getHeaders(),
       body: jsonEncode(product.toJson()..remove('id')..remove('createdAt')..remove('updatedAt')),
@@ -354,7 +317,7 @@ class ApiService {
   }
 
   Future<Product> updateProduct(int id, Product product) async {
-    final response = await http.put(
+    final response = await _put(
       Uri.parse('$baseUrl/products/$id'),
       headers: await _getHeaders(),
       body: jsonEncode(product.toJson()),
@@ -368,7 +331,7 @@ class ApiService {
   }
 
   Future<void> deleteProduct(int id) async {
-    final response = await http.delete(Uri.parse('$baseUrl/products/$id'), headers: await _getHeaders());
+    final response = await _delete(Uri.parse('$baseUrl/products/$id'), headers: await _getHeaders());
 
     if (response.statusCode != 200) {
       throw Exception('Failed to delete product');
@@ -376,7 +339,7 @@ class ApiService {
   }
 
   Future<Map<String, double>> getCustomerProductPrices(int customerId) async {
-    final response = await http.get(
+    final response = await _get(
       Uri.parse('$baseUrl/bills/customer-prices?customerId=$customerId'),
       headers: await _getHeaders(),
     );
@@ -390,7 +353,7 @@ class ApiService {
   }
 
   Future<List<Bill>> getBills() async {
-    final response = await http.get(Uri.parse('$baseUrl/bills'), headers: await _getHeaders());
+    final response = await _get(Uri.parse('$baseUrl/bills'), headers: await _getHeaders());
 
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
@@ -401,7 +364,7 @@ class ApiService {
   }
 
   Future<Bill> getBill(int id) async {
-    final response = await http.get(Uri.parse('$baseUrl/bills/$id'), headers: await _getHeaders());
+    final response = await _get(Uri.parse('$baseUrl/bills/$id'), headers: await _getHeaders());
 
     if (response.statusCode == 200) {
       return Bill.fromJson(jsonDecode(response.body));
@@ -411,7 +374,7 @@ class ApiService {
   }
 
   Future<List<Bill>> getBillsByDateRange(String startDate, String endDate) async {
-    final response = await http.get(
+    final response = await _get(
       Uri.parse('$baseUrl/bills/by-date-range?startDate=${Uri.encodeComponent(startDate)}&endDate=${Uri.encodeComponent(endDate)}'),
       headers: await _getHeaders(),
     );
@@ -425,7 +388,7 @@ class ApiService {
   }
 
   Future<List<Bill>> searchBills(String customerName) async {
-    final response = await http.get(
+    final response = await _get(
       Uri.parse('$baseUrl/bills/search?customerName=${Uri.encodeComponent(customerName)}'),
       headers: await _getHeaders(),
     );
@@ -439,7 +402,7 @@ class ApiService {
   }
 
   Future<List<Bill>> searchBillsByProduct(String keyword) async {
-    final response = await http.get(
+    final response = await _get(
       Uri.parse('$baseUrl/bills/search-by-product?keyword=${Uri.encodeComponent(keyword)}'),
       headers: await _getHeaders(),
     );
@@ -453,7 +416,7 @@ class ApiService {
   }
 
   Future<Bill> createBillFromMap(Map<String, dynamic> billData) async {
-    final response = await http.post(
+    final response = await _post(
       Uri.parse('$baseUrl/bills'),
       headers: await _getHeaders(),
       body: jsonEncode(billData),
@@ -467,7 +430,7 @@ class ApiService {
   }
 
   Future<Bill> updateBill(int id, Map<String, dynamic> billData) async {
-    final response = await http.put(
+    final response = await _put(
       Uri.parse('$baseUrl/bills/$id'),
       headers: await _getHeaders(),
       body: jsonEncode(billData),
@@ -485,7 +448,7 @@ class ApiService {
   }
 
   Future<void> sendBillViaWhatsApp(int id, String phone) async {
-    final response = await http.post(
+    final response = await _post(
       Uri.parse('$baseUrl/bills/$id/send-whatsapp?phone=${Uri.encodeComponent(phone)}'),
       headers: await _getHeaders(),
     );
@@ -495,7 +458,7 @@ class ApiService {
   }
 
   Future<String> exportExcel() async {
-    final response = await http.get(
+    final response = await _get(
       Uri.parse('$baseUrl/products/export-excel'),
       headers: await _getHeaders(),
     );
@@ -533,7 +496,7 @@ class ApiService {
   }
 
   Future<List<dynamic>> getBillTemplates() async {
-    final response = await http.get(Uri.parse('$baseUrl/bills/templates'), headers: await _getHeaders());
+    final response = await _get(Uri.parse('$baseUrl/bills/templates'), headers: await _getHeaders());
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
@@ -542,7 +505,7 @@ class ApiService {
   }
 
   Future<dynamic> createBillTemplate(Map<String, dynamic> data) async {
-    final response = await http.post(
+    final response = await _post(
       Uri.parse('$baseUrl/bills/templates'),
       headers: await _getHeaders(),
       body: jsonEncode(data),
@@ -555,7 +518,7 @@ class ApiService {
   }
 
   Future<dynamic> updateBillTemplate(int id, Map<String, dynamic> data) async {
-    final response = await http.put(
+    final response = await _put(
       Uri.parse('$baseUrl/bills/templates/$id'),
       headers: await _getHeaders(),
       body: jsonEncode(data),
@@ -568,7 +531,7 @@ class ApiService {
   }
 
   Future<void> deleteBillTemplate(int id) async {
-    final response = await http.delete(Uri.parse('$baseUrl/bills/templates/$id'), headers: await _getHeaders());
+    final response = await _delete(Uri.parse('$baseUrl/bills/templates/$id'), headers: await _getHeaders());
     if (response.statusCode != 200) {
       throw Exception('Failed to delete bill template');
     }
@@ -576,13 +539,13 @@ class ApiService {
 
   // --- BRANCHES ---
   Future<List<dynamic>> getBranches() async {
-    final response = await http.get(Uri.parse('$baseUrl/branches'), headers: await _getHeaders());
+    final response = await _get(Uri.parse('$baseUrl/branches'), headers: await _getHeaders());
     if (response.statusCode == 200) return jsonDecode(response.body);
     throw Exception('Failed to load branches');
   }
 
   Future<dynamic> createBranch(Map<String, dynamic> data) async {
-    final response = await http.post(
+    final response = await _post(
       Uri.parse('$baseUrl/branches'),
       headers: await _getHeaders(),
       body: jsonEncode(data),
@@ -592,7 +555,7 @@ class ApiService {
   }
 
   Future<dynamic> updateBranch(int id, Map<String, dynamic> data) async {
-    final response = await http.put(
+    final response = await _put(
       Uri.parse('$baseUrl/branches/$id'),
       headers: await _getHeaders(),
       body: jsonEncode(data),
@@ -602,13 +565,13 @@ class ApiService {
   }
 
   Future<void> deleteBranch(int id) async {
-    final response = await http.delete(Uri.parse('$baseUrl/branches/$id'), headers: await _getHeaders());
+    final response = await _delete(Uri.parse('$baseUrl/branches/$id'), headers: await _getHeaders());
     if (response.statusCode != 200) throw Exception('Failed to delete branch');
   }
 
   // --- STAFF ---
   Future<dynamic> createStaff(Map<String, dynamic> data) async {
-    final response = await http.post(
+    final response = await _post(
       Uri.parse('$baseUrl/auth/staff'),
       headers: await _getHeaders(),
       body: jsonEncode(data),
@@ -618,7 +581,7 @@ class ApiService {
   }
 
   Future<dynamic> updateStaff(int id, Map<String, dynamic> data) async {
-    final response = await http.put(
+    final response = await _put(
       Uri.parse('$baseUrl/auth/staff/$id'),
       headers: await _getHeaders(),
       body: jsonEncode(data),
@@ -629,13 +592,13 @@ class ApiService {
 
   // --- BUSINESS ---
   Future<dynamic> getBusiness() async {
-    final response = await http.get(Uri.parse('$baseUrl/business'), headers: await _getHeaders());
+    final response = await _get(Uri.parse('$baseUrl/business'), headers: await _getHeaders());
     if (response.statusCode == 200) return jsonDecode(response.body);
     throw Exception('Failed to get business info');
   }
 
   Future<dynamic> updateSubscription(int id, String subscriptionPlan) async {
-    final response = await http.put(
+    final response = await _put(
       Uri.parse('$baseUrl/super-manager/businesses/$id/subscription'),
       headers: await _getHeaders(),
       body: jsonEncode({'subscriptionPlan': subscriptionPlan}),
@@ -645,7 +608,7 @@ class ApiService {
   }
 
   Future<dynamic> toggleSubscriptionStatus(int id, bool isActive) async {
-    final response = await http.put(
+    final response = await _put(
       Uri.parse('$baseUrl/super-manager/businesses/$id/subscription/status'),
       headers: await _getHeaders(),
       body: jsonEncode({'isActive': isActive}),
@@ -656,13 +619,13 @@ class ApiService {
 
   // --- NOTIFICATIONS ---
   Future<List<dynamic>> getNotifications() async {
-    final response = await http.get(Uri.parse('$baseUrl/notifications'), headers: await _getHeaders());
+    final response = await _get(Uri.parse('$baseUrl/notifications'), headers: await _getHeaders());
     if (response.statusCode == 200) return jsonDecode(response.body);
     throw Exception('Failed to load notifications');
   }
 
   Future<int> getUnreadNotificationCount() async {
-    final response = await http.get(Uri.parse('$baseUrl/notifications/unread/count'), headers: await _getHeaders());
+    final response = await _get(Uri.parse('$baseUrl/notifications/unread/count'), headers: await _getHeaders());
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       return data is int ? data : (data['count'] ?? 0);
@@ -671,7 +634,7 @@ class ApiService {
   }
 
   Future<void> markNotificationAsRead(int id) async {
-    final response = await http.put(Uri.parse('$baseUrl/notifications/$id/read'), headers: await _getHeaders());
+    final response = await _put(Uri.parse('$baseUrl/notifications/$id/read'), headers: await _getHeaders());
     if (response.statusCode != 200) throw Exception('Failed to mark notification as read');
   }
 
@@ -701,7 +664,7 @@ class ApiService {
   }
 
   Future<List<Purchase>> getPurchases() async {
-    final response = await http.get(Uri.parse('$baseUrl/purchases'), headers: await _getHeaders());
+    final response = await _get(Uri.parse('$baseUrl/purchases'), headers: await _getHeaders());
 
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
@@ -712,7 +675,7 @@ class ApiService {
   }
 
   Future<Purchase> getPurchase(int id) async {
-    final response = await http.get(Uri.parse('$baseUrl/purchases/$id'), headers: await _getHeaders());
+    final response = await _get(Uri.parse('$baseUrl/purchases/$id'), headers: await _getHeaders());
 
     if (response.statusCode == 200) {
       return Purchase.fromJson(jsonDecode(response.body));
@@ -722,7 +685,7 @@ class ApiService {
   }
 
   Future<List<Purchase>> getPurchasesByDateRange(String startDate, String endDate) async {
-    final response = await http.get(
+    final response = await _get(
       Uri.parse('$baseUrl/purchases/by-date-range?startDate=${Uri.encodeComponent(startDate)}&endDate=${Uri.encodeComponent(endDate)}'),
       headers: await _getHeaders(),
     );
@@ -736,7 +699,7 @@ class ApiService {
   }
 
   Future<List<Purchase>> searchPurchases(String supplierName) async {
-    final response = await http.get(
+    final response = await _get(
       Uri.parse('$baseUrl/purchases/search?supplierName=${Uri.encodeComponent(supplierName)}'),
       headers: await _getHeaders(),
     );
@@ -750,7 +713,7 @@ class ApiService {
   }
 
   Future<List<Purchase>> searchPurchasesByProduct(String keyword) async {
-    final response = await http.get(
+    final response = await _get(
       Uri.parse('$baseUrl/purchases/search-by-product?keyword=${Uri.encodeComponent(keyword)}'),
       headers: await _getHeaders(),
     );
@@ -764,7 +727,7 @@ class ApiService {
   }
 
   Future<Purchase> createPurchase(Map<String, dynamic> purchaseData) async {
-    final response = await http.post(
+    final response = await _post(
       Uri.parse('$baseUrl/purchases'),
       headers: await _getHeaders(),
       body: jsonEncode(purchaseData),
@@ -778,7 +741,7 @@ class ApiService {
   }
 
   Future<List<Payment>> getCustomerPayments(int customerId) async {
-    final response = await http.get(
+    final response = await _get(
       Uri.parse('$baseUrl/payments/customer/$customerId'),
       headers: await _getHeaders(),
     );
@@ -792,7 +755,7 @@ class ApiService {
   }
 
   Future<CustomerBalance> getCustomerBalance(int customerId) async {
-    final response = await http.get(
+    final response = await _get(
       Uri.parse('$baseUrl/payments/customer/$customerId/balance'),
       headers: await _getHeaders(),
     );
@@ -805,7 +768,7 @@ class ApiService {
   }
 
   Future<Payment> createPayment(Map<String, dynamic> paymentData) async {
-    final response = await http.post(
+    final response = await _post(
       Uri.parse('$baseUrl/payments'),
       headers: await _getHeaders(),
       body: jsonEncode(paymentData),
@@ -819,7 +782,7 @@ class ApiService {
   }
 
   Future<DashboardStats> getDashboardStats() async {
-    final response = await http.get(Uri.parse('$baseUrl/dashboard/stats'), headers: await _getHeaders());
+    final response = await _get(Uri.parse('$baseUrl/dashboard/stats'), headers: await _getHeaders());
 
     if (response.statusCode == 200) {
       return DashboardStats.fromJson(jsonDecode(response.body));
@@ -829,7 +792,7 @@ class ApiService {
   }
 
   Future<DetailedAnalyticsResponse> getFullAnalytics() async {
-    final response = await http.get(Uri.parse('$baseUrl/analytics/full'), headers: await _getHeaders());
+    final response = await _get(Uri.parse('$baseUrl/analytics/full'), headers: await _getHeaders());
 
     if (response.statusCode == 200) {
       return DetailedAnalyticsResponse.fromJson(jsonDecode(response.body));
@@ -839,7 +802,7 @@ class ApiService {
   }
 
   Future<AdminDashboardResponse> getAdminDashboard() async {
-    final response = await http.get(Uri.parse('$baseUrl/analytics/admin-dashboard'), headers: await _getHeaders());
+    final response = await _get(Uri.parse('$baseUrl/analytics/admin-dashboard'), headers: await _getHeaders());
 
     if (response.statusCode == 200) {
       return AdminDashboardResponse.fromJson(jsonDecode(response.body));
@@ -849,7 +812,7 @@ class ApiService {
   }
 
   Future<List<dynamic>> getMyBills() async {
-    final response = await http.get(Uri.parse('$baseUrl/customers/me/bills'), headers: await _getHeaders());
+    final response = await _get(Uri.parse('$baseUrl/customers/me/bills'), headers: await _getHeaders());
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     }
@@ -857,7 +820,7 @@ class ApiService {
   }
 
   Future<List<dynamic>> getMyWarranties() async {
-    final response = await http.get(Uri.parse('$baseUrl/warranties/me'), headers: await _getHeaders());
+    final response = await _get(Uri.parse('$baseUrl/warranties/me'), headers: await _getHeaders());
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     }
@@ -865,7 +828,7 @@ class ApiService {
   }
 
   Future<List<dynamic>> getMyEmis() async {
-    final response = await http.get(Uri.parse('$baseUrl/emis/me'), headers: await _getHeaders());
+    final response = await _get(Uri.parse('$baseUrl/emis/me'), headers: await _getHeaders());
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     }
@@ -873,7 +836,7 @@ class ApiService {
   }
 
   Future<void> register(String username, String email, String password) async {
-    final response = await http.post(
+    final response = await _post(
       Uri.parse('$baseUrl/auth/register'),
       headers: await _getHeaders(),
       body: jsonEncode({
@@ -889,7 +852,7 @@ class ApiService {
   }
 
   Future<void> verifyOtp(String email, String otp) async {
-    final response = await http.post(
+    final response = await _post(
       Uri.parse('$baseUrl/auth/verify-otp'),
       headers: await _getHeaders(),
       body: jsonEncode({
@@ -919,7 +882,7 @@ class ApiService {
   }
 
   Future<List<dynamic>> getUsers() async {
-    final response = await http.get(Uri.parse('$baseUrl/auth/users'), headers: await _getHeaders());
+    final response = await _get(Uri.parse('$baseUrl/auth/users'), headers: await _getHeaders());
 
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
@@ -929,7 +892,7 @@ class ApiService {
   }
 
   Future<void> createUser(String username, String email, String password, String role, bool enabled) async {
-    final response = await http.post(
+    final response = await _post(
       Uri.parse('$baseUrl/auth/users'),
       headers: await _getHeaders(),
       body: jsonEncode({
@@ -947,7 +910,7 @@ class ApiService {
   }
 
   Future<void> deleteUser(int id) async {
-    final response = await http.delete(Uri.parse('$baseUrl/auth/users/$id'), headers: await _getHeaders());
+    final response = await _delete(Uri.parse('$baseUrl/auth/users/$id'), headers: await _getHeaders());
 
     if (response.statusCode != 200) {
       throw Exception('Failed to delete user');
@@ -955,7 +918,7 @@ class ApiService {
   }
 
   Future<void> updateUserRole(int id, String role) async {
-    final response = await http.put(
+    final response = await _put(
       Uri.parse('$baseUrl/auth/users/$id/role?role=$role'),
       headers: await _getHeaders(),
     );
@@ -966,7 +929,7 @@ class ApiService {
   }
 
   Future<void> changePassword(String newPassword) async {
-    final response = await http.post(
+    final response = await _post(
       Uri.parse('$baseUrl/auth/change-password'),
       headers: await _getHeaders(),
       body: jsonEncode({
@@ -982,7 +945,7 @@ class ApiService {
   // SaaS Features
 
   Future<Map<String, dynamic>> getPredictiveAnalytics() async {
-    final response = await http.get(Uri.parse('$baseUrl/predictive-analytics'), headers: await _getHeaders());
+    final response = await _get(Uri.parse('$baseUrl/predictive-analytics'), headers: await _getHeaders());
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
@@ -991,7 +954,7 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> getLoyaltyAccount(int customerId) async {
-    final response = await http.get(Uri.parse('$baseUrl/loyalty/account/$customerId'), headers: await _getHeaders());
+    final response = await _get(Uri.parse('$baseUrl/loyalty/account/$customerId'), headers: await _getHeaders());
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
@@ -1000,11 +963,105 @@ class ApiService {
   }
 
   Future<String> exportTallyXml() async {
-    final response = await http.get(Uri.parse('$baseUrl/exports/tally-xml'), headers: await _getHeaders());
+    final response = await _get(Uri.parse('$baseUrl/exports/tally-xml'), headers: await _getHeaders());
     if (response.statusCode == 200) {
       return response.body;
     } else {
       throw Exception('Failed to export Tally XML');
+    }
+  }
+
+  Future<http.Response> _get(Uri url, {Map<String, String>? headers}) async {
+    return _request('GET', url, headers: headers);
+  }
+
+  Future<http.Response> _post(Uri url, {Map<String, String>? headers, Object? body, Encoding? encoding}) async {
+    return _request('POST', url, headers: headers, body: body, encoding: encoding);
+  }
+
+  Future<http.Response> _put(Uri url, {Map<String, String>? headers, Object? body, Encoding? encoding}) async {
+    return _request('PUT', url, headers: headers, body: body, encoding: encoding);
+  }
+
+  Future<http.Response> _delete(Uri url, {Map<String, String>? headers, Object? body, Encoding? encoding}) async {
+    return _request('DELETE', url, headers: headers, body: body, encoding: encoding);
+  }
+
+  Future<http.Response> _request(
+    String method,
+    Uri url, {
+    Map<String, String>? headers,
+    Object? body,
+    Encoding? encoding,
+  }) async {
+    final defaultHeaders = await _getHeaders();
+    if (headers != null) {
+      defaultHeaders.addAll(headers);
+    }
+    
+    print('=== API Request ===');
+    print('URL: $url');
+    print('Method: $method');
+    print('Headers: $defaultHeaders');
+    if (body != null) print('Body: $body');
+
+    http.Response response;
+    try {
+      switch (method.toUpperCase()) {
+        case 'GET':
+          response = await http.get(url, headers: defaultHeaders);
+          break;
+        case 'POST':
+          response = await http.post(url, headers: defaultHeaders, body: body, encoding: encoding);
+          break;
+        case 'PUT':
+          response = await http.put(url, headers: defaultHeaders, body: body, encoding: encoding);
+          break;
+        case 'DELETE':
+          response = await http.delete(url, headers: defaultHeaders, body: body, encoding: encoding);
+          break;
+        default:
+          throw Exception('Unsupported HTTP method: $method');
+      }
+    } catch (e) {
+      print('Network Error: $e');
+      if (e.toString().contains('SocketException') || e.toString().contains('ClientException') || e.toString().contains('Failed host lookup')) {
+        throw Exception('Could not connect to server. Please check your internet connection.');
+      }
+      rethrow;
+    }
+
+    print('=== API Response ===');
+    print('Status: ${response.statusCode}');
+    if (response.body.length > 500) {
+       print('Body: ${response.body.substring(0, 500)}... (truncated)');
+    } else {
+       print('Body: ${response.body}');
+    }
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return response;
+    } else {
+      String errorMessage = 'Request failed with status: ${response.statusCode}';
+      try {
+        final Map<String, dynamic> errorBody = jsonDecode(response.body);
+        if (errorBody['message'] != null) {
+          errorMessage = errorBody['message'];
+        }
+      } catch (_) {}
+      
+      switch (response.statusCode) {
+        case 401:
+          throw Exception('Unauthorized: $errorMessage');
+        case 403:
+          throw Exception('Forbidden: $errorMessage');
+        case 404:
+          throw Exception('Not Found: $errorMessage');
+        case 500:
+          throw Exception('Server Error: $errorMessage');
+        default:
+          throw Exception(errorMessage);
+      }
     }
   }
 }

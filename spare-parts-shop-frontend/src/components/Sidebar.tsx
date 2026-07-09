@@ -62,30 +62,32 @@ const Sidebar = ({
   const menuItems = useMemo(() => {
     const items: MenuItem[] = [];
 
-    if (user?.role === 'SUPER_MANAGER') {
-      items.push({ label: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} />, roles: ['SUPER_MANAGER'] });
-      items.push({ label: 'Reports', path: '/reports', icon: <FileSpreadsheet size={20} />, roles: ['SUPER_MANAGER'] });
-      items.push({ label: 'Users', path: '/users', icon: <Users size={20} />, roles: ['SUPER_MANAGER'] });
-      items.push({ label: 'Admins', path: '/admins', icon: <UserPlus size={20} />, roles: ['SUPER_MANAGER'] });
-      items.push({ label: 'Businesses', path: '/businesses', icon: <PackageOpen size={20} />, roles: ['SUPER_MANAGER'] });
-      items.push({ label: 'Subscriptions', path: '/subscriptions', icon: <CreditCard size={20} />, roles: ['SUPER_MANAGER'] });
-      items.push({ label: 'Payments', path: '/payments', icon: <Receipt size={20} />, roles: ['SUPER_MANAGER'] });
-      items.push({ label: 'Predictive Analytics', path: '/predictive-analytics', icon: <Activity size={20} />, roles: ['SUPER_MANAGER'] });
-      items.push({ label: 'Feature Management', path: '/feature-management', icon: <Zap size={20} />, roles: ['SUPER_MANAGER'] });
-    } else if (user?.role === 'ADMIN' || user?.role === 'EMPLOYEE') {
-      items.push({ label: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} />, roles: ['ADMIN', 'EMPLOYEE'] });
-      items.push({ label: 'Inventory', path: '/products', icon: <PackageOpen size={20} />, roles: ['ADMIN', 'EMPLOYEE'] });
-      items.push({ label: 'Transfers', path: '/stock-transfers', icon: <Truck size={20} />, roles: ['ADMIN', 'EMPLOYEE'] });
-      items.push({ label: 'Customers', path: '/customers', icon: <Users size={20} />, roles: ['ADMIN', 'EMPLOYEE'] });
-      items.push({ label: 'Suppliers', path: '/suppliers', icon: <Truck size={20} />, roles: ['ADMIN', 'EMPLOYEE'] });
-      items.push({ label: 'Sales', path: '/bills', icon: <Receipt size={20} />, roles: ['ADMIN', 'EMPLOYEE'] });
-      items.push({ label: 'Purchases', path: '/purchases', icon: <ShoppingCart size={20} />, roles: ['ADMIN', 'EMPLOYEE'] });
-      items.push({ label: 'Reports', path: '/reports', icon: <FileSpreadsheet size={20} />, roles: ['ADMIN', 'EMPLOYEE'] });
-      items.push({ label: 'Predictive Analytics', path: '/predictive-analytics', icon: <Activity size={20} />, roles: ['ADMIN'] });
-      if (user?.role === 'ADMIN') {
-        items.push({ label: 'Billing', path: '/billing', icon: <CreditCard size={20} />, roles: ['ADMIN'] });
-        items.push({ label: 'Settings', path: '/settings', icon: <Settings size={20} />, roles: ['ADMIN'] });
-      }
+    if (user?.role === 'SUPER_MANAGER' || user?.role === 'SUPER_ADMIN') {
+      items.push({ label: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> });
+      items.push({ label: 'Sales', path: '/bills', icon: <Receipt size={20} /> });
+      items.push({ label: 'Purchases', path: '/purchases', icon: <ShoppingCart size={20} /> });
+      items.push({ label: 'Reports', path: '/reports', icon: <FileSpreadsheet size={20} /> });
+      items.push({ label: 'Predictive Analytics', path: '/predictive-analytics', icon: <Activity size={20} /> });
+      items.push({ label: 'Staff', path: '/users', icon: <Users size={20} /> });
+      items.push({ label: 'Customers', path: '/customers', icon: <Users size={20} /> });
+      items.push({ label: 'Billing', path: '/billing', icon: <CreditCard size={20} /> });
+      items.push({ label: 'Settings', path: '/settings', icon: <Settings size={20} /> });
+      items.push({ label: 'Organizations', path: '/businesses', icon: <PackageOpen size={20} /> });
+      items.push({ label: 'Admins', path: '/admins', icon: <UserPlus size={20} /> });
+    } else if (user?.role === 'ADMIN') {
+      items.push({ label: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> });
+      items.push({ label: 'Sales', path: '/bills', icon: <Receipt size={20} /> });
+      items.push({ label: 'Purchases', path: '/purchases', icon: <ShoppingCart size={20} /> });
+      items.push({ label: 'Reports', path: '/reports', icon: <FileSpreadsheet size={20} /> });
+      items.push({ label: 'Predictive Analytics', path: '/predictive-analytics', icon: <Activity size={20} /> });
+      items.push({ label: 'Staff', path: '/users', icon: <Users size={20} /> });
+      items.push({ label: 'Customers', path: '/customers', icon: <Users size={20} /> });
+      items.push({ label: 'Settings', path: '/settings', icon: <Settings size={20} /> });
+    } else if (user?.role === 'STAFF' || user?.role === 'EMPLOYEE') {
+      items.push({ label: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> });
+      items.push({ label: 'Sales', path: '/bills', icon: <Receipt size={20} /> });
+      items.push({ label: 'Purchases', path: '/purchases', icon: <ShoppingCart size={20} /> });
+      items.push({ label: 'Customers', path: '/customers', icon: <Users size={20} /> });
     } else {
       items.push({ label: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> });
     }

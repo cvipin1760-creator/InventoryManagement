@@ -57,4 +57,7 @@ public class User implements BelongsToBusiness {
 
     @Column(name = "password_changed")
     private Boolean passwordChanged = false;
+
+    @Column(name = "created_by_id")
+    private Long createdBy;
 }

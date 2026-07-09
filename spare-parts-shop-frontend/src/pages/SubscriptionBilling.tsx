@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Box, Typography, Card, CardContent, Button, Grid, LinearProgress, useTheme } from '@mui/material';
+import { Box, Typography, Card, CardContent, Button, Grid, LinearProgress, useTheme, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import { CheckCircle } from 'lucide-react';
 import api from '../api';
 
@@ -17,6 +17,8 @@ const SubscriptionBilling = () => {
   const theme = useTheme();
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
+  const [errorModalOpen, setErrorModalOpen] = useState(false);
+  const [upgradePlanName, setUpgradePlanName] = useState('');
 
   // Hardcode usages for now as we haven't created a usage stats endpoint.
   // In a real app, these would come from an API.
@@ -48,7 +50,8 @@ const SubscriptionBilling = () => {
       alert(`Successfully upgraded to ${planName} Plan!`);
     } catch (error) {
       console.error('Failed to upgrade plan', error);
-      alert('Failed to upgrade plan.');
+      setUpgradePlanName(planName);
+      setErrorModalOpen(true);
     }
   };
 
@@ -130,6 +133,30 @@ const SubscriptionBilling = () => {
           </Grid>
         ))}
       </Grid>
+
+      {/* Professional Error Modal */}
+      <Dialog open={errorModalOpen} onClose={() => setErrorModalOpen(false)} PaperProps={{ sx: { borderRadius: 3, maxWidth: 400 } }}>
+        <DialogTitle sx={{ fontWeight: 700, color: 'error.main' }}>
+          Unable to upgrade plan
+        </DialogTitle>
+        <DialogContent dividers>
+          <Typography variant="body1" sx={{ mb: 2 }}>
+            We couldn't process your request to upgrade to the <strong>{upgradePlanName}</strong> plan.
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            <strong>Reason:</strong> Payment service is currently unavailable.
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+            Please try again later or contact our support team for assistance.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ p: 2, px: 3 }}>
+          <Button onClick={() => setErrorModalOpen(false)} color="inherit">Cancel</Button>
+          <Button variant="contained" color="primary" onClick={() => setErrorModalOpen(false)} sx={{ borderRadius: 2 }}>
+            Contact Support
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

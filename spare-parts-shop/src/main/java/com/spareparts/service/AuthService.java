@@ -401,24 +401,58 @@ public class AuthService {
         return userRepository.save(superManager);
     }
 
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public List<User> getAllUsers(String currentUsername) {
+        User currentUser = userRepository.findByUsername(currentUsername).orElse(null);
+        if (currentUser == null) return java.util.Collections.emptyList();
+        
+        List<User> all = userRepository.findAll();
+        if ("SUPER_ADMIN".equals(currentUser.getRole()) || "SUPER_MANAGER".equals(currentUser.getRole())) {
+            return all;
+        } else if ("ADMIN".equals(currentUser.getRole())) {
+            return all.stream().filter(u -> currentUser.getId().equals(u.getCreatedBy()) || currentUser.getId().equals(u.getId())).toList();
+        } else {
+            return java.util.List.of(currentUser);
+        }
     }
 
-    public void deleteUser(Long id) {
+    public void deleteUser(Long id, String currentUsername) {
+        User currentUser = userRepository.findByUsername(currentUsername).orElseThrow(() -> new RuntimeException("Current user not found"));
+        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        
+        if (!"SUPER_ADMIN".equals(currentUser.getRole()) && !"SUPER_MANAGER".equals(currentUser.getRole())) {
+            if ("ADMIN".equals(currentUser.getRole()) && !currentUser.getId().equals(user.getCreatedBy())) {
+                throw new RuntimeException("Unauthorized to delete this user");
+            }
+            if ("STAFF".equals(currentUser.getRole())) {
+                throw new RuntimeException("Staff cannot delete users");
+            }
+        }
         userRepository.deleteById(id);
     }
 
-    public void updateUserRole(Long id, String role) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    public void updateUserRole(Long id, String role, String currentUsername) {
+        User currentUser = userRepository.findByUsername(currentUsername).orElseThrow(() -> new RuntimeException("Current user not found"));
+        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        
+        if (!"SUPER_ADMIN".equals(currentUser.getRole()) && !"SUPER_MANAGER".equals(currentUser.getRole())) {
+            throw new RuntimeException("Only Super Admin can change roles");
+        }
         user.setRole(role);
         userRepository.save(user);
     }
 
-    public void updateUserStatus(Long id, boolean enabled) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    public void updateUserStatus(Long id, boolean enabled, String currentUsername) {
+        User currentUser = userRepository.findByUsername(currentUsername).orElseThrow(() -> new RuntimeException("Current user not found"));
+        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        
+        if (!"SUPER_ADMIN".equals(currentUser.getRole()) && !"SUPER_MANAGER".equals(currentUser.getRole())) {
+            if ("ADMIN".equals(currentUser.getRole()) && !currentUser.getId().equals(user.getCreatedBy())) {
+                throw new RuntimeException("Unauthorized to update status of this user");
+            }
+            if ("STAFF".equals(currentUser.getRole())) {
+                throw new RuntimeException("Staff cannot update user statuses");
+            }
+        }
         user.setEnabled(enabled);
         if (enabled) {
             user.setOtpCode(null);
@@ -427,9 +461,20 @@ public class AuthService {
         userRepository.save(user);
     }
 
-    public void updateUser(Long id, com.spareparts.dto.CreateUserRequest request) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    public void updateUser(Long id, com.spareparts.dto.CreateUserRequest request, String currentUsername) {
+        User currentUser = userRepository.findByUsername(currentUsername).orElseThrow(() -> new RuntimeException("Current user not found"));
+        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        
+        // RBAC Check
+        if (!"SUPER_ADMIN".equals(currentUser.getRole()) && !"SUPER_MANAGER".equals(currentUser.getRole())) {
+            if ("ADMIN".equals(currentUser.getRole()) && !currentUser.getId().equals(user.getCreatedBy()) && !currentUser.getId().equals(user.getId())) {
+                throw new RuntimeException("Unauthorized to update this user");
+            }
+            if ("STAFF".equals(currentUser.getRole()) && !currentUser.getId().equals(user.getId())) {
+                throw new RuntimeException("Unauthorized to update this user");
+            }
+        }
+        
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         if (request.getPassword() != null && !request.getPassword().isEmpty()) {
@@ -441,7 +486,8 @@ public class AuthService {
     }
 
     @EnforceUsageLimit(UsageLimitType.USERS)
-    public User createUser(String username, String email, String password, String role, Boolean enabled) {
+    public User createUser(String username, String email, String password, String role, Boolean enabled, String creatorUsername) {
+        User creator = userRepository.findByUsername(creatorUsername).orElse(null);
         if (userRepository.findByUsername(username).isPresent()) {
             throw new RuntimeException("Username already exists");
         }
@@ -453,9 +499,14 @@ public class AuthService {
         user.setUsername(username);
         user.setEmail(email);
         user.setPassword(password);
-        user.setRole(role);
+        user.setRole(role); // SUPER_ADMIN, ADMIN, STAFF
         user.setEnabled(enabled != null ? enabled : true);
         user.setPasswordChanged(false);
+        if (creator != null) {
+            user.setCreatedBy(creator.getId());
+            user.setBusiness(creator.getBusiness());
+            user.setBranch(creator.getBranch());
+        }
         return userRepository.save(user);
     }
 }

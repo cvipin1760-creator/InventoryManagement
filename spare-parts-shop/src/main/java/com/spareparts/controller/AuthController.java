@@ -67,20 +67,20 @@ public class AuthController {
     }
 
     @GetMapping("/users")
-    public ResponseEntity<List<User>> getAllUsers() {
-        return ResponseEntity.ok(authService.getAllUsers());
+    public ResponseEntity<List<User>> getAllUsers(java.security.Principal principal) {
+        return ResponseEntity.ok(authService.getAllUsers(principal.getName()));
     }
 
     @DeleteMapping("/users/{id}")
-    public ResponseEntity<String> deleteUser(@PathVariable Long id) {
-        authService.deleteUser(id);
+    public ResponseEntity<String> deleteUser(@PathVariable Long id, java.security.Principal principal) {
+        authService.deleteUser(id, principal.getName());
         return ResponseEntity.ok("User deleted successfully");
     }
 
     @PutMapping("/users/{id}/role")
-    public ResponseEntity<String> updateUserRole(@PathVariable Long id, @RequestParam String role) {
+    public ResponseEntity<String> updateUserRole(@PathVariable Long id, @RequestParam String role, java.security.Principal principal) {
         try {
-            authService.updateUserRole(id, role);
+            authService.updateUserRole(id, role, principal.getName());
             return ResponseEntity.ok("User role updated successfully");
         } catch (Exception e) {
             return ResponseEntity.status(400).body(e.getMessage());
@@ -88,9 +88,9 @@ public class AuthController {
     }
 
     @PutMapping("/users/{id}/status")
-    public ResponseEntity<String> updateUserStatus(@PathVariable Long id, @RequestParam boolean enabled) {
+    public ResponseEntity<String> updateUserStatus(@PathVariable Long id, @RequestParam boolean enabled, java.security.Principal principal) {
         try {
-            authService.updateUserStatus(id, enabled);
+            authService.updateUserStatus(id, enabled, principal.getName());
             return ResponseEntity.ok("User status updated successfully");
         } catch (Exception e) {
             return ResponseEntity.status(400).body(e.getMessage());
@@ -98,9 +98,9 @@ public class AuthController {
     }
 
     @PutMapping("/users/{id}")
-    public ResponseEntity<String> updateUser(@PathVariable Long id, @RequestBody com.spareparts.dto.CreateUserRequest request) {
+    public ResponseEntity<String> updateUser(@PathVariable Long id, @RequestBody com.spareparts.dto.CreateUserRequest request, java.security.Principal principal) {
         try {
-            authService.updateUser(id, request);
+            authService.updateUser(id, request, principal.getName());
             return ResponseEntity.ok("User updated successfully");
         } catch (Exception e) {
             return ResponseEntity.status(400).body(e.getMessage());
@@ -138,14 +138,15 @@ public class AuthController {
     }
 
     @PostMapping("/users")
-    public ResponseEntity<String> createUser(@RequestBody com.spareparts.dto.CreateUserRequest request) {
+    public ResponseEntity<String> createUser(@RequestBody com.spareparts.dto.CreateUserRequest request, java.security.Principal principal) {
         try {
             authService.createUser(
                     request.getUsername(),
                     request.getEmail(),
                     request.getPassword(),
                     request.getRole(),
-                    request.getEnabled()
+                    request.getEnabled(),
+                    principal.getName()
             );
             return ResponseEntity.ok("User created successfully");
         } catch (Exception e) {
