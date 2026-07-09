@@ -233,15 +233,13 @@ const SuperReports = () => {
           <TextField
             placeholder="Search..."
             sx={{ minWidth: 250, borderRadius: 2 }}
-            slotProps={{
-              input: {
+            InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
                     <Search size={20} />
                   </InputAdornment>
                 ),
-              },
-            }}
+              } }}
           />
         </Box>
       </Box>

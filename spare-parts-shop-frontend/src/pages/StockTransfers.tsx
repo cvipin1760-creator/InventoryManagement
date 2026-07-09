@@ -255,7 +255,7 @@ const StockTransfers: React.FC = () => {
                 type="number"
                 required
                 fullWidth
-                slotProps={{ htmlInput: { min: 1 } }}
+                inputProps={{ min: 1 } }}
                 value={formData.quantity}
                 onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
               />

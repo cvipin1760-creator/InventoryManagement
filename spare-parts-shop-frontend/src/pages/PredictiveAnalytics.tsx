@@ -81,7 +81,7 @@ const PredictiveAnalytics = () => {
 
       <Grid container spacing={3}>
         {/* Dead Stock */}
-        <Grid size={{ xs: 12, md: 6 }}>
+        <Grid item xs={12} md={6}>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
             <Card sx={{ height: '100%', borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
               <CardContent>
@@ -136,7 +136,7 @@ const PredictiveAnalytics = () => {
         </Grid>
 
         {/* Fast Moving */}
-        <Grid size={{ xs: 12, md: 6 }}>
+        <Grid item xs={12} md={6}>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
             <Card sx={{ height: '100%', borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
               <CardContent>
@@ -187,7 +187,7 @@ const PredictiveAnalytics = () => {
         </Grid>
 
         {/* Churned Customers */}
-        <Grid size={{ xs: 12 }}>
+        <Grid item xs={12}>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
             <Card sx={{ borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
               <CardContent>
@@ -208,7 +208,7 @@ const PredictiveAnalytics = () => {
                 ) : (
                   <Grid container spacing={2}>
                     {churnedCustomers.map((customer: any) => (
-                      <Grid size={{ xs: 12, sm: 6, md: 4 }} key={customer.id}>
+                      <Grid item xs={12} sm={6} md={4} key={customer.id}>
                         <Box sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
                           <Typography variant="subtitle1" sx={{ fontWeight: '600' }}>{customer.name}</Typography>
                           <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>{customer.phone}</Typography>

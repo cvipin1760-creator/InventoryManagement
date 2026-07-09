@@ -26,6 +26,20 @@ export default function Products() {
     }
   })
   
+  const [modal, setModal] = useState<'add' | 'edit' | 'bulk' | null>(null)
+  const [editing, setEditing] = useState<Product | null>(null)
+  const [form, setForm] = useState<any>({})
+  const [uploading, setUploading] = useState(false)
+  const [excelLoading, setExcelLoading] = useState(false)
+  const [bulkText, setBulkText] = useState('')
+  const [attachment, setAttachment] = useState<File | null>(null)
+  const [isScanning, setIsScanning] = useState(false)
+  const [visibleCosts, setVisibleCosts] = useState<{[key:number]: boolean}>({})
+  
+  const toggleCost = (id: number) => {
+    setVisibleCosts(prev => ({ ...prev, [id]: !prev[id] }))
+  }
+
   const [modalError, setModalError] = useState('')
   const error = queryError ? (queryError instanceof Error ? queryError.message : String(queryError)) : modalError;
 

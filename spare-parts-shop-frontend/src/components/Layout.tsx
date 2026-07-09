@@ -37,6 +37,7 @@ import { selectCurrentUser } from '../store/slices/authSlice';
 import { toggleTheme } from '../store/slices/themeSlice';
 import { api } from '../api/client';
 import Sidebar from './Sidebar';
+import Chatbot from './Chatbot';
 import CommandPalette from './CommandPalette';
 import { useInventoryWebSocket } from '../hooks/useInventoryWebSocket';
 
@@ -352,6 +353,7 @@ const Layout = () => {
           </AnimatePresence>
         </Box>
       </Box>
+      <Chatbot />
 
       {/* Mobile Sidebar Drawer */}
       {isMobile && (

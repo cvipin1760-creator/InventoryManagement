@@ -38,7 +38,18 @@ public class Business {
 
     // Subscription fields
     @Column(nullable = false, columnDefinition = "varchar(255) default 'TRIAL'")
-    private String subscriptionPlan = "TRIAL"; // TRIAL, MONTHLY, YEARLY
+    private String subscriptionStatus = "TRIAL"; // TRIAL, ACTIVE, EXPIRED, CANCELED
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "subscription_plan_id")
+    private SubscriptionPlan currentPlan;
+
+    private LocalDateTime trialStartDate;
+
+    private LocalDateTime trialEndDate;
+
+    @Column(columnDefinition = "varchar(255) default 'PENDING'")
+    private String paymentStatus = "PENDING"; // PENDING, SUCCESS, FAILED
 
     private LocalDateTime subscriptionStartDate;
 
@@ -50,12 +61,34 @@ public class Business {
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    public String getSubscriptionPlan() {
+        return currentPlan != null ? currentPlan.getName() : subscriptionStatus;
+    }
+
+    public void setSubscriptionPlan(String plan) {
+        this.subscriptionStatus = plan; // Hacky but keeps old code compiling
+    }
+
     @PrePersist
     @PreUpdate
     public void prePersistUpdate() {
         // Convert empty string to null for gstNumber to avoid unique constraint violations
         if (gstNumber != null && gstNumber.trim().isEmpty()) {
             gstNumber = null;
+        }
+        
+        // Auto-assign 7-day trial based on createdAt if not set
+        if (trialStartDate == null) {
+            trialStartDate = createdAt != null ? createdAt : LocalDateTime.now();
+        }
+        if (trialEndDate == null) {
+            trialEndDate = trialStartDate.plusDays(7);
+        }
+        
+        // Auto-expire trial if past end date and status is still TRIAL
+        if ("TRIAL".equals(subscriptionStatus) && LocalDateTime.now().isAfter(trialEndDate)) {
+            subscriptionStatus = "EXPIRED";
+            isSubscriptionActive = false;
         }
     }
 }

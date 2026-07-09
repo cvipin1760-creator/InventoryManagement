@@ -2,6 +2,9 @@ package com.spareparts.config;
 
 import com.spareparts.model.BelongsToBusiness;
 import com.spareparts.exception.TenantAccessException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.GrantedAuthority;
 
 public class TenantSecurity {
     public static void checkAccess(BelongsToBusiness record) {
@@ -9,9 +12,14 @@ public class TenantSecurity {
             return;
         }
         Long currentBusinessId = TenantContext.getBusinessId();
+        
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_SUPER_MANAGER") || a.getAuthority().equals("ROLE_SUPER_ADMIN"))) {
+            return; // Super admins have access to all records
+        }
+
         if (currentBusinessId == null) {
-            // Requester does not have a business context (e.g. SUPER_MANAGER or unauthenticated)
-            // If the record is tenant-specific, SUPER_MANAGER is not allowed to read/write it.
+            // Requester does not have a business context and is not a SUPER_MANAGER
             throw new TenantAccessException("Access denied: No business context found in request");
         }
         if (record.getBusiness() == null || !currentBusinessId.equals(record.getBusiness().getId())) {

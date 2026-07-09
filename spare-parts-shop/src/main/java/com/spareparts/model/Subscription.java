@@ -21,8 +21,9 @@ public class Subscription {
     @JoinColumn(name = "business_id", nullable = false)
     private Business business;
 
-    @Column(nullable = false)
-    private String planName; // e.g. "Basic", "Premium", "Enterprise"
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "subscription_plan_id")
+    private SubscriptionPlan plan;
 
     @Column(nullable = false)
     private BigDecimal monthlyPrice;
@@ -41,6 +42,14 @@ public class Subscription {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     private LocalDateTime updatedAt = LocalDateTime.now();
+
+    public String getPlanName() {
+        return plan != null ? plan.getName() : "Unknown";
+    }
+
+    public void setPlanName(String name) {
+        // Not implemented since it should be set via SubscriptionPlan object now.
+    }
 
     @PreUpdate
     protected void onUpdate() {

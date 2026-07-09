@@ -109,8 +109,7 @@ const RegisterPage = () => {
             '&:hover': {
               backgroundColor: theme.palette.primary.main,
               color: 'white',
-            },
-          }}
+            } }}
         >
           {themeMode === 'light' ? <DarkMode /> : <LightMode />}
         </IconButton>
@@ -175,8 +174,7 @@ const RegisterPage = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   variant="outlined"
                   required
-                  slotProps={{
-                    input: {
+                  InputProps={{
                       endAdornment: (
                         <InputAdornment position="end">
                           <IconButton
@@ -187,8 +185,7 @@ const RegisterPage = () => {
                           </IconButton>
                         </InputAdornment>
                       ),
-                    },
-                  }}
+                    } }}
                 />
 
                 <Button
@@ -262,8 +259,7 @@ const RegisterPage = () => {
                   variant="outlined"
                   required
                   placeholder="123456"
-                  slotProps={{
-                    htmlInput: {
+                  inputProps={{
                       maxLength: 6,
                       style: { textAlign: 'center', fontSize: '1.25rem', letterSpacing: '0.5rem' }
                     }

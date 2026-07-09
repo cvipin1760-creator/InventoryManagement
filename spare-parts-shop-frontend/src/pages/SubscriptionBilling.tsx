@@ -111,7 +111,7 @@ const SubscriptionBilling = () => {
       <Typography variant="h5" sx={{ fontWeight: 600, mb: 3 }}>Upgrade Plan</Typography>
       <Grid container spacing={3}>
         {plans.map((plan) => (
-          <Grid size={{ xs: 12, md: 4 }} key={plan.name}>
+          <Grid item xs={12} md={4} key={plan.name}>
             <Card sx={{ height: '100%', borderRadius: 3, border: subscription?.planName === plan.name ? `2px solid ${theme.palette.primary.main}` : 'none' }}>
               <CardContent sx={{ p: 3 }}>
                 <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>{plan.name}</Typography>

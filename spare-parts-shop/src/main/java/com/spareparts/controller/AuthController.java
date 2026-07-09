@@ -30,6 +30,12 @@ public class AuthController {
         }
     }
 
+    @PostMapping("/refresh")
+    public ResponseEntity<String> refresh() {
+        // Placeholder for JWT refresh token logic
+        return ResponseEntity.ok("Refresh token will be implemented here.");
+    }
+
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody RegisterRequest request) {
         try {

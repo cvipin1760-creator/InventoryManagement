@@ -1,8 +1,8 @@
 package com.spareparts.interceptor;
 
 import com.spareparts.config.TenantContext;
-import com.spareparts.model.Subscription;
-import com.spareparts.repository.SubscriptionRepository;
+import com.spareparts.model.Business;
+import com.spareparts.repository.BusinessRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +15,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class SubscriptionInterceptor implements HandlerInterceptor {
 
-    private final SubscriptionRepository subscriptionRepository;
+    private final BusinessRepository businessRepository;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -36,14 +36,16 @@ public class SubscriptionInterceptor implements HandlerInterceptor {
         
         // If there's no businessId, let the request pass (might be super admin)
         if (businessId != null) {
-            Optional<Subscription> subscriptionOpt = subscriptionRepository.findByBusinessId(businessId);
+            Optional<Business> businessOpt = businessRepository.findById(businessId);
             
-            if (subscriptionOpt.isPresent()) {
-                Subscription subscription = subscriptionOpt.get();
-                if ("EXPIRED".equalsIgnoreCase(subscription.getStatus()) || "PAST_DUE".equalsIgnoreCase(subscription.getStatus())) {
+            if (businessOpt.isPresent()) {
+                Business business = businessOpt.get();
+                String status = business.getSubscriptionStatus();
+                // GRACE_PERIOD is allowed to WRITE, EXPIRED is blocked
+                if ("EXPIRED".equalsIgnoreCase(status) || "PAST_DUE".equalsIgnoreCase(status)) {
                     response.setStatus(HttpServletResponse.SC_PAYMENT_REQUIRED);
                     response.setContentType("application/json");
-                    response.getWriter().write("{\"error\": \"Your subscription is " + subscription.getStatus() + ". Account is in read-only mode.\"}");
+                    response.getWriter().write("{\"error\": \"Your subscription is " + status + ". Account is in read-only mode.\"}");
                     return false;
                 }
             }
