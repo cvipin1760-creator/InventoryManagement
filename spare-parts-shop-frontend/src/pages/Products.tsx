@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useSearchParams } from 'react-router-dom'
 import { api } from '../api/client'
 import type { Product } from '../types'
@@ -11,49 +12,40 @@ function formatCurrency(n: number) {
 }
 
 export default function Products() {
+  const queryClient = useQueryClient()
   const [searchParams] = useSearchParams()
   const lowStockOnly = searchParams.get('lowStock') === '1'
-  const [products, setProducts] = useState<Product[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
   const [search, setSearch] = useState('')
-  const [isScanning, setIsScanning] = useState(false)
-  const [modal, setModal] = useState<'add' | 'edit' | 'bulk' | null>(null)
-  const [editing, setEditing] = useState<Product | null>(null)
-  const [bulkText, setBulkText] = useState('')
-  const [form, setForm] = useState({
-    name: '',
-    partNumber: '',
-    costPrice: 0,
-    price: 0,
-    gstPercent: 18,
-    quantity: 0,
-    lowStockThreshold: 10,
-    attachmentPath: '',
-  })
-  const [attachment, setAttachment] = useState<File | null>(null)
-  const [uploading, setUploading] = useState(false)
-  const [excelLoading, setExcelLoading] = useState(false)
-  const [visibleCosts, setVisibleCosts] = useState<Record<number, boolean>>({})
-
-  const toggleCost = (id: number) => {
-    setVisibleCosts(prev => ({ ...prev, [id]: !prev[id] }))
-  }
-
-  const load = () => {
-    setLoading(true)
-    if (lowStockOnly) {
-      api.getLowStockProducts().then(setProducts).catch((e) => setError(e instanceof Error ? e.message : String(e))).finally(() => setLoading(false))
-    } else if (search.trim()) {
-      api.searchProducts(search.trim()).then(setProducts).catch((e) => setError(e instanceof Error ? e.message : String(e))).finally(() => setLoading(false))
-    } else {
-      api.getProducts().then(setProducts).catch((e) => setError(e instanceof Error ? e.message : String(e))).finally(() => setLoading(false))
+  
+  const { data: products = [], isLoading: loading, error: queryError } = useQuery({
+    queryKey: ['products', lowStockOnly, search],
+    queryFn: () => {
+      if (lowStockOnly) return api.getLowStockProducts();
+      if (search.trim()) return api.searchProducts(search.trim());
+      return api.getProducts();
     }
-  }
+  })
+  
+  const [modalError, setModalError] = useState('')
+  const error = queryError ? (queryError instanceof Error ? queryError.message : String(queryError)) : modalError;
 
-  useEffect(() => {
-    load()
-  }, [search, lowStockOnly])
+  const createMutation = useMutation({
+    mutationFn: (data: any) => api.createProduct(data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['products'] }),
+    onError: (err) => setModalError(err instanceof Error ? err.message : 'Failed to create')
+  })
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number, data: any }) => api.updateProduct(id, data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['products'] }),
+    onError: (err) => setModalError(err instanceof Error ? err.message : 'Failed to update')
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => api.deleteProduct(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['products'] }),
+    onError: (err) => setModalError(err instanceof Error ? err.message : 'Failed to delete')
+  })
 
   const openAdd = () => {
     setForm({
@@ -90,6 +82,7 @@ export default function Products() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setUploading(true)
+    setModalError('')
     try {
       let attachmentPath = form.attachmentPath
       if (attachment) {
@@ -98,19 +91,15 @@ export default function Products() {
 
       const data = { ...form, attachmentPath }
 
-      // Optimistic update
       if (editing) {
-        setProducts(prev => prev.map(p => p.id === editing.id ? { ...p, ...data, id: editing.id } as Product : p))
-        api.updateProduct(editing.id, data).catch(() => load()) // revert on failure
+        await updateMutation.mutateAsync({ id: editing.id, data })
       } else {
-        const tempId = Date.now()
-        setProducts(prev => [{ ...data, id: tempId } as Product, ...prev])
-        api.createProduct(data).then(() => load()).catch(() => load()) // revert on failure
+        await createMutation.mutateAsync(data)
       }
       
       setModal(null)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed')
+      setModalError(err instanceof Error ? err.message : 'Failed')
     } finally {
       setUploading(false)
     }
@@ -118,11 +107,11 @@ export default function Products() {
 
   const handleDelete = async (id: number) => {
     if (!confirm('Delete this product?')) return
+    setModalError('')
     try {
-      await api.deleteProduct(id)
-      load()
+      await deleteMutation.mutateAsync(id)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed')
+      setModalError(err instanceof Error ? err.message : 'Failed')
     }
   }
 
@@ -130,17 +119,19 @@ export default function Products() {
     const file = e.target.files?.[0]
     if (!file) return
     setExcelLoading(true)
+    setModalError('')
     api.uploadExcel(file)
       .then(() => {
-        load()
+        queryClient.invalidateQueries({ queryKey: ['products'] })
         e.target.value = ''
       })
-      .catch((err) => setError(err instanceof Error ? err.message : String(err)))
+      .catch((err) => setModalError(err instanceof Error ? err.message : String(err)))
       .finally(() => setExcelLoading(false))
   }
 
   const confirmBulkProducts = async () => {
     setUploading(true)
+    setModalError('')
     try {
       const listToAdd = parseBulkText(bulkText)
       for (const p of listToAdd) {
@@ -156,9 +147,9 @@ export default function Products() {
       }
       setModal(null)
       setBulkText('')
-      load()
+      queryClient.invalidateQueries({ queryKey: ['products'] })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to add products')
+      setModalError(err instanceof Error ? err.message : 'Failed to add products')
     } finally {
       setUploading(false)
     }

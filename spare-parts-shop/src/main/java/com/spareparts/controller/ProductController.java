@@ -9,6 +9,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import jakarta.validation.Valid;
 import java.io.ByteArrayOutputStream;
 import java.util.List;
 
@@ -20,8 +23,8 @@ public class ProductController {
     private ProductService productService;
     
     @GetMapping
-    public ResponseEntity<List<Product>> getAllProducts() {
-        return ResponseEntity.ok(productService.getAllProducts());
+    public ResponseEntity<Page<Product>> getAllProducts(Pageable pageable) {
+        return ResponseEntity.ok(productService.getAllProducts(pageable));
     }
     
     @GetMapping("/{id}")
@@ -30,12 +33,12 @@ public class ProductController {
     }
     
     @PostMapping
-    public ResponseEntity<Product> createProduct(@RequestBody Product product) {
+    public ResponseEntity<Product> createProduct(@Valid @RequestBody Product product) {
         return ResponseEntity.ok(productService.createProduct(product));
     }
     
     @PutMapping("/{id}")
-    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product product) {
+    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @Valid @RequestBody Product product) {
         return ResponseEntity.ok(productService.updateProduct(id, product));
     }
     
@@ -46,13 +49,13 @@ public class ProductController {
     }
     
     @GetMapping("/search")
-    public ResponseEntity<List<Product>> searchProducts(@RequestParam String keyword) {
-        return ResponseEntity.ok(productService.searchProducts(keyword));
+    public ResponseEntity<Page<Product>> searchProducts(@RequestParam String keyword, Pageable pageable) {
+        return ResponseEntity.ok(productService.searchProducts(keyword, pageable));
     }
     
     @GetMapping("/low-stock")
-    public ResponseEntity<List<Product>> getLowStockProducts() {
-        return ResponseEntity.ok(productService.getLowStockProducts());
+    public ResponseEntity<Page<Product>> getLowStockProducts(Pageable pageable) {
+        return ResponseEntity.ok(productService.getLowStockProducts(pageable));
     }
     
     @PostMapping("/upload-excel")

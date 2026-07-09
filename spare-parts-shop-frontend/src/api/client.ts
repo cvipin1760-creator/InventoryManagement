@@ -177,12 +177,12 @@ export const api = {
     request<void>(`/suppliers/${id}`, { method: 'DELETE' }),
 
   // Products
-  getProducts: () => request<import('../types').Product[]>('/products'),
+  getProducts: () => request<any>('/products').then(res => res.content ? res.content : res),
   getProduct: (id: number) => request<import('../types').Product>(`/products/${id}`),
   searchProducts: (keyword: string) =>
-    request<import('../types').Product[]>(`/products/search?keyword=${encodeURIComponent(keyword)}`),
+    request<any>(`/products/search?keyword=${encodeURIComponent(keyword)}`).then(res => res.content ? res.content : res),
   getLowStockProducts: () =>
-    request<import('../types').Product[]>('/products/low-stock'),
+    request<any>('/products/low-stock').then(res => res.content ? res.content : res),
   createProduct: (data: Omit<import('../types').Product, 'id' | 'createdAt' | 'updatedAt'>) =>
     request<import('../types').Product>('/products', {
       method: 'POST',

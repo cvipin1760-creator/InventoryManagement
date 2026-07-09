@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import com.spareparts.Config.InventoryWebSocketHandler;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.CacheEvict;
@@ -35,14 +37,13 @@ public class ProductService {
     @Autowired
     private InventoryWebSocketHandler inventoryWebSocketHandler;
 
-    @Cacheable(value = "products", key = "'' + T(com.spareparts.config.TenantContext).getBusinessId() + '-' + T(com.spareparts.config.BranchContext).getBranchId()")
-    public List<Product> getAllProducts() {
+    public Page<Product> getAllProducts(Pageable pageable) {
         Long businessId = com.spareparts.config.TenantContext.getBusinessId();
         if (businessId == null) {
             throw new com.spareparts.exception.TenantAccessException("No business context found");
         }
         Long branchId = com.spareparts.config.BranchContext.getBranchId();
-        return productRepository.findByBusinessId(businessId, branchId);
+        return productRepository.findByBusinessId(businessId, branchId, pageable);
     }
     
     public Product getProductById(Long id) {
@@ -115,22 +116,22 @@ public class ProductService {
         productRepository.delete(product);
     }
     
-    public List<Product> searchProducts(String keyword) {
+    public Page<Product> searchProducts(String keyword, Pageable pageable) {
         Long businessId = com.spareparts.config.TenantContext.getBusinessId();
         if (businessId == null) {
             throw new com.spareparts.exception.TenantAccessException("No business context found");
         }
         Long branchId = com.spareparts.config.BranchContext.getBranchId();
-        return productRepository.searchProducts(keyword, businessId, branchId);
+        return productRepository.searchProducts(keyword, businessId, branchId, pageable);
     }
     
-    public List<Product> getLowStockProducts() {
+    public Page<Product> getLowStockProducts(Pageable pageable) {
         Long businessId = com.spareparts.config.TenantContext.getBusinessId();
         if (businessId == null) {
             throw new com.spareparts.exception.TenantAccessException("No business context found");
         }
         Long branchId = com.spareparts.config.BranchContext.getBranchId();
-        return productRepository.findLowStockProducts(businessId, branchId);
+        return productRepository.findLowStockProducts(businessId, branchId, pageable);
     }
     
     @Caching(evict = {
@@ -249,7 +250,7 @@ public class ProductService {
             throw new com.spareparts.exception.TenantAccessException("No business context found");
         }
         Long branchId = com.spareparts.config.BranchContext.getBranchId();
-        List<Product> products = productRepository.findByBusinessId(businessId, branchId);
+        List<Product> products = productRepository.findByBusinessId(businessId, branchId, org.springframework.data.domain.Pageable.unpaged()).getContent();
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet("Products");
         

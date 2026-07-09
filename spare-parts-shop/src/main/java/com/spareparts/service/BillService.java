@@ -315,7 +315,7 @@ public class BillService {
             weeklySales = billRepository.getTotalSalesBetweenDates(weekStart, now, businessId, branchId);
             monthlySales = billRepository.getTotalSalesBetweenDates(monthStart, now, businessId, branchId);
             todayBillsCount = billRepository.countBillsBetweenDates(todayStart, todayEnd, businessId, branchId);
-            lowStockCount = productRepository.findLowStockProducts(businessId, branchId).size();
+            lowStockCount = productRepository.findLowStockProducts(businessId, branchId, org.springframework.data.domain.Pageable.unpaged()).getContent().size();
             totalProducts = productRepository.countByBusinessId(businessId, branchId);
             totalCustomers = customerRepository.findByBusinessId(businessId, branchId).size();
         } else {

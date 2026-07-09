@@ -32,8 +32,8 @@ public class SuperManagerController {
 
     // ==================== Admin Management ====================
     @GetMapping("/admins")
-    public List<User> getAllAdmins() {
-        return authService.getAllUsers().stream()
+    public List<User> getAllAdmins(java.security.Principal principal) {
+        return authService.getAllUsers(principal.getName()).stream()
                 .filter(u -> "ADMIN".equals(u.getRole()))
                 .toList();
     }
@@ -72,24 +72,24 @@ public class SuperManagerController {
     }
 
     @PutMapping("/admins/{id}/role")
-    public ResponseEntity<Map<String, Object>> updateAdminRole(@PathVariable Long id, @RequestBody Map<String, String> body) {
-        authService.updateUserRole(id, body.get("role"));
+    public ResponseEntity<Map<String, Object>> updateAdminRole(@PathVariable Long id, @RequestBody Map<String, String> body, java.security.Principal principal) {
+        authService.updateUserRole(id, body.get("role"), principal.getName());
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
         return ResponseEntity.ok(response);
     }
 
     @PutMapping("/admins/{id}/status")
-    public ResponseEntity<Map<String, Object>> updateAdminStatus(@PathVariable Long id, @RequestBody Map<String, Boolean> body) {
-        authService.updateUserStatus(id, body.get("enabled"));
+    public ResponseEntity<Map<String, Object>> updateAdminStatus(@PathVariable Long id, @RequestBody Map<String, Boolean> body, java.security.Principal principal) {
+        authService.updateUserStatus(id, body.get("enabled"), principal.getName());
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
         return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/admins/{id}")
-    public ResponseEntity<Map<String, Object>> deleteAdmin(@PathVariable Long id) {
-        authService.deleteUser(id);
+    public ResponseEntity<Map<String, Object>> deleteAdmin(@PathVariable Long id, java.security.Principal principal) {
+        authService.deleteUser(id, principal.getName());
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
         return ResponseEntity.ok(response);

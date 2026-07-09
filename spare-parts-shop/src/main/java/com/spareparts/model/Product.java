@@ -6,6 +6,9 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Min;
 import java.time.LocalDateTime;
 
 @Entity
@@ -32,6 +35,7 @@ public class Product implements BelongsToBusiness {
     private Branch branch;
     
     @Column(nullable = false)
+    @NotBlank(message = "Product name is required")
     private String name;
     
     @Column(name = "part_number")
@@ -41,12 +45,16 @@ public class Product implements BelongsToBusiness {
     private Double costPrice = 0.0;
     
     @Column(nullable = false)
+    @NotNull(message = "Price is required")
+    @Min(value = 0, message = "Price cannot be negative")
     private Double price;
     
     @Column(name = "gst_percent")
     private Double gstPercent = 0.0;
     
     @Column(nullable = false)
+    @NotNull(message = "Quantity is required")
+    @Min(value = 0, message = "Quantity cannot be negative")
     private Integer quantity;
     
     @Column(name = "low_stock_threshold")

@@ -259,7 +259,8 @@ class ApiService {
     final response = await _get(Uri.parse('$baseUrl/products'), headers: await _getHeaders());
 
     if (response.statusCode == 200) {
-      List<dynamic> body = jsonDecode(response.body);
+      dynamic decoded = jsonDecode(response.body);
+      List<dynamic> body = decoded is Map<String, dynamic> && decoded.containsKey('content') ? decoded['content'] : decoded;
       await SqliteService().cacheProducts(body);
       return body.map((dynamic item) => Product.fromJson(item)).toList();
     } else {
@@ -281,7 +282,8 @@ class ApiService {
     final response = await _get(Uri.parse('$baseUrl/products/low-stock'), headers: await _getHeaders());
 
     if (response.statusCode == 200) {
-      List<dynamic> body = jsonDecode(response.body);
+      dynamic decoded = jsonDecode(response.body);
+      List<dynamic> body = decoded is Map<String, dynamic> && decoded.containsKey('content') ? decoded['content'] : decoded;
       return body.map((dynamic item) => Product.fromJson(item)).toList();
     } else {
       throw Exception('Failed to load low stock products');
@@ -295,7 +297,8 @@ class ApiService {
     );
 
     if (response.statusCode == 200) {
-      List<dynamic> body = jsonDecode(response.body);
+      dynamic decoded = jsonDecode(response.body);
+      List<dynamic> body = decoded is Map<String, dynamic> && decoded.containsKey('content') ? decoded['content'] : decoded;
       return body.map((dynamic item) => Product.fromJson(item)).toList();
     } else {
       throw Exception('Failed to search products');
