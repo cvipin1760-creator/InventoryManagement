@@ -13,6 +13,9 @@ public interface BillRepository extends JpaRepository<Bill, Long> {
     @Query("SELECT b FROM Bill b WHERE b.business.id = :businessId AND (:branchId IS NULL OR b.branch.id = :branchId)")
     List<Bill> findByBusinessId(@Param("businessId") Long businessId, @Param("branchId") Long branchId);
     
+    List<Bill> findByCustomerId(Long customerId);
+
+    
     @Query("SELECT b FROM Bill b WHERE b.business.id = :businessId AND (:branchId IS NULL OR b.branch.id = :branchId) AND b.billDate BETWEEN :startDate AND :endDate ORDER BY b.billDate DESC")
     List<Bill> findBillsBetweenDates(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate, @Param("businessId") Long businessId, @Param("branchId") Long branchId);
     

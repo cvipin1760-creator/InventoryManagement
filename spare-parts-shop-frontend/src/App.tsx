@@ -28,6 +28,11 @@ import FeaturePermissions from './pages/FeaturePermissions';
 import SubscriptionBilling from './pages/SubscriptionBilling';
 import StockTransfers from './pages/StockTransfers';
 import PredictiveAnalytics from './pages/PredictiveAnalytics';
+import CustomerProducts from './pages/CustomerProducts';
+import CustomerBills from './pages/CustomerBills';
+import Warranties from './pages/Warranties';
+import CustomerEmi from './pages/CustomerEmi';
+import Support from './pages/Support';
 
 
 // Protected Route component
@@ -75,7 +80,7 @@ const App = () => {
 
         {/* Super Admin Routes */}
         <Route path="predictive-analytics" element={
-          <RoleBasedRoute allowedRoles={['SUPER_MANAGER', 'MANAGER']}>
+          <RoleBasedRoute allowedRoles={['SUPER_MANAGER', 'ADMIN']}>
             <PredictiveAnalytics />
           </RoleBasedRoute>
         } />
@@ -94,7 +99,7 @@ const App = () => {
             <Subscriptions />
           </RoleBasedRoute>
         } />
-        <Route path="permissions" element={
+        <Route path="feature-management" element={
           <RoleBasedRoute allowedRoles={['SUPER_MANAGER']}>
             <FeaturePermissions />
           </RoleBasedRoute>
@@ -167,7 +172,7 @@ const App = () => {
           </RoleBasedRoute>
         } />
         <Route path="users" element={
-          <RoleBasedRoute allowedRoles={['ADMIN']}>
+          <RoleBasedRoute allowedRoles={[]}>
             <Users />
           </RoleBasedRoute>
         } />
@@ -190,27 +195,27 @@ const App = () => {
         {/* Customer Routes */}
         <Route path="my-products" element={
           <RoleBasedRoute allowedRoles={['CUSTOMER']}>
-            <div className="p-4"><h1>My Products</h1><p>Coming soon...</p></div>
+            <CustomerProducts />
           </RoleBasedRoute>
         } />
         <Route path="my-bills" element={
           <RoleBasedRoute allowedRoles={['CUSTOMER']}>
-            <div className="p-4"><h1>My Bills</h1><p>Coming soon...</p></div>
+            <CustomerBills />
           </RoleBasedRoute>
         } />
         <Route path="warranties" element={
           <RoleBasedRoute allowedRoles={['CUSTOMER', 'ADMIN', 'EMPLOYEE']}>
-            <div className="p-4"><h1>Warranties</h1><p>Coming soon...</p></div>
+            <Warranties />
           </RoleBasedRoute>
         } />
         <Route path="my-emi" element={
           <RoleBasedRoute allowedRoles={['CUSTOMER']}>
-            <div className="p-4"><h1>My EMI</h1><p>Coming soon...</p></div>
+            <CustomerEmi />
           </RoleBasedRoute>
         } />
         <Route path="support" element={
           <RoleBasedRoute allowedRoles={['CUSTOMER']}>
-            <div className="p-4"><h1>Support</h1><p>Coming soon...</p></div>
+            <Support />
           </RoleBasedRoute>
         } />
 

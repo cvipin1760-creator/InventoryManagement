@@ -72,8 +72,6 @@ const Sidebar = ({
       items.push({ label: 'Payments', path: '/payments', icon: <Receipt size={20} />, roles: ['SUPER_MANAGER'] });
       items.push({ label: 'Predictive Analytics', path: '/predictive-analytics', icon: <Activity size={20} />, roles: ['SUPER_MANAGER'] });
       items.push({ label: 'Feature Management', path: '/feature-management', icon: <Zap size={20} />, roles: ['SUPER_MANAGER'] });
-      items.push({ label: 'Audit Logs', path: '/audit-logs', icon: <History size={20} />, roles: ['SUPER_MANAGER'] });
-      items.push({ label: 'System Settings', path: '/system-settings', icon: <Settings size={20} />, roles: ['SUPER_MANAGER'] });
     } else if (user?.role === 'ADMIN' || user?.role === 'EMPLOYEE') {
       items.push({ label: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} />, roles: ['ADMIN', 'EMPLOYEE'] });
       items.push({ label: 'Inventory', path: '/products', icon: <PackageOpen size={20} />, roles: ['ADMIN', 'EMPLOYEE'] });
@@ -85,7 +83,6 @@ const Sidebar = ({
       items.push({ label: 'Reports', path: '/reports', icon: <FileSpreadsheet size={20} />, roles: ['ADMIN', 'EMPLOYEE'] });
       items.push({ label: 'Predictive Analytics', path: '/predictive-analytics', icon: <Activity size={20} />, roles: ['ADMIN'] });
       if (user?.role === 'ADMIN') {
-        items.push({ label: 'Staff', path: '/users', icon: <Shield size={20} />, roles: ['ADMIN'] });
         items.push({ label: 'Billing', path: '/billing', icon: <CreditCard size={20} />, roles: ['ADMIN'] });
         items.push({ label: 'Settings', path: '/settings', icon: <Settings size={20} />, roles: ['ADMIN'] });
       }

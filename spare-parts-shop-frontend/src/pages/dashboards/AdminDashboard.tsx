@@ -10,6 +10,7 @@ import {
   ListItem,
   ListItemText,
   ListItemIcon,
+  Skeleton,
 } from '@mui/material';
 import {
   TrendingUp,
@@ -99,43 +100,42 @@ const KPICard = ({
   </motion.div>
 );
 
-const revenueData = [
-  { name: 'Mon', revenue: 4000, profit: 2400 },
-  { name: 'Tue', revenue: 3000, profit: 1398 },
-  { name: 'Wed', revenue: 2000, profit: 9800 },
-  { name: 'Thu', revenue: 2780, profit: 3908 },
-  { name: 'Fri', revenue: 1890, profit: 4800 },
-  { name: 'Sat', revenue: 2390, profit: 3800 },
-  { name: 'Sun', revenue: 3490, profit: 4300 },
-];
+import { useQuery } from '@tanstack/react-query';
+import { api } from '../../api/client';
 
-const customerData = [
-  { name: 'New', value: 400 },
-  { name: 'Returning', value: 300 },
-];
 const COLORS = ['#2563EB', '#10B981', '#F59E0B', '#EF4444'];
 
 const AdminDashboard = () => {
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const response = await apiClient.get('/bills/dashboard');
-        setStats(response.data);
-      } catch (error) {
-        console.error('Failed to fetch dashboard stats', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchStats();
-  }, []);
+  const { data: stats, isLoading: loading } = useQuery({
+    queryKey: ['admin-dashboard'],
+    queryFn: api.getAdminDashboard
+  });
 
   if (loading) {
-    return <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><CircularProgress /></Box>;
+    return (
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <Skeleton variant="rectangular" height={60} sx={{ borderRadius: 3 }} />
+        <Grid container spacing={3}>
+          {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+            <Grid size={{ xs: 12, sm: 6, md: 3 }} key={i}>
+              <Skeleton variant="rectangular" height={140} sx={{ borderRadius: 3 }} />
+            </Grid>
+          ))}
+        </Grid>
+        <Grid container spacing={3}>
+          <Grid size={{ xs: 12, lg: 8 }}>
+            <Skeleton variant="rectangular" height={360} sx={{ borderRadius: 3 }} />
+          </Grid>
+          <Grid size={{ xs: 12, lg: 4 }}>
+            <Skeleton variant="rectangular" height={360} sx={{ borderRadius: 3 }} />
+          </Grid>
+        </Grid>
+      </Box>
+    );
   }
+
+  if (!stats) return null;
+
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -177,7 +177,7 @@ const AdminDashboard = () => {
                 <Typography variant="h6" sx={{ fontWeight: 700 }}>Financial Overview (Revenue vs Profit)</Typography>
               </Box>
               <ResponsiveContainer width="100%" height={300}>
-                <AreaChart data={revenueData}>
+                <AreaChart data={stats.revenueData}>
                   <defs>
                     <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#2563EB" stopOpacity={0.8}/>
@@ -206,8 +206,8 @@ const AdminDashboard = () => {
               <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>Customer Retention</Typography>
               <ResponsiveContainer width="100%" height={250}>
                 <PieChart>
-                  <Pie data={customerData} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
-                    {customerData.map((entry, index) => (
+                  <Pie data={stats.customerData} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
+                    {stats.customerData?.map((entry: any, index: number) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
@@ -215,7 +215,7 @@ const AdminDashboard = () => {
                 </PieChart>
               </ResponsiveContainer>
               <Box sx={{ display: 'flex', justifyContent: 'center', gap: 4, mt: 2 }}>
-                {customerData.map((entry, index) => (
+                {stats.customerData?.map((entry: any, index: number) => (
                   <Box key={entry.name} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: COLORS[index] }} />
                     <Typography variant="body2">{entry.name} ({entry.value})</Typography>
@@ -262,15 +262,9 @@ const AdminDashboard = () => {
             <CardContent>
               <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>Recent Activity</Typography>
               <List sx={{ p: 0 }}>
-                {[
-                  { time: "09:15 AM", text: "New Admin Created", icon: <Users size={18} />, color: "#3B82F6" },
-                  { time: "09:05 AM", text: "Shop Created", icon: <PackageOpen size={18} />, color: "#10B981" },
-                  { time: "08:42 AM", text: "Premium Plan Purchased", icon: <DollarSign size={18} />, color: "#F59E0B" },
-                  { time: "08:20 AM", text: "Inventory Imported", icon: <RefreshCcw size={18} />, color: "#8B5CF6" },
-                  { time: "07:45 AM", text: "Backup Completed", icon: <Clock size={18} />, color: "#64748B" },
-                ].map((item, i) => (
+                {stats.recentActivity?.map((item: any, i: number) => (
                   <ListItem key={i} sx={{ px: 0, py: 1.5, borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
-                    <ListItemIcon sx={{ minWidth: 40, color: item.color }}>{item.icon}</ListItemIcon>
+                    <ListItemIcon sx={{ minWidth: 40, color: item.color }}><Activity size={18} /></ListItemIcon>
                     <ListItemText 
                       primary={<Typography variant="body2" sx={{ fontWeight: 600 }}>{item.text}</Typography>}
                       secondary={<Typography variant="caption">{item.time}</Typography>}
@@ -291,13 +285,7 @@ const AdminDashboard = () => {
                 <Typography variant="h6" sx={{ fontWeight: 700 }}>Action Required</Typography>
               </Box>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {[
-                  { title: "Low Stock Alert", desc: "Engine Oil below minimum threshold", color: "warning" },
-                  { title: "Subscription Expired", desc: "Shop Alpha's basic plan expired", color: "error" },
-                  { title: "GST Pending", desc: "GST filing due in 3 days", color: "info" },
-                  { title: "Payment Failed", desc: "Invoice #1024 payment failed", color: "error" },
-                  { title: "Warranty Expiring", desc: "5 items warranty expiring this week", color: "warning" },
-                ].map((notif, i) => (
+                {stats.notifications?.map((notif: any, i: number) => (
                   <Box key={i} sx={{ display: 'flex', flexDirection: 'column', p: 1.5, borderRadius: 2, bgcolor: `${notif.color}.light`, color: `${notif.color}.dark`, border: '1px solid', borderColor: `${notif.color}.main`, opacity: 0.9 }}>
                     <Typography variant="body2" sx={{ fontWeight: 700 }}>{notif.title}</Typography>
                     <Typography variant="caption">{notif.desc}</Typography>

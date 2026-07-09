@@ -4,20 +4,81 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:stock_pilot/core/constants/app_colors.dart';
 import 'package:stock_pilot/core/providers/theme_provider.dart';
 import 'package:stock_pilot/core/widgets/kpi_card.dart';
+import 'package:stock_pilot/models/admin_dashboard_response.dart';
+import 'package:stock_pilot/services/api_service.dart';
 
-class AdminDashboard extends ConsumerWidget {
+class AdminDashboard extends ConsumerStatefulWidget {
   const AdminDashboard({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AdminDashboard> createState() => _AdminDashboardState();
+}
+
+class _AdminDashboardState extends ConsumerState<AdminDashboard> {
+  final ApiService _apiService = ApiService();
+  AdminDashboardResponse? _stats;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    try {
+      final data = await _apiService.getAdminDashboard();
+      if (mounted) {
+        setState(() {
+          _stats = data;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    
+    if (_isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    
+    if (_stats == null) {
+      return Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text('Failed to load dashboard'),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {
+                  setState(() => _isLoading = true);
+                  _loadData();
+                },
+                child: const Text('Tap to Retry'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: SingleChildScrollView(
-            child: Column(
+        child: RefreshIndicator(
+          onRefresh: _loadData,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
@@ -61,7 +122,7 @@ class AdminDashboard extends ConsumerWidget {
                   children: [
                     KpiCard(
                       title: "Today's Sales",
-                      value: '₹5,840',
+                      value: '₹${_stats!.todaySales.toStringAsFixed(0)}',
                       icon: FontAwesomeIcons.indianRupeeSign,
                       iconColor: AppColors.success,
                       change: '+12%',
@@ -69,22 +130,22 @@ class AdminDashboard extends ConsumerWidget {
                     ),
                     KpiCard(
                       title: 'Total Products',
-                      value: '248',
+                      value: _stats!.totalProducts.toString(),
                       icon: FontAwesomeIcons.boxesStacked,
                       iconColor: AppColors.primary,
                     ),
                     KpiCard(
                       title: 'Low Stock',
-                      value: '18',
+                      value: _stats!.lowStockCount.toString(),
                       icon: FontAwesomeIcons.triangleExclamation,
                       iconColor: AppColors.warning,
                     ),
                     KpiCard(
                       title: 'Customers',
-                      value: '128',
+                      value: _stats!.totalCustomers.toString(),
                       icon: FontAwesomeIcons.users,
                       iconColor: AppColors.secondary,
-                      change: '+8%',
+                      change: '+${_stats!.customerGrowthPercent}%',
                       isPositive: true,
                     ),
                   ],
@@ -98,7 +159,7 @@ class AdminDashboard extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Recent Bills',
+                          'Recent Activity',
                           style: theme.textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
@@ -107,18 +168,19 @@ class AdminDashboard extends ConsumerWidget {
                         ListView.separated(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
-                          itemCount: 4,
+                          itemCount: _stats!.recentActivity.length,
                           separatorBuilder: (context, index) => const Divider(),
                           itemBuilder: (context, index) {
+                            final activity = _stats!.recentActivity[index];
                             return ListTile(
                               leading: CircleAvatar(
                                 backgroundColor: AppColors.primary.withOpacity(0.1),
-                                child: Text('C${index + 1}'),
+                                child: Icon(FontAwesomeIcons.bolt, size: 16, color: AppColors.primary),
                               ),
-                              title: Text('Customer ${index + 1}'),
-                              subtitle: Text('Invoice #100${index + 1}'),
+                              title: Text(activity.text),
+                              subtitle: Text(activity.time),
                               trailing: Text(
-                                '₹${1200 + index * 250}',
+                                activity.color,
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                 ),

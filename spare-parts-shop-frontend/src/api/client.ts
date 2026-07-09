@@ -136,10 +136,21 @@ export const api = {
     }),
   deleteCustomer: (id: number) =>
     request<void>(`/customers/${id}`, { method: 'DELETE' }),
+  getCustomerProducts: () => request<import('../types').Product[]>('/customers/me/products'),
+  getCustomerBills: () => request<import('../types').Bill[]>('/customers/me/bills'),
+  getWarranties: () => request<any[]>('/warranties'),
+  getEmis: () => request<any[]>('/emis'),
+  submitSupportTicket: (data: { subject: string; description: string }) => 
+    request<any>('/support-tickets', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
 
   // Analytics
   getPredictiveAnalytics: () => request<any>('/analytics/predictive'),
-
+  getFullAnalytics: () => request<any>('/analytics/full'),
+  getAdminDashboard: () => request<any>('/analytics/admin-dashboard'),
+  getMyTasks: () => request<any>('/tasks/me'),
   // Marketing
   sendWhatsAppMessage: (data: { customerId: number; message: string }) =>
     request<any>('/marketing/whatsapp/send', {
@@ -298,12 +309,12 @@ export const api = {
 
   // Staff & Permissions
   createStaff: (data: any) =>
-    request<any>('/auth/staff', {
+    request<any>('/auth/users', {
       method: 'POST',
       body: JSON.stringify(data),
     }),
   updateStaff: (id: number, data: any) =>
-    request<any>(`/auth/staff/${id}`, {
+    request<any>(`/auth/users/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     }),

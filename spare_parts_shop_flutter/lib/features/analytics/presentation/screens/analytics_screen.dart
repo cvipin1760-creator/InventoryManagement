@@ -3,26 +3,88 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:stock_pilot/core/providers/theme_provider.dart';
+import 'package:stock_pilot/models/detailed_analytics_response.dart';
+import 'package:stock_pilot/services/api_service.dart';
 
-class AnalyticsScreen extends ConsumerWidget {
+class AnalyticsScreen extends ConsumerStatefulWidget {
   const AnalyticsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AnalyticsScreen> createState() => _AnalyticsScreenState();
+}
+
+class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
+  final ApiService _apiService = ApiService();
+  DetailedAnalyticsResponse? _analyticsData;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    try {
+      final data = await _apiService.getFullAnalytics();
+      if (mounted) {
+        setState(() {
+          _analyticsData = data;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    
+    if (_isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    
+    if (_analyticsData == null) {
+      return Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text('Failed to load analytics'),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {
+                  setState(() => _isLoading = true);
+                  _loadData();
+                },
+                child: const Text('Tap to Retry'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    
     return Scaffold(
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Analytics',
-                style: theme.textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
+        child: RefreshIndicator(
+          onRefresh: _loadData,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Analytics',
+                  style: theme.textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
               
               const SizedBox(height: 24),
               
@@ -37,7 +99,7 @@ class AnalyticsScreen extends ConsumerWidget {
                   _buildMetricCard(
                     context,
                     title: 'Total Revenue',
-                    value: '₹1,25,430',
+                    value: _analyticsData!.metrics?.totalRevenue ?? '₹0',
                     change: '+12.5%',
                     isPositive: true,
                     color: Colors.green,
@@ -46,7 +108,7 @@ class AnalyticsScreen extends ConsumerWidget {
                   _buildMetricCard(
                     context,
                     title: 'Total Sales',
-                    value: '1,234',
+                    value: _analyticsData!.metrics?.totalSales ?? '0',
                     change: '+8.2%',
                     isPositive: true,
                     color: Colors.blue,
@@ -55,7 +117,7 @@ class AnalyticsScreen extends ConsumerWidget {
                   _buildMetricCard(
                     context,
                     title: 'Total Customers',
-                    value: '345',
+                    value: _analyticsData!.metrics?.totalCustomers ?? '0',
                     change: '+5.1%',
                     isPositive: true,
                     color: Colors.purple,
@@ -64,7 +126,7 @@ class AnalyticsScreen extends ConsumerWidget {
                   _buildMetricCard(
                     context,
                     title: 'Low Stock Items',
-                    value: '23',
+                    value: _analyticsData!.metrics?.lowStockItems ?? '0',
                     change: '-3.4%',
                     isPositive: false,
                     color: Colors.orange,
@@ -143,20 +205,12 @@ class AnalyticsScreen extends ConsumerWidget {
                               ),
                             ),
                             minX: 0,
-                            maxX: 6,
+                            maxX: (_analyticsData!.revenueData.length - 1).toDouble(),
                             minY: 0,
-                            maxY: 60,
+                            maxY: _analyticsData!.revenueData.isEmpty ? 60 : (_analyticsData!.revenueData.map((e) => e.revenue).reduce((a, b) => a > b ? a : b) / 1000) * 1.2,
                             lineBarsData: [
                               LineChartBarData(
-                                spots: const [
-                                  FlSpot(0, 20),
-                                  FlSpot(1, 25),
-                                  FlSpot(2, 30),
-                                  FlSpot(3, 28),
-                                  FlSpot(4, 40),
-                                  FlSpot(5, 45),
-                                  FlSpot(6, 55),
-                                ],
+                                spots: _analyticsData!.revenueData.asMap().entries.map((e) => FlSpot(e.key.toDouble(), e.value.revenue / 1000)).toList(),
                                 isCurved: true,
                                 color: theme.colorScheme.primary,
                                 barWidth: 3,
@@ -199,29 +253,32 @@ class AnalyticsScreen extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      ...List.generate(
-                        5,
-                        (index) => ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
-                            child: Text(
-                              (index + 1).toString(),
-                              style: TextStyle(
-                                color: theme.colorScheme.primary,
+                      ..._analyticsData!.topProducts.asMap().entries.map(
+                        (entry) {
+                          int index = entry.key;
+                          var product = entry.value;
+                          return ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+                              child: Text(
+                                (index + 1).toString(),
+                                style: TextStyle(
+                                  color: theme.colorScheme.primary,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            title: Text(product.name),
+                            subtitle: Text(product.category),
+                            trailing: Text(
+                              product.sales,
+                              style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                          ),
-                          title: Text('Product ${index + 1}'),
-                          subtitle: Text('Category ${index + 1}'),
-                          trailing: Text(
-                            '₹${(500 - index * 50).toStringAsFixed(0)}',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
+                          );
+                        }
+                      ).toList(),
                     ],
                   ),
                 ),
@@ -301,8 +358,10 @@ class AnalyticsScreen extends ConsumerWidget {
     );
   }
 
-  String _getMonthName(int month) {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'];
-    return months[month];
+  String _getMonthName(int index) {
+    if (_analyticsData != null && index >= 0 && index < _analyticsData!.revenueData.length) {
+      return _analyticsData!.revenueData[index].month;
+    }
+    return '';
   }
 }

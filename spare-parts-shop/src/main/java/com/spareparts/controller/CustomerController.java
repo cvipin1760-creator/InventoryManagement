@@ -5,7 +5,16 @@ import com.spareparts.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
+import com.spareparts.model.User;
+import com.spareparts.model.Bill;
+import com.spareparts.model.Product;
+import com.spareparts.repository.UserRepository;
+import com.spareparts.repository.BillRepository;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
+
 
 @RestController
 @RequestMapping("/api/customers")
@@ -13,6 +22,29 @@ public class CustomerController {
     
     @Autowired
     private CustomerService customerService;
+    
+    @Autowired
+    private UserRepository userRepository;
+    
+    @Autowired
+    private BillRepository billRepository;
+
+    private User getAuthenticatedUser(Authentication auth) {
+        return userRepository.findByUsername(auth.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
+    private Customer getCustomerForUser(User user) {
+        if (!"CUSTOMER".equals(user.getRole())) {
+            throw new RuntimeException("Not a customer");
+        }
+        List<Customer> customers = customerService.searchCustomers(user.getPhone());
+        if (customers.isEmpty()) {
+            throw new RuntimeException("Customer profile not found");
+        }
+        return customers.get(0);
+    }
+
     
     @GetMapping
     public ResponseEntity<List<Customer>> getAllCustomers() {
@@ -43,5 +75,28 @@ public class CustomerController {
     @GetMapping("/search")
     public ResponseEntity<List<Customer>> searchCustomers(@RequestParam String keyword) {
         return ResponseEntity.ok(customerService.searchCustomers(keyword));
+    }
+    
+    @GetMapping("/me/bills")
+    public ResponseEntity<List<Bill>> getMyBills(Authentication auth) {
+        User user = getAuthenticatedUser(auth);
+        Customer customer = getCustomerForUser(user);
+        return ResponseEntity.ok(billRepository.findByCustomerId(customer.getId()));
+    }
+    
+    @GetMapping("/me/products")
+    public ResponseEntity<List<Product>> getMyProducts(Authentication auth) {
+        User user = getAuthenticatedUser(auth);
+        Customer customer = getCustomerForUser(user);
+        List<Bill> bills = billRepository.findByCustomerId(customer.getId());
+        List<Product> products = new ArrayList<>();
+        bills.forEach(bill -> {
+            bill.getItems().forEach(item -> {
+                if (!products.contains(item.getProduct())) {
+                    products.add(item.getProduct());
+                }
+            });
+        });
+        return ResponseEntity.ok(products);
     }
 }

@@ -9,24 +9,51 @@ import {
 } from '@mui/icons-material';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useTheme } from '@mui/material/styles';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '../api/client';
+import { CircularProgress, Skeleton, Grid } from '@mui/material';
 
 const Analytics = () => {
   const theme = useTheme();
 
-  // Sample data
-  const revenueData = [
-    { month: 'Jan', revenue: 4000 },
-    { month: 'Feb', revenue: 3000 },
-    { month: 'Mar', revenue: 5000 },
-    { month: 'Apr', revenue: 4500 },
-    { month: 'May', revenue: 6000 },
-    { month: 'Jun', revenue: 8000 },
-  ];
+  const { data, isLoading } = useQuery({
+    queryKey: ['analytics-full'],
+    queryFn: api.getFullAnalytics
+  });
+
+  if (isLoading) {
+    return (
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <Skeleton variant="rectangular" height={60} sx={{ borderRadius: 3, mb: 2, width: 250 }} />
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 4 }}>
+          {[1, 2, 3, 4].map((i) => (
+            <Box key={i} sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
+              <Skeleton variant="rectangular" height={160} sx={{ borderRadius: 3 }} />
+            </Box>
+          ))}
+        </Box>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+           <Box sx={{ flex: { xs: '1 1 100%', lg: '1 1 calc(66.66% - 12px)' } }}>
+             <Skeleton variant="rectangular" height={400} sx={{ borderRadius: 3 }} />
+           </Box>
+           <Box sx={{ flex: { xs: '1 1 100%', lg: '1 1 calc(33.33% - 12px)' } }}>
+             <Skeleton variant="rectangular" height={400} sx={{ borderRadius: 3 }} />
+           </Box>
+        </Box>
+      </Box>
+    );
+  }
+
+  if (!data) return null;
+
+  const { revenueData, metrics: apiMetrics, topProducts } = data;
+
+
 
   const metrics = [
     {
       title: 'Total Revenue',
-      value: '₹1,24,580',
+      value: apiMetrics?.totalRevenue || '₹0',
       change: '12.5%',
       changeType: 'increase',
       icon: <AttachMoney />,
@@ -34,7 +61,7 @@ const Analytics = () => {
     },
     {
       title: 'Total Sales',
-      value: '1,234',
+      value: apiMetrics?.totalSales || '0',
       change: '8.2%',
       changeType: 'increase',
       icon: <Receipt />,
@@ -42,7 +69,7 @@ const Analytics = () => {
     },
     {
       title: 'Total Customers',
-      value: '345',
+      value: apiMetrics?.totalCustomers || '0',
       change: '5.1%',
       changeType: 'increase',
       icon: <People />,
@@ -50,20 +77,12 @@ const Analytics = () => {
     },
     {
       title: 'Low Stock Items',
-      value: '18',
+      value: apiMetrics?.lowStockItems || '0',
       change: '3.4%',
       changeType: 'decrease',
       icon: <Warning />,
       color: theme.palette.warning.main
     },
-  ];
-
-  const topProducts = [
-    { name: 'Engine Oil 5W-30', sales: '₹45,800', category: 'Lubricants' },
-    { name: 'Brake Pads Front', sales: '₹32,400', category: 'Brakes' },
-    { name: 'Air Filter', sales: '₹28,200', category: 'Filters' },
-    { name: 'Oil Filter', sales: '₹25,600', category: 'Filters' },
-    { name: 'Spark Plug', sales: '₹18,900', category: 'Electrical' },
   ];
 
   return (
@@ -166,7 +185,7 @@ const Analytics = () => {
                 Top Products
               </Typography>
               <List>
-                {topProducts.map((product, index) => (
+                {topProducts?.map((product: any, index: number) => (
                   <ListItem key={index} disablePadding sx={{ mb: 2 }}>
                     <ListItemAvatar>
                       <Avatar

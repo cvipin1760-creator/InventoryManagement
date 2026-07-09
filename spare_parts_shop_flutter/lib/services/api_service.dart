@@ -12,6 +12,8 @@ import '../models/purchase.dart';
 import '../models/payment.dart';
 import '../models/customer_balance.dart';
 import '../models/dashboard_stats.dart';
+import '../models/admin_dashboard_response.dart';
+import '../models/detailed_analytics_response.dart';
 import '../models/login_response.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'sqlite_service.dart';
@@ -824,6 +826,50 @@ class ApiService {
     } else {
       throw Exception('Failed to load dashboard stats');
     }
+  }
+
+  Future<DetailedAnalyticsResponse> getFullAnalytics() async {
+    final response = await http.get(Uri.parse('$baseUrl/analytics/full'), headers: await _getHeaders());
+
+    if (response.statusCode == 200) {
+      return DetailedAnalyticsResponse.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception('Failed to load full analytics');
+    }
+  }
+
+  Future<AdminDashboardResponse> getAdminDashboard() async {
+    final response = await http.get(Uri.parse('$baseUrl/analytics/admin-dashboard'), headers: await _getHeaders());
+
+    if (response.statusCode == 200) {
+      return AdminDashboardResponse.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception('Failed to load admin dashboard');
+    }
+  }
+
+  Future<List<dynamic>> getMyBills() async {
+    final response = await http.get(Uri.parse('$baseUrl/customers/me/bills'), headers: await _getHeaders());
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+    throw Exception('Failed to load customer bills');
+  }
+
+  Future<List<dynamic>> getMyWarranties() async {
+    final response = await http.get(Uri.parse('$baseUrl/warranties/me'), headers: await _getHeaders());
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+    throw Exception('Failed to load warranties');
+  }
+
+  Future<List<dynamic>> getMyEmis() async {
+    final response = await http.get(Uri.parse('$baseUrl/emis/me'), headers: await _getHeaders());
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+    throw Exception('Failed to load EMIs');
   }
 
   Future<void> register(String username, String email, String password) async {
