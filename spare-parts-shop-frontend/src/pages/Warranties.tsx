@@ -46,7 +46,7 @@ const Warranties = () => {
             const endDate = new Date(war.warrantyEndDate);
             const isActive = new Date() <= endDate;
             return (
-              <Grid size={{ xs: 12, md: 4 }} key={war.id}>
+              <Grid item xs={12} md={4} key={war.id}>
                 <Card sx={{ 
                   borderRadius: 3, 
                   borderTop: `4px solid ${isActive ? theme.palette.success.main : theme.palette.error.main}` 
@@ -79,7 +79,7 @@ const Warranties = () => {
           })
         )}
 
-        <Grid size={{ xs: 12, md: 4 }}>
+        <Grid item xs={12} md={6}>
           <Card sx={{ borderRadius: 3, height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: theme.palette.mode === 'light' ? '#f8fafc' : '#1e293b' }}>
 
             <CardContent sx={{ textAlign: 'center', p: 4 }}>

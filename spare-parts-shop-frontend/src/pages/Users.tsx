@@ -171,7 +171,7 @@ export default function Users() {
 
   const toggleUserStatus = async (user: any) => {
     try {
-      await api.updateStaffStatus(user.id, !user.enabled);
+      await api.updateUserStatus(user.id, !user.enabled);
       showToast(`User ${user.enabled ? 'disabled' : 'enabled'} successfully`, 'success');
       load();
     } catch (err) {
@@ -196,7 +196,7 @@ export default function Users() {
         <Typography variant="h4" sx={{ fontWeight: 700 }}>
           Staff Management
         </Typography>
-        {currentUser?.role !== 'STAFF' && currentUser?.role !== 'EMPLOYEE' && (
+        {currentUser?.role !== 'EMPLOYEE' && (
           <Button variant="contained" startIcon={<Add />} onClick={() => handleOpen()} sx={{ borderRadius: 2, px: 3 }}>
             Add Staff
           </Button>

@@ -34,7 +34,7 @@ const SubscriptionBilling = () => {
 
   const fetchSubscription = async () => {
     try {
-      const response = await api.get('/api/subscriptions/current');
+      const response = await api.get('/subscriptions/current');
       setSubscription(response.data);
     } catch (error) {
       console.error('Failed to fetch subscription', error);
@@ -45,7 +45,7 @@ const SubscriptionBilling = () => {
 
   const handleUpgrade = async (planName: string) => {
     try {
-      const response = await api.post(`/api/subscriptions/upgrade?planName=${planName}`);
+      const response = await api.post(`/subscriptions/upgrade?planName=${planName}`);
       setSubscription(response.data);
       alert(`Successfully upgraded to ${planName} Plan!`);
     } catch (error) {

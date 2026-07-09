@@ -248,28 +248,28 @@ const SuperReports = () => {
 
       {/* KPI Cards */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+        <Grid item xs={12} sm={6} md={4} lg={3}>
           <KpiCard title="Total Shops" value={data?.metrics?.totalBusinesses?.toLocaleString() || "0"} change={12.5} trend="up" icon={Package} />
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+        <Grid item xs={12} sm={6} md={4} lg={3}>
           <KpiCard title="Active Shops" value={data?.metrics?.activeBusinesses?.toLocaleString() || "0"} change={8.3} trend="up" icon={Shield} />
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+        <Grid item xs={12} sm={6} md={4} lg={3}>
           <KpiCard title="Inactive/Expired Shops" value={data?.metrics?.expiredBusinesses?.toLocaleString() || "0"} change={-4.2} trend="down" icon={AlertCircle} />
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+        <Grid item xs={12} sm={6} md={4} lg={3}>
           <KpiCard title="New Shops This Month" value={data?.metrics?.newBusinesses?.toLocaleString() || "0"} change={22} trend="up" icon={TrendingUp} />
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+        <Grid item xs={12} sm={6} md={4} lg={3}>
           <KpiCard title="Total Users" value={data?.metrics?.activeUsersToday?.toLocaleString() || "0"} change={15.3} trend="up" icon={Users} />
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+        <Grid item xs={12} sm={6} md={4} lg={3}>
           <KpiCard title="Live Global Sales" value={`₹${data?.metrics?.liveGlobalSales?.toLocaleString() || "0"}`} change={18.2} trend="up" icon={CreditCard} />
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+        <Grid item xs={12} sm={6} md={4} lg={3}>
           <KpiCard title="MRR" value={`₹${data?.metrics?.monthlyMrr?.toLocaleString() || "0"}`} change={12.5} trend="up" icon={Calendar} />
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+        <Grid item xs={12} sm={6} md={4} lg={3}>
           <KpiCard title="ARR" value={`₹${data?.metrics?.annualArr?.toLocaleString() || "0"}`} change={15.5} trend="up" icon={Calendar} />
         </Grid>
       </Grid>
@@ -292,7 +292,7 @@ const SuperReports = () => {
       {activeTab === 0 && (
         <Grid container spacing={3}>
           {/* Revenue Trend */}
-          <Grid size={{ xs: 12, lg: 8 }}>
+          <Grid item xs={12} lg={8}>
             <Card sx={{ borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.05)', height: '100%' }}>
               <CardContent sx={{ p: 3 }}>
                 <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>
@@ -324,7 +324,7 @@ const SuperReports = () => {
           </Grid>
 
           {/* Sales by Category */}
-          <Grid size={{ xs: 12, lg: 4 }}>
+          <Grid item xs={12} lg={4}>
             <Card sx={{ borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.05)', height: '100%' }}>
               <CardContent sx={{ p: 3 }}>
                 <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>
@@ -366,7 +366,7 @@ const SuperReports = () => {
           </Grid>
 
           {/* Shop Performance Table */}
-          <Grid size={{ xs: 12 }}>
+          <Grid item xs={12}>
             <Card sx={{ borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
               <CardContent sx={{ p: 3 }}>
                 <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>
@@ -435,7 +435,7 @@ const SuperReports = () => {
           </Grid>
 
           {/* AI Insights */}
-          <Grid size={{ xs: 12, lg: 6 }}>
+          <Grid item xs={12} lg={6}>
             <Card sx={{ borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.05)', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
               <CardContent sx={{ p: 3 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
@@ -466,7 +466,7 @@ const SuperReports = () => {
           </Grid>
 
           {/* Alerts */}
-          <Grid size={{ xs: 12, lg: 6 }}>
+          <Grid item xs={12} lg={6}>
             <Card sx={{ borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
               <CardContent sx={{ p: 3 }}>
                 <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>
