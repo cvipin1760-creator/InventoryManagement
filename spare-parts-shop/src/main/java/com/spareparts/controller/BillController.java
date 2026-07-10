@@ -40,6 +40,15 @@ public class BillController {
         return ResponseEntity.ok(billService.getAllBills());
     }
 
+    @GetMapping("/bills/templates")
+    public ResponseEntity<List<Map<String, Object>>> getBillTemplates() {
+        return ResponseEntity.ok(List.of(
+            Map.of("id", 1, "name", "Standard Invoice", "type", "standard"),
+            Map.of("id", 2, "name", "Thermal Receipt (80mm)", "type", "thermal_80"),
+            Map.of("id", 3, "name", "Thermal Receipt (58mm)", "type", "thermal_58")
+        ));
+    }
+
     @GetMapping("/bills/{id}")
     public ResponseEntity<Bill> getBillById(@PathVariable Long id) {
         return ResponseEntity.ok(billService.getBillById(id));
