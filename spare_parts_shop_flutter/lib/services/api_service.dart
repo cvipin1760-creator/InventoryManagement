@@ -17,6 +17,7 @@ import '../models/detailed_analytics_response.dart';
 import '../models/login_response.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'sqlite_service.dart';
+import '../core/exceptions/payment_required_exception.dart';
 
 class ApiService {
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
@@ -575,7 +576,7 @@ class ApiService {
   // --- STAFF ---
   Future<dynamic> createStaff(Map<String, dynamic> data) async {
     final response = await _post(
-      Uri.parse('$baseUrl/auth/staff'),
+      Uri.parse('$baseUrl/auth/users'),
       headers: await _getHeaders(),
       body: jsonEncode(data),
     );
@@ -585,7 +586,7 @@ class ApiService {
 
   Future<dynamic> updateStaff(int id, Map<String, dynamic> data) async {
     final response = await _put(
-      Uri.parse('$baseUrl/auth/staff/$id'),
+      Uri.parse('$baseUrl/auth/users/$id'),
       headers: await _getHeaders(),
       body: jsonEncode(data),
     );
@@ -1056,6 +1057,8 @@ class ApiService {
       switch (response.statusCode) {
         case 401:
           throw Exception('Unauthorized: $errorMessage');
+        case 402:
+          throw PaymentRequiredException('Payment Required: $errorMessage');
         case 403:
           throw Exception('Forbidden: $errorMessage');
         case 404:

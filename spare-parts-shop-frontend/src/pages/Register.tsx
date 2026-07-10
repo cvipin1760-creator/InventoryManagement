@@ -185,7 +185,7 @@ const RegisterPage = () => {
                           </IconButton>
                         </InputAdornment>
                       ),
-                    } }}
+                    }}
                 />
 
                 <Button
@@ -262,7 +262,6 @@ const RegisterPage = () => {
                   inputProps={{
                       maxLength: 6,
                       style: { textAlign: 'center', fontSize: '1.25rem', letterSpacing: '0.5rem' }
-                    }
                   }}
                 />
 

@@ -93,8 +93,9 @@ class _CustomersScreenState extends State<CustomersScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(customer == null ? 'Add Customer' : 'Edit Customer'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
           children: [
           TextField(
             controller: nameController,

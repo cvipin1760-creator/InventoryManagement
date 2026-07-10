@@ -239,7 +239,7 @@ const SuperReports = () => {
                     <Search size={20} />
                   </InputAdornment>
                 ),
-              } }}
+              }}
           />
         </Box>
       </Box>

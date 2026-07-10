@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:stock_pilot/constants/app_theme.dart';
 import 'package:stock_pilot/providers/auth_provider.dart';
 import 'package:stock_pilot/providers/theme_provider.dart';
+import 'package:stock_pilot/providers/subscription_provider.dart';
 import 'package:stock_pilot/screens/bills_screen.dart';
 import 'package:stock_pilot/screens/create_bill_screen.dart';
 import 'package:stock_pilot/screens/create_purchase_screen.dart';
@@ -21,6 +22,7 @@ import 'package:stock_pilot/screens/branches_screen.dart';
 import 'package:stock_pilot/screens/staff_screen.dart';
 import 'package:stock_pilot/screens/business_settings_screen.dart';
 import 'package:stock_pilot/screens/notifications_screen.dart';
+import 'package:stock_pilot/screens/subscription_billing_screen.dart';
 import 'package:stock_pilot/services/api_service.dart';
 import 'package:stock_pilot/services/fcm_service.dart';
 import 'package:stock_pilot/services/offline_sync_service.dart';
@@ -50,6 +52,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => SubscriptionProvider()),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
@@ -80,6 +83,7 @@ class MyApp extends StatelessWidget {
               '/staff': (context) => const StaffScreen(),
               '/business-settings': (context) => const BusinessSettingsScreen(),
               '/notifications': (context) => const NotificationsScreen(),
+              '/billing': (context) => const BillingScreen(),
             },
           );
         },

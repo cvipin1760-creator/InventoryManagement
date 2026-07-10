@@ -276,7 +276,7 @@ class _CreatePurchaseScreenState extends State<CreatePurchaseScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
@@ -294,7 +294,6 @@ class _CreatePurchaseScreenState extends State<CreatePurchaseScreen> {
                     labelText: 'Select Supplier',
                     labelStyle: TextStyle(color: Colors.grey[700]),
                     filled: true,
-                    fillColor: AppTheme.inputBackgroundColor,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
@@ -328,7 +327,6 @@ class _CreatePurchaseScreenState extends State<CreatePurchaseScreen> {
                           labelText: 'GST Type',
                           labelStyle: TextStyle(color: Colors.grey[700]),
                           filled: true,
-                          fillColor: AppTheme.inputBackgroundColor,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
@@ -364,7 +362,6 @@ class _CreatePurchaseScreenState extends State<CreatePurchaseScreen> {
                           labelText: 'Purchase Discount (₹)',
                           labelStyle: TextStyle(color: Colors.grey[700]),
                           filled: true,
-                          fillColor: AppTheme.inputBackgroundColor,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
@@ -444,7 +441,7 @@ class _CreatePurchaseScreenState extends State<CreatePurchaseScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
@@ -474,7 +471,6 @@ class _CreatePurchaseScreenState extends State<CreatePurchaseScreen> {
                           )
                         : null,
                     filled: true,
-                    fillColor: AppTheme.inputBackgroundColor,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
@@ -494,7 +490,7 @@ class _CreatePurchaseScreenState extends State<CreatePurchaseScreen> {
                   Container(
                     constraints: const BoxConstraints(maxHeight: 200),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(8),
                       boxShadow: [
                         BoxShadow(

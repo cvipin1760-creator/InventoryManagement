@@ -4,7 +4,10 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:stock_pilot/constants/app_theme.dart';
 import 'package:stock_pilot/providers/auth_provider.dart';
 import 'package:stock_pilot/services/api_service.dart';
-import 'package:local_auth/local_auth.dart';
+import '../repositories/auth_repository.dart';
+import '../services/api_service.dart';
+import '../services/biometric_service.dart';
+import '../services/secure_storage_service.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -24,7 +27,9 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   bool _isLoading = false;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
-  final LocalAuthentication auth = LocalAuthentication();
+  late final AuthRepository _authRepository;
+  late final BiometricService _biometricService;
+  late final SecureStorageService _secureStorageService;
   bool _canCheckBiometrics = false;
 
   @override
@@ -55,22 +60,42 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   }
 
   Future<void> _authenticate() async {
-    bool authenticated = false;
     try {
       setState(() => _isLoading = true);
-      authenticated = await auth.authenticate(
-        localizedReason: 'Let OS determine authentication method',
-        persistAcrossBackgrounding: true,
-      );
+      
+      final isReady = await _authRepository.isBiometricReady();
+      if (!isReady) {
+        if (mounted) {
+           ScaffoldMessenger.of(context).showSnackBar(
+             SnackBar(content: const Text('Biometrics are not set up or your session expired. Please login manually first.'), backgroundColor: AppTheme.warningColor),
+           );
+        }
+        return;
+      }
+
+      final authenticated = await _authRepository.loginWithBiometrics();
+      if (authenticated) {
+        final token = await _authRepository.getSavedToken();
+        if (token != null) {
+          // Instead of manually navigating, we should ensure AuthProvider is fully loaded.
+          // But since AuthProvider loads token from storage on boot, it might just work.
+          // In a real app we might call a special 'biometricLogin' on AuthProvider that just reads storage.
+          if (mounted) Navigator.pushReplacementNamed(context, '/dashboard');
+        }
+      }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error using biometrics: $e')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll('Exception: ', '')),
+            backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          )
+        );
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
-    }
-
-    if (authenticated) {
-      // In a real app, retrieve securely stored credentials here.
-      if (mounted) Navigator.pushReplacementNamed(context, '/dashboard');
     }
   }
 

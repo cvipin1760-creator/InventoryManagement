@@ -6,6 +6,7 @@ import '../services/api_service.dart';
 import '../models/dashboard_stats.dart';
 import '../constants/app_theme.dart';
 import '../providers/auth_provider.dart';
+import '../providers/subscription_provider.dart';
 import 'users_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -16,6 +17,7 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  static bool _hasShownTrialModal = false;
   final ApiService _apiService = ApiService();
   DashboardStats? _stats;
   List<dynamic> _branches = [];
@@ -28,6 +30,68 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void initState() {
     super.initState();
     _loadData();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final subProvider = Provider.of<SubscriptionProvider>(context, listen: false);
+      await subProvider.fetchSubscriptionStatus();
+      if (mounted && !_hasShownTrialModal && subProvider.status == 'TRIAL' && subProvider.remainingDays <= 3) {
+        _hasShownTrialModal = true;
+        _showTrialEndingModal(subProvider.remainingDays);
+      }
+    });
+  }
+
+
+  void _showTrialEndingModal(int daysLeft) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 28),
+            const SizedBox(width: 12),
+            const Text('Trial Ending Soon'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Your free trial expires in',
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+            const SizedBox(height: 12),
+            Center(
+              child: Text(
+                daysLeft <= 0 ? 'Today' : '$daysLeft Day${daysLeft == 1 ? '' : 's'}',
+                style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.orange),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text('Purchase a subscription now to continue using StockPilot without interruption.'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Remind Me Later', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/subscription_billing');
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primaryColor,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Buy Subscription'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _loadData() async {
@@ -322,6 +386,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
+                          _buildSubscriptionBanner(context),
                           _buildQuickActions(isAdmin),
                           const SizedBox(height: 24),
                           _buildStatsGrid(),
@@ -388,6 +453,81 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
       ],
     );
+  }
+
+  Widget _buildSubscriptionBanner(BuildContext context) {
+    final sub = Provider.of<SubscriptionProvider>(context);
+    if (sub.isLoading) return const SizedBox.shrink();
+
+    if (sub.isExpired) {
+       return Container(
+         margin: const EdgeInsets.only(bottom: 24),
+         padding: const EdgeInsets.all(16),
+         decoration: BoxDecoration(
+           color: Colors.red.shade100,
+           borderRadius: BorderRadius.circular(12),
+           border: Border.all(color: Colors.red),
+         ),
+         child: Row(
+           children: [
+             const Icon(Icons.error_outline, color: Colors.red, size: 32),
+             const SizedBox(width: 16),
+             Expanded(
+               child: Column(
+                 crossAxisAlignment: CrossAxisAlignment.start,
+                 children: [
+                   Text('Subscription Expired', style: TextStyle(color: Colors.red.shade900, fontWeight: FontWeight.bold, fontSize: 16)),
+                   const Text('Your subscription has expired. Please renew to continue using Stock Pilot.', style: TextStyle(color: Colors.red)),
+                 ],
+               ),
+             ),
+             ElevatedButton(
+               onPressed: () {
+                 Navigator.pushNamed(context, '/billing');
+               },
+               style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+               child: const Text('Renew Now'),
+             )
+           ],
+         ),
+       );
+    }
+
+    if (sub.status == 'TRIAL' && sub.remainingDays <= 3) {
+       return Container(
+         margin: const EdgeInsets.only(bottom: 24),
+         padding: const EdgeInsets.all(16),
+         decoration: BoxDecoration(
+           color: Colors.orange.shade100,
+           borderRadius: BorderRadius.circular(12),
+           border: Border.all(color: Colors.orange),
+         ),
+         child: Row(
+           children: [
+             const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 32),
+             const SizedBox(width: 16),
+             Expanded(
+               child: Column(
+                 crossAxisAlignment: CrossAxisAlignment.start,
+                 children: [
+                   Text('Trial Ending Soon', style: TextStyle(color: Colors.orange.shade900, fontWeight: FontWeight.bold, fontSize: 16)),
+                   Text('Your free trial expires in ${sub.remainingDays} Days. Purchase a subscription now to continue without interruption.', style: TextStyle(color: Colors.orange.shade900)),
+                 ],
+               ),
+             ),
+             ElevatedButton(
+               onPressed: () {
+                 Navigator.pushNamed(context, '/billing');
+               },
+               style: ElevatedButton.styleFrom(backgroundColor: Colors.orange, foregroundColor: Colors.white),
+               child: const Text('Buy Subscription'),
+             )
+           ],
+         ),
+       );
+    }
+    
+    return const SizedBox.shrink();
   }
 
   Widget _buildStatsGrid() {

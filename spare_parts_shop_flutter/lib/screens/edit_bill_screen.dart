@@ -729,7 +729,7 @@ class _EditBillScreenState extends State<EditBillScreen> {
                 style: TextStyle(
                   fontWeight: isTotal ? FontWeight.bold : FontWeight.w500,
                   fontSize: isTotal ? 16 : 14,
-                  color: isTotal ? Colors.blue : Colors.grey[800],
+                  color: isTotal ? Colors.blue : Theme.of(context).colorScheme.onSurface,
                 ),
               ),
             ),
@@ -744,7 +744,7 @@ class _EditBillScreenState extends State<EditBillScreen> {
                 style: TextStyle(
                   fontWeight: isTotal ? FontWeight.bold : FontWeight.w500,
                   fontSize: isTotal ? 16 : 14,
-                  color: isTotal ? Colors.blue : Colors.grey[800],
+                  color: isTotal ? Colors.blue : Theme.of(context).colorScheme.onSurface,
                 ),
               ),
             ),

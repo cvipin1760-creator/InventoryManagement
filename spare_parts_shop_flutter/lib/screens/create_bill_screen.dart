@@ -347,7 +347,7 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: Colors.blue[50],
+                                color: Theme.of(context).primaryColor.withOpacity(0.05),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Row(
@@ -370,8 +370,8 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: Colors.orange[50],
-                                borderRadius: BorderRadius.circular(8),
+                                color: Theme.of(context).primaryColor.withOpacity(0.05),
+                                borderRadius: BorderRadius.circular(12),
                               ),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -731,7 +731,7 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
                 style: TextStyle(
                   fontWeight: isTotal ? FontWeight.bold : FontWeight.w500,
                   fontSize: isTotal ? 16 : 14,
-                  color: isTotal ? Colors.blue : Colors.grey[800],
+                  color: isTotal ? Colors.blue : Theme.of(context).colorScheme.onSurface,
                 ),
               ),
             ),
@@ -746,7 +746,7 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
                 style: TextStyle(
                   fontWeight: isTotal ? FontWeight.bold : FontWeight.w500,
                   fontSize: isTotal ? 16 : 14,
-                  color: isTotal ? Colors.blue : Colors.grey[800],
+                  color: isTotal ? Colors.blue : Theme.of(context).colorScheme.onSurface,
                 ),
               ),
             ),
