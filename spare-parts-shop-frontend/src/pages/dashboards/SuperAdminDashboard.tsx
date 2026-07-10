@@ -162,20 +162,20 @@ const SuperAdminDashboard = () => {
       <Box>
         <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>Business Metrics</Typography>
         <Grid container spacing={3}>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Total Businesses" value={metrics?.totalBusinesses.toString() || "0"} icon={<PackageOpen />} trend="up" trendValue="+12%" subtitle="All time registered" color="primary" /></Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Active Businesses" value={metrics?.activeBusinesses.toString() || "0"} icon={<Activity />} trend="up" trendValue="+5%" subtitle="Logged in this week" color="success" /></Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="New Businesses" value={metrics?.newBusinesses.toString() || "0"} icon={<TrendingUp />} trend="up" trendValue="+18%" subtitle="This month" color="info" /></Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Trial Businesses" value={metrics?.trialBusinesses.toString() || "0"} icon={<DollarSign />} trend="down" trendValue="-2%" subtitle="Ending soon" color="warning" /></Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Premium Businesses" value={metrics?.premiumBusinesses.toString() || "0"} icon={<ShieldCheck />} trend="up" trendValue="+8%" subtitle="Paid subscriptions" color="success" /></Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Expired Businesses" value={metrics?.expiredBusinesses.toString() || "0"} icon={<TrendingDown />} trend="up" trendValue="+1%" subtitle="Needs follow-up" color="error" /></Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Monthly MRR" value={`₹${metrics?.monthlyMrr.toLocaleString()}`} icon={<DollarSign />} trend="up" trendValue="+15%" subtitle="Current month" color="primary" /></Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Annual ARR" value={`₹${metrics?.annualArr.toLocaleString()}`} icon={<TrendingUp />} trend="up" trendValue="+22%" subtitle="Projected" color="success" /></Grid>
+          <Grid item xs={12} sm={6} md={3}><KPICard title="Total Businesses" value={metrics?.totalBusinesses.toString() || "0"} icon={<PackageOpen />} trend="up" trendValue="+12%" subtitle="All time registered" color="primary" /></Grid>
+          <Grid item xs={12} sm={6} md={3}><KPICard title="Active Businesses" value={metrics?.activeBusinesses.toString() || "0"} icon={<Activity />} trend="up" trendValue="+5%" subtitle="Logged in this week" color="success" /></Grid>
+          <Grid item xs={12} sm={6} md={3}><KPICard title="New Businesses" value={metrics?.newBusinesses.toString() || "0"} icon={<TrendingUp />} trend="up" trendValue="+18%" subtitle="This month" color="info" /></Grid>
+          <Grid item xs={12} sm={6} md={3}><KPICard title="Trial Businesses" value={metrics?.trialBusinesses.toString() || "0"} icon={<DollarSign />} trend="down" trendValue="-2%" subtitle="Ending soon" color="warning" /></Grid>
+          <Grid item xs={12} sm={6} md={3}><KPICard title="Premium Businesses" value={metrics?.premiumBusinesses.toString() || "0"} icon={<ShieldCheck />} trend="up" trendValue="+8%" subtitle="Paid subscriptions" color="success" /></Grid>
+          <Grid item xs={12} sm={6} md={3}><KPICard title="Expired Businesses" value={metrics?.expiredBusinesses.toString() || "0"} icon={<TrendingDown />} trend="up" trendValue="+1%" subtitle="Needs follow-up" color="error" /></Grid>
+          <Grid item xs={12} sm={6} md={3}><KPICard title="Monthly MRR" value={`₹${metrics?.monthlyMrr.toLocaleString()}`} icon={<DollarSign />} trend="up" trendValue="+15%" subtitle="Current month" color="primary" /></Grid>
+          <Grid item xs={12} sm={6} md={3}><KPICard title="Annual ARR" value={`₹${metrics?.annualArr.toLocaleString()}`} icon={<TrendingUp />} trend="up" trendValue="+22%" subtitle="Projected" color="success" /></Grid>
         </Grid>
       </Box>
 
       <Grid container spacing={3}>
         {/* 3. Platform Health */}
-        <Grid size={{ xs: 12, lg: 4 }}>
+        <Grid item xs={12} lg={4}>
           <Card sx={{ borderRadius: 3, height: '100%' }}>
             <CardContent>
               <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>Platform Health ────────────────────────────</Typography>
@@ -207,7 +207,7 @@ const SuperAdminDashboard = () => {
         </Grid>
 
         {/* 4. Live Map */}
-        <Grid size={{ xs: 12, lg: 8 }}>
+        <Grid item xs={12} lg={8}>
           <ShopLocationsMap />
         </Grid>
       </Grid>
@@ -222,7 +222,7 @@ const SuperAdminDashboard = () => {
             { title: "💰 Top Profit Shops", data: [{ name: "AutoParts Pro", val: "₹4.2L" }, { name: "Bike World", val: "₹3.8L" }, { name: "Engine Hub", val: "₹3.5L" }] },
             { title: "⭐ Top Customers", data: [{ name: "Rahul Sharma", val: "₹1.2L" }, { name: "Ajay Singh", val: "₹95K" }, { name: "Vikram Tech", val: "₹88K" }] },
           ].map((board, i) => (
-            <Grid size={{ xs: 12, sm: 6, md: 3 }} key={i}>
+            <Grid item xs={12} sm={6} md={3} key={i}>
               <Card sx={{ borderRadius: 3, height: '100%', background: 'linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(248,250,252,1) 100%)' }}>
                 <CardContent>
                   <Typography variant="subtitle1" sx={{ fontWeight: 800, mb: 2, color: '#1E293B' }}>{board.title}</Typography>

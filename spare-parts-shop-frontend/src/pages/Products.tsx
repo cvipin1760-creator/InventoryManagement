@@ -248,7 +248,7 @@ export default function Products() {
               </tr>
             </thead>
             <tbody>
-              {products.map((p) => (
+              {products.map((p: any) => (
                 <tr key={p.id} className={p.quantity <= p.lowStockThreshold ? 'low-stock' : ''}>
                   <td>{p.name}</td>
                   <td>{p.partNumber}</td>
