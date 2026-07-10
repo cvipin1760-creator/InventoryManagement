@@ -176,7 +176,7 @@ export default function Bills() {
             className="btn btn-secondary"
             onClick={() => {
               const headers = ['Invoice #', 'Customer', 'Date', 'Amount'];
-              const data = bills.map(b => [b.invoiceNumber, b.customer.name, formatDate(b.billDate), b.finalAmount]);
+              const data = (bills || []).map(b => [b.invoiceNumber, b.customer?.name || 'N/A', formatDate(b.billDate), b.finalAmount]);
               exportToPDF('Bills Report', headers, data, 'bills_report');
             }}
           >
@@ -186,7 +186,7 @@ export default function Bills() {
             type="button"
             className="btn btn-secondary"
             onClick={() => {
-              const data = bills.map(b => ({
+              const data = (bills || []).map(b => ({
                 'Invoice #': b.invoiceNumber,
                 'Customer': b.customer.name,
                 'Date': formatDate(b.billDate),
@@ -224,7 +224,7 @@ export default function Bills() {
               </tr>
             </thead>
             <tbody>
-              {bills.map((b) => (
+              {(bills || []).map((b) => (
                 <tr key={b.id}>
                   <td><strong>{b.invoiceNumber}</strong></td>
                   <td>{b.customer.name}</td>
@@ -325,7 +325,7 @@ export default function Bills() {
                   </tr>
                 </thead>
                 <tbody>
-                  {previewBill.items.map((it) => (
+                  {(previewBill.items || []).map((it) => (
                     <tr key={it.id}>
                       <td>
                         <div style={{ fontWeight: '600' }}>{it.product.name}</div>

@@ -40,14 +40,14 @@ const CustomerBills = () => {
                   <CircularProgress />
                 </TableCell>
               </TableRow>
-            ) : bills.length === 0 ? (
+            ) : (!bills || bills.length === 0) ? (
               <TableRow>
                 <TableCell colSpan={6} align="center" sx={{ p: 4 }}>
                   No bills found.
                 </TableCell>
               </TableRow>
             ) : (
-              bills.map((bill) => (
+              (bills || []).map((bill) => (
                 <TableRow key={bill.id} hover>
                   <TableCell sx={{ fontWeight: 500 }}>{bill.invoiceNumber}</TableCell>
                   <TableCell>{format(new Date(bill.billDate), 'dd MMM yyyy')}</TableCell>
