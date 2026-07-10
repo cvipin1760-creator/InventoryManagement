@@ -155,22 +155,22 @@ const AdminDashboard = () => {
         <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>Daily Performance Tracker</Typography>
         <Grid container spacing={3}>
           {/* Revenue */}
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Revenue Today" value={`₹${stats?.todaySales?.toLocaleString() || 0}`} icon={<DollarSign />} trend="up" trendValue="+24%" subtitle="vs yesterday" color="success" /></Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Net Profit" value={`₹${stats?.netProfit?.toLocaleString() || 0}`} icon={<TrendingUp />} trend="up" trendValue="+12%" subtitle="Today" color="primary" /></Grid>
+          <Grid item xs={12} sm={6} md={3}><KPICard title="Revenue Today" value={`₹${stats?.todaySales?.toLocaleString() || 0}`} icon={<DollarSign />} trend="up" trendValue="+24%" subtitle="vs yesterday" color="success" /></Grid>
+          <Grid item xs={12} sm={6} md={3}><KPICard title="Net Profit" value={`₹${stats?.netProfit?.toLocaleString() || 0}`} icon={<TrendingUp />} trend="up" trendValue="+12%" subtitle="Today" color="primary" /></Grid>
           {/* Customer */}
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Total Customers" value={stats?.totalCustomers?.toString() || "0"} icon={<Users />} trend="up" trendValue={`+${stats?.customerGrowthPercent || 0}%`} subtitle="All time" color="info" /></Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="New Customers" value={stats?.newCustomers?.toString() || "0"} icon={<RefreshCcw />} trend="up" trendValue="+2%" subtitle="This month" color="warning" /></Grid>
+          <Grid item xs={12} sm={6} md={3}><KPICard title="Total Customers" value={stats?.totalCustomers?.toString() || "0"} icon={<Users />} trend="up" trendValue={`+${stats?.customerGrowthPercent || 0}%`} subtitle="All time" color="info" /></Grid>
+          <Grid item xs={12} sm={6} md={3}><KPICard title="New Customers" value={stats?.newCustomers?.toString() || "0"} icon={<RefreshCcw />} trend="up" trendValue="+2%" subtitle="This month" color="warning" /></Grid>
           {/* Inventory */}
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Total Products" value={stats?.totalProducts?.toString() || "0"} icon={<PackageOpen />} trend="up" trendValue="+10" subtitle="Added recently" color="primary" /></Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Low Stock" value={stats?.lowStockCount?.toString() || "0"} icon={<AlertCircle />} trend="down" trendValue="-3" subtitle="Requires attention" color="warning" /></Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Out of Stock" value={stats?.outOfStockCount?.toString() || "0"} icon={<Activity />} trend="down" trendValue="+2" subtitle="Lost revenue" color="error" /></Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}><KPICard title="Dead Stock" value={stats?.deadStockCount?.toString() || "0"} icon={<PackageOpen />} trend="up" trendValue="+5%" subtitle="Requires attention" color="success" /></Grid>
+          <Grid item xs={12} sm={6} md={3}><KPICard title="Total Products" value={stats?.totalProducts?.toString() || "0"} icon={<PackageOpen />} trend="up" trendValue="+10" subtitle="Added recently" color="primary" /></Grid>
+          <Grid item xs={12} sm={6} md={3}><KPICard title="Low Stock" value={stats?.lowStockCount?.toString() || "0"} icon={<AlertCircle />} trend="down" trendValue="-3" subtitle="Requires attention" color="warning" /></Grid>
+          <Grid item xs={12} sm={6} md={3}><KPICard title="Out of Stock" value={stats?.outOfStockCount?.toString() || "0"} icon={<Activity />} trend="down" trendValue="+2" subtitle="Lost revenue" color="error" /></Grid>
+          <Grid item xs={12} sm={6} md={3}><KPICard title="Dead Stock" value={stats?.deadStockCount?.toString() || "0"} icon={<PackageOpen />} trend="up" trendValue="+5%" subtitle="Requires attention" color="success" /></Grid>
         </Grid>
       </Box>
 
       <Grid container spacing={3}>
         {/* 3. Financial & Customer Charts */}
-        <Grid size={{ xs: 12, lg: 8 }}>
+        <Grid item xs={12} lg={8}>
           <Card sx={{ borderRadius: 3, height: '100%' }}>
             <CardContent>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
@@ -200,7 +200,7 @@ const AdminDashboard = () => {
           </Card>
         </Grid>
 
-        <Grid size={{ xs: 12, lg: 4 }}>
+        <Grid item xs={12} lg={4}>
           <Card sx={{ borderRadius: 3, height: '100%' }}>
             <CardContent>
               <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>Customer Retention</Typography>
@@ -229,7 +229,7 @@ const AdminDashboard = () => {
 
       <Grid container spacing={3}>
         {/* 4. AI Insights */}
-        <Grid size={{ xs: 12, lg: 4 }}>
+        <Grid item xs={12} lg={4}>
           <Card sx={{ borderRadius: 3, height: '100%', background: 'linear-gradient(135deg, rgba(37,99,235,0.05) 0%, rgba(255,255,255,1) 100%)' }}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
@@ -257,7 +257,7 @@ const AdminDashboard = () => {
         </Grid>
 
         {/* 5. Recent Activity Timeline */}
-        <Grid size={{ xs: 12, lg: 4 }}>
+        <Grid item xs={12} lg={4}>
           <Card sx={{ borderRadius: 3, height: '100%' }}>
             <CardContent>
               <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>Recent Activity</Typography>
@@ -277,7 +277,7 @@ const AdminDashboard = () => {
         </Grid>
 
         {/* 6. Notifications Panel */}
-        <Grid size={{ xs: 12, lg: 4 }}>
+        <Grid item xs={12} lg={4}>
           <Card sx={{ borderRadius: 3, height: '100%' }}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
