@@ -99,4 +99,14 @@ public class CustomerController {
         });
         return ResponseEntity.ok(products);
     }
+
+    @PostMapping("/{id}/enable-b2b")
+    public ResponseEntity<Void> enableB2b(@PathVariable Long id, @RequestBody java.util.Map<String, String> payload) {
+        String password = payload.get("password");
+        if (password == null || password.isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+        customerService.enableB2bAccess(id, password);
+        return ResponseEntity.ok().build();
+    }
 }

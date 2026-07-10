@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Box, Typography, Card, CardContent, Button, Grid, LinearProgress, useTheme, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import { CheckCircle } from 'lucide-react';
-import api from '../api';
+import { api } from '../api/client';
 
 interface Subscription {
   planName: string;
@@ -34,8 +34,8 @@ const SubscriptionBilling = () => {
 
   const fetchSubscription = async () => {
     try {
-      const response = await api.get('/subscriptions/current');
-      setSubscription(response.data);
+      const data = await api.getCurrentSubscription();
+      setSubscription(data);
     } catch (error) {
       console.error('Failed to fetch subscription', error);
     } finally {
@@ -45,9 +45,11 @@ const SubscriptionBilling = () => {
 
   const handleUpgrade = async (planName: string) => {
     try {
-      const response = await api.post(`/subscriptions/upgrade?planName=${planName}`);
-      setSubscription(response.data);
+      const data = await api.upgradeCurrentSubscription(planName);
+      setSubscription(data);
       alert(`Successfully upgraded to ${planName} Plan!`);
+      // Fetch fresh subscription info
+      fetchSubscription();
     } catch (error) {
       console.error('Failed to upgrade plan', error);
       setUpgradePlanName(planName);

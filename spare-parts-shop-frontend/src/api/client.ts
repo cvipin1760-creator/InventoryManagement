@@ -163,6 +163,12 @@ export const api = {
   sendBulkSMS: (data: { message: string, audience: string }) =>
     request<any>('/marketing/sms/bulk', { method: 'POST', body: JSON.stringify(data) }),
 
+  // Purchase Orders
+  getPurchaseOrders: () => request<any[]>('/purchase-orders'),
+  createPurchaseOrder: (data: any) => request<any>('/purchase-orders', { method: 'POST', body: JSON.stringify(data) }),
+  updatePurchaseOrderStatus: (id: number, status: string) => 
+    request<any>(`/purchase-orders/${id}/status`, { method: 'PUT', body: JSON.stringify({ status }) }),
+
   // Suppliers
   getSuppliers: () => request<import('../types').Supplier[]>('/suppliers'),
   getSupplier: (id: number) => request<import('../types').Supplier>(`/suppliers/${id}`),
@@ -402,6 +408,9 @@ export const api = {
 
   // Business & Subscription
   getBusiness: () => request<any>('/business'),
+  getCurrentSubscription: () => request<any>('/subscriptions/current'),
+  getAvailablePlans: () => request<any[]>('/subscriptions/plans'),
+  upgradeCurrentSubscription: (planName: string) => request<any>(`/subscriptions/upgrade?planName=${encodeURIComponent(planName)}`, { method: 'POST' }),
   updateSubscription: (id: number, subscriptionPlan: string) =>
     request<any>(`/super-admin/businesses/${id}/subscription`, {
       method: 'PUT',

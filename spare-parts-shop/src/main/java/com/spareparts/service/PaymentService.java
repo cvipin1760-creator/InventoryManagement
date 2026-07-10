@@ -98,4 +98,16 @@ public class PaymentService {
         payment.setPaymentDate(LocalDateTime.now());
         return paymentRepository.save(payment);
     }
+    
+    public String generatePaymentLink(Long billId) {
+        Bill bill = billRepository.findById(billId)
+                .orElseThrow(() -> new RuntimeException("Bill not found"));
+        
+        // Mock Stripe/Razorpay URL generation
+        String mockPaymentId = java.util.UUID.randomUUID().toString();
+        
+        // Let's pretend our frontend has a /pay route
+        String baseUrl = "http://localhost:5173/pay/";
+        return baseUrl + mockPaymentId + "?amount=" + bill.getFinalAmount();
+    }
 }

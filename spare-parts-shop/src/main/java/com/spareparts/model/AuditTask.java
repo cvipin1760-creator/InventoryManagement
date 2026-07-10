@@ -9,18 +9,16 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "customers", indexes = {
-    @Index(name = "idx_customer_phone", columnList = "phone")
-})
+@Table(name = "audit_tasks")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class Customer implements BelongsToBusiness {
+public class AuditTask implements BelongsToBusiness {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "business_id", nullable = false)
     @JsonIgnore
@@ -29,26 +27,27 @@ public class Customer implements BelongsToBusiness {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "branch_id")
     private Branch branch;
-    
-    @Column(nullable = false)
-    private String name;
-    
-    @Column(nullable = false)
-    private String phone;
-    
-    @Column(columnDefinition = "TEXT")
-    private String address;
 
-    @Column(name = "loyalty_points", nullable = false, columnDefinition = "integer default 0")
-    private Integer loyaltyPoints = 0;
-    
-    @Column(name = "is_b2b_client")
-    private Boolean isB2bClient = false;
-    
-    @Column(name = "password")
-    @JsonIgnore
-    private String password;
-    
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User auditor;
+
+    @Column(name = "expected_quantity", nullable = false)
+    private Integer expectedQuantity;
+
+    @Column(name = "actual_quantity")
+    private Integer actualQuantity;
+
+    @Column(name = "status", nullable = false)
+    private String status = "PENDING"; // PENDING, COMPLETED, DISCREPANCY
+
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "completed_at")
+    private LocalDateTime completedAt;
 }

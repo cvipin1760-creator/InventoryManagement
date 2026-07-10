@@ -95,4 +95,14 @@ public class CustomerService {
         Long branchId = com.spareparts.config.BranchContext.getBranchId();
         return customerRepository.searchCustomers(keyword, businessId, branchId);
     }
+    
+    @Autowired
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
+    public void enableB2bAccess(Long customerId, String rawPassword) {
+        Customer customer = getCustomerById(customerId);
+        customer.setIsB2bClient(true);
+        customer.setPassword(passwordEncoder.encode(rawPassword));
+        customerRepository.save(customer);
+    }
 }

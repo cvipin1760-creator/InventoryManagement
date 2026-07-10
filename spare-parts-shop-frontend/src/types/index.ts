@@ -20,13 +20,16 @@ export interface Product {
   id: number
   name: string
   partNumber: string
-  costPrice: number
-  price: number
-  gstPercent: number
-  quantity: number
-  lowStockThreshold: number
-  attachmentPath?: string
-  createdAt: string
+  costPrice: number;
+  price: number;
+  gstPercent: number;
+  quantity: number;
+  lowStockThreshold: number;
+  attachmentPath?: string;
+  warrantyDays?: number;
+  requiresSerialNumber?: boolean;
+  fitments?: any[];
+  createdAt: string;
   updatedAt: string
 }
 
@@ -38,6 +41,7 @@ export interface BillItem {
   gstPercent: number
   itemTotal: number
   discount: number
+  serialNumber?: string
 }
 
 export interface Bill {
@@ -83,6 +87,7 @@ export interface BillItemRequest {
   price: number
   gstPercent: number
   discount?: number
+  serialNumber?: string
 }
 
 export interface BillRequest {
@@ -169,4 +174,15 @@ export interface LoginResponse {
   }
   token?: string
   message: string
+}
+
+export interface AuditTask {
+  id: number;
+  product: Product;
+  auditor: any;
+  expectedQuantity: number;
+  actualQuantity?: number;
+  status: 'PENDING' | 'COMPLETED' | 'DISCREPANCY';
+  createdAt: string;
+  completedAt?: string;
 }

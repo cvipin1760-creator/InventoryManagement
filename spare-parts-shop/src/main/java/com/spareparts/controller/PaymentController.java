@@ -30,4 +30,12 @@ public class PaymentController {
     public ResponseEntity<Payment> createPayment(@RequestBody PaymentRequest request) {
         return ResponseEntity.ok(paymentService.createPayment(request));
     }
+
+    @PostMapping("/bill/{billId}/link")
+    public ResponseEntity<java.util.Map<String, String>> generatePaymentLink(@PathVariable Long billId) {
+        String link = paymentService.generatePaymentLink(billId);
+        java.util.Map<String, String> response = new java.util.HashMap<>();
+        response.put("link", link);
+        return ResponseEntity.ok(response);
+    }
 }

@@ -4,7 +4,7 @@ import { useSearchParams } from 'react-router-dom'
 import { api } from '../api/client'
 import type { Product } from '../types'
 import BarcodeScanner from '../components/BarcodeScanner'
-import { ScanBarcode } from 'lucide-react'
+import { ScanBarcode, Brain } from 'lucide-react'
 import './Products.css'
 
 function formatCurrency(n: number) {
@@ -266,7 +266,14 @@ export default function Products() {
                     {p.costPrice === p.price ? '✓' : ''}
                   </td>
                   <td>{p.gstPercent}%</td>
-                  <td>{p.quantity}</td>
+                  <td>
+                    {p.quantity}
+                    {p.quantity <= p.lowStockThreshold && (
+                      <span title="Low stock, restock recommended" style={{ marginLeft: '8px', color: '#d97706' }}>
+                        <Brain size={16} />
+                      </span>
+                    )}
+                  </td>
                   <td>{p.lowStockThreshold}</td>
                   <td>
                     {p.attachmentPath ? (
@@ -352,6 +359,22 @@ export default function Products() {
                     <div className="form-group">
                       <label>Low Stock Threshold</label>
                       <input type="number" min="0" value={form.lowStockThreshold} onChange={(e) => setForm({ ...form, lowStockThreshold: +e.target.value })} />
+                    </div>
+                  </div>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Warranty Days</label>
+                      <input type="number" min="0" value={form.warrantyDays || 0} onChange={(e) => setForm({ ...form, warrantyDays: +e.target.value })} />
+                    </div>
+                    <div className="form-group" style={{ display: 'flex', alignItems: 'flex-end', paddingBottom: '0.5rem' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                        <input 
+                          type="checkbox" 
+                          checked={form.requiresSerialNumber || false} 
+                          onChange={(e) => setForm({ ...form, requiresSerialNumber: e.target.checked })}
+                        />
+                        Requires Serial Number?
+                      </label>
                     </div>
                   </div>
                   <div className="form-group">

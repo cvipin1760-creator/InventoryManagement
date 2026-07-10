@@ -23,10 +23,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("SELECT COUNT(p) FROM Product p WHERE p.business.id = :businessId AND (:branchId IS NULL OR p.branch.id = :branchId)")
     long countByBusinessId(@Param("businessId") Long businessId, @Param("branchId") Long branchId);
     
-    @Query("SELECT p FROM Product p WHERE p.business.id = :businessId AND (:branchId IS NULL OR p.branch.id = :branchId) AND (LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(p.partNumber) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    @Query("SELECT DISTINCT p FROM Product p LEFT JOIN p.fitments f WHERE p.business.id = :businessId AND (:branchId IS NULL OR p.branch.id = :branchId) AND (LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(p.partNumber) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(f.vehicleModel.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(f.vehicleModel.make.name) LIKE LOWER(CONCAT('%', :keyword, '%')))")
     Page<Product> searchProducts(@Param("keyword") String keyword, @Param("businessId") Long businessId, @Param("branchId") Long branchId, Pageable pageable);
     
-    @Query("SELECT p FROM Product p WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(p.partNumber) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    @Query("SELECT DISTINCT p FROM Product p LEFT JOIN p.fitments f WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(p.partNumber) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(f.vehicleModel.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(f.vehicleModel.make.name) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     List<Product> searchProducts(@Param("keyword") String keyword);
     
     @Query("SELECT p FROM Product p WHERE p.business.id = :businessId AND (:branchId IS NULL OR p.branch.id = :branchId) AND p.quantity <= p.lowStockThreshold ORDER BY p.quantity ASC")

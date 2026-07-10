@@ -63,6 +63,20 @@ public class Product implements BelongsToBusiness {
     @Column(name = "attachment_path")
     private String attachmentPath;
     
+    @Column(name = "warranty_days")
+    private Integer warrantyDays = 0;
+    
+    @Column(name = "requires_serial_number")
+    private Boolean requiresSerialNumber = false;
+    
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "product_fitments",
+        joinColumns = @JoinColumn(name = "product_id"),
+        inverseJoinColumns = @JoinColumn(name = "fitment_id")
+    )
+    private java.util.Set<Fitment> fitments = new java.util.HashSet<>();
+    
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
     

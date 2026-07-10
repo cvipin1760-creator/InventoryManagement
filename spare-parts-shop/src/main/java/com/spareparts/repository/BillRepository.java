@@ -57,4 +57,7 @@ public interface BillRepository extends JpaRepository<Bill, Long> {
     
     @Query("SELECT COALESCE(SUM(b.finalAmount), 0.0) FROM Bill b WHERE b.customer.id = :customerId")
     Double getTotalBilledByCustomerId(@Param("customerId") Long customerId);
+    
+    @Query("SELECT COALESCE(SUM(i.quantity), 0) FROM Bill b JOIN b.items i WHERE i.product.id = :productId AND b.billDate BETWEEN :startDate AND :endDate")
+    Integer getTotalQuantitySoldForProduct(@Param("productId") Long productId, @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 }

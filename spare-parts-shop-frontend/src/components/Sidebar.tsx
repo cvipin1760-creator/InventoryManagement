@@ -36,6 +36,11 @@ import {
   TrendingUp,
   Wallet,
   MessageSquare,
+  Brain,
+  PieChart,
+  Target,
+  Megaphone,
+  ClipboardList,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppSelector } from '../store/hooks';
@@ -83,9 +88,13 @@ const Sidebar = ({
       items.push({ label: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> });
       items.push({ label: 'Products', path: '/products', icon: <PackageOpen size={20} /> });
       items.push({ label: 'Inventory', path: '/stock-transfers', icon: <Database size={20} /> });
+      if (user?.features?.inventoryEnabled) {
+        items.push({ label: 'Inventory Audit', path: '/audit', icon: <ClipboardList size={20} /> });
+      }
       items.push({ label: 'Customers', path: '/customers', icon: <Users size={20} /> });
       items.push({ label: 'Sales', path: '/bills', icon: <Receipt size={20} /> });
       items.push({ label: 'Purchases', path: '/purchases', icon: <ShoppingCart size={20} /> });
+      items.push({ label: 'Purchase Orders', path: '/purchase-orders', icon: <Brain size={20} /> });
       items.push({ label: 'Reports', path: '/reports', icon: <FileSpreadsheet size={20} /> });
       items.push({ label: 'Marketing', path: '/marketing', icon: <MessageSquare size={20} /> });
       if (user?.features?.accountingExportEnabled) {
@@ -97,6 +106,10 @@ const Sidebar = ({
       const perms = user?.permissions || [];
       items.push({ label: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> });
       if (perms.includes('products')) items.push({ label: 'Products', path: '/products', icon: <PackageOpen size={20} /> });
+      if (user?.features?.inventoryEnabled) {
+        items.push({ label: 'Inventory Audit', path: '/audit', icon: <ClipboardList size={20} /> });
+      }
+      if (perms.includes('customers')) items.push({ label: 'Customers', path: '/customers', icon: <Users size={20} /> });
       if (perms.includes('customers')) items.push({ label: 'Customers', path: '/customers', icon: <Users size={20} /> });
       if (perms.includes('bills')) items.push({ label: 'Sales', path: '/bills', icon: <Receipt size={20} /> });
       if (perms.includes('purchases')) items.push({ label: 'Purchases', path: '/purchases', icon: <ShoppingCart size={20} /> });

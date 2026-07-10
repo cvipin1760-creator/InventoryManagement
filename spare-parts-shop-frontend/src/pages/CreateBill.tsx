@@ -31,6 +31,7 @@ export default function CreateBill() {
     price: number
     gstPercent: number
     discount: number
+    serialNumber?: string
   }>>([])
 
   const [loading, setLoading] = useState(false)
@@ -107,7 +108,7 @@ export default function CreateBill() {
     setShowDropdown(false)
   }
 
-  const updateItem = (idx: number, field: string, value: number) => {
+  const updateItem = (idx: number, field: string, value: number | string) => {
     const next = [...items]
     const item = next[idx]
 
@@ -120,7 +121,7 @@ export default function CreateBill() {
         item.gstPercent = p.gstPercent
       }
     } else {
-      ;(item as unknown as Record<string, number>)[field] = value
+      ;(item as unknown as Record<string, any>)[field] = value
     }
 
     setItems(next)
@@ -355,6 +356,16 @@ const totalDiscount = lineDiscountTotal + percentDiscountAmount
                     <td>
                       <div style={{ fontWeight: 600 }}>{item.product.name}</div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{item.product.partNumber}</div>
+                      {item.product.requiresSerialNumber && (
+                        <input
+                          type="text"
+                          placeholder="Enter Serial No."
+                          value={item.serialNumber || ''}
+                          onChange={(e) => updateItem(idx, 'serialNumber', e.target.value)}
+                          className="form-control"
+                          style={{ marginTop: '0.5rem', width: '100%', fontSize: '0.8rem', padding: '0.2rem 0.5rem' }}
+                        />
+                      )}
                     </td>
                     <td style={{ textAlign: 'center' }}>
                       <input

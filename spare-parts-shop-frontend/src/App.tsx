@@ -36,6 +36,10 @@ import Support from './pages/Support';
 import PaymentSettings from './pages/PaymentSettings';
 import AccountingExport from './pages/AccountingExport';
 import Marketing from './pages/Marketing';
+import PurchaseOrders from './pages/PurchaseOrders';
+import B2bLogin from './pages/B2bLogin';
+import B2bShop from './pages/B2bShop';
+import Audit from './pages/Audit';
 
 
 // Protected Route component
@@ -79,6 +83,10 @@ const App = () => {
       {/* Public Routes */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      
+      {/* Public B2B Portal Routes */}
+      <Route path="/b2b/:businessId/login" element={<B2bLogin />} />
+      <Route path="/b2b/:businessId/shop" element={<B2bShop />} />
 
       {/* Protected Routes */}
       <Route

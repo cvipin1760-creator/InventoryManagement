@@ -8,40 +8,34 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "bill_items")
+@Table(name = "purchase_order_items")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class BillItem {
+public class PurchaseOrderItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "bill_id", nullable = false)
+    @JoinColumn(name = "purchase_order_id", nullable = false)
     @JsonIgnore
-    private Bill bill;
+    private PurchaseOrder purchaseOrder;
     
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
     
     @Column(nullable = false)
-    private Integer quantity;
+    private Integer requestedQuantity;
     
     @Column(nullable = false)
-    private Double price;
+    private Double estimatedPrice;
     
-    @Column(name = "gst_percent", nullable = false)
-    private Double gstPercent;
+    @Column(name = "suggested_by_ai")
+    private Boolean suggestedByAi = false;
     
-    @Column(name = "item_total", nullable = false)
-    private Double itemTotal;
-    
-    @Column(nullable = false)
-    private Double discount = 0.0;
-    
-    @Column(name = "serial_number")
-    private String serialNumber;
+    @Column(name = "reason")
+    private String reason; // e.g., "High demand forecasted", "Below low stock threshold"
 }
