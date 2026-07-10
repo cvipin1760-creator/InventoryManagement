@@ -34,14 +34,12 @@ const CustomerProducts = () => {
           size="small"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Search />
-                </InputAdornment>
-              ),
-            }
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Search size={20} />
+              </InputAdornment>
+            ),
           }}
           sx={{ bgcolor: theme.palette.background.paper, borderRadius: 2 }}
         />

@@ -50,7 +50,8 @@ const RoleBasedRoute = ({ children, allowedRoles }: { children: React.ReactNode;
   if (!user) {
     return <Navigate to="/dashboard" replace />;
   }
-  const role = user.role === 'SUPER_ADMIN' ? 'SUPER_MANAGER' : user.role === 'STAFF' ? 'EMPLOYEE' : user.role;
+  const userRole = user.role as string;
+  const role = userRole === 'SUPER_ADMIN' ? 'SUPER_MANAGER' : userRole === 'STAFF' ? 'EMPLOYEE' : user.role;
   if (role === 'SUPER_MANAGER') {
     return <>{children}</>;
   }

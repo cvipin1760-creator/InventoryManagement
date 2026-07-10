@@ -62,7 +62,8 @@ const Sidebar = ({
   const menuItems = useMemo(() => {
     const items: MenuItem[] = [];
 
-    if (user?.role === 'SUPER_MANAGER' || user?.role === 'SUPER_ADMIN') {
+    const userRole = user?.role as string | undefined;
+    if (user?.role === 'SUPER_MANAGER' || userRole === 'SUPER_ADMIN') {
       items.push({ label: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> });
       items.push({ label: 'Sales', path: '/bills', icon: <Receipt size={20} /> });
       items.push({ label: 'Purchases', path: '/purchases', icon: <ShoppingCart size={20} /> });
@@ -83,7 +84,7 @@ const Sidebar = ({
       items.push({ label: 'Staff', path: '/users', icon: <Users size={20} /> });
       items.push({ label: 'Customers', path: '/customers', icon: <Users size={20} /> });
       items.push({ label: 'Settings', path: '/settings', icon: <Settings size={20} /> });
-    } else if (user?.role === 'STAFF' || user?.role === 'EMPLOYEE') {
+    } else if (userRole === 'STAFF' || user?.role === 'EMPLOYEE') {
       items.push({ label: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> });
       items.push({ label: 'Sales', path: '/bills', icon: <Receipt size={20} /> });
       items.push({ label: 'Purchases', path: '/purchases', icon: <ShoppingCart size={20} /> });

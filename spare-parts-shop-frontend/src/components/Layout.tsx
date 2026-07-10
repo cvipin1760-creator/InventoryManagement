@@ -191,14 +191,12 @@ const Layout = () => {
               placeholder="Search..."
               size="small"
               sx={{ mr: 3, width: 300 }}
-              slotProps={{
-                input: {
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Search size={20} />
-                    </InputAdornment>
-                  ),
-                },
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search size={20} />
+                  </InputAdornment>
+                ),
               }}
             />
           )}
@@ -274,12 +272,10 @@ const Layout = () => {
             anchorEl={anchorEl}
             open={Boolean(anchorEl)}
             onClose={handleMenuClose}
-            slotProps={{
-              paper: {
-                sx: {
-                  borderRadius: 2,
-                  boxShadow: '0 10px 40px -10px rgba(0,0,0,0.2)',
-                },
+            PaperProps={{
+              sx: {
+                borderRadius: 2,
+                boxShadow: '0 10px 40px -10px rgba(0,0,0,0.2)',
               },
             }}
           >
