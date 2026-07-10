@@ -35,11 +35,11 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   @override
   void initState() {
     super.initState();
-    _secureStorageService = SecureStorageService(const FlutterSecureStorage());
+    _secureStorageService = SecureStorageService();
     _biometricService = BiometricService();
     _authRepository = AuthRepository(
       apiService: ApiService(),
-      secureStorageService: _secureStorageService,
+      storageService: _secureStorageService,
       biometricService: _biometricService,
     );
     _checkBiometrics();
