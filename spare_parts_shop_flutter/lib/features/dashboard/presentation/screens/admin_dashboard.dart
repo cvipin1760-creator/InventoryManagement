@@ -197,6 +197,6 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
           ),
         ),
       ),
-    );
+    ));
   }
 }

@@ -138,6 +138,6 @@ class _CustomerDashboardState extends ConsumerState<CustomerDashboard> {
           ),
         ),
       ),
-    );
+    ));
   }
 }

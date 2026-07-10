@@ -1,6 +1,5 @@
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:local_auth/error_codes.dart' as auth_error;
 import 'package:flutter/foundation.dart';
 
 class BiometricService {
@@ -21,33 +20,30 @@ class BiometricService {
     try {
       return await _auth.authenticate(
         localizedReason: reason,
-        options: const AuthenticationOptions(
-          biometricOnly: true,
-          stickyAuth: true,
-          sensitiveTransaction: true,
-          useErrorDialogs: true,
-        ),
+        biometricOnly: true,
+        persistAcrossBackgrounding: true,
+        sensitiveTransaction: true,
       );
     } on PlatformException catch (e) {
       debugPrint('Biometric Error: ${e.code} - ${e.message}');
       String errorMessage;
       switch (e.code) {
-        case auth_error.notEnrolled:
+        case 'NotEnrolled':
           errorMessage = 'No biometrics enrolled on this device. Please set it up in your device settings.';
           break;
-        case auth_error.lockedOut:
+        case 'LockedOut':
           errorMessage = 'Biometric authentication is temporarily locked out due to too many failed attempts.';
           break;
-        case auth_error.permanentlyLockedOut:
+        case 'PermanentlyLockedOut':
           errorMessage = 'Biometric authentication is permanently locked out. Please use your PIN/Password to unlock.';
           break;
-        case auth_error.passcodeNotSet:
+        case 'PasscodeNotSet':
           errorMessage = 'Device passcode is not set. Please secure your device first.';
           break;
-        case auth_error.otherOperatingSystem:
+        case 'OtherOperatingSystem':
           errorMessage = 'Biometric authentication is not supported on this OS.';
           break;
-        case auth_error.notAvailable:
+        case 'NotAvailable':
           errorMessage = 'Biometric hardware is currently unavailable.';
           break;
         case 'uiUnavailable':

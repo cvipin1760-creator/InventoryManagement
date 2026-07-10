@@ -111,6 +111,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
           ),
         ],
       ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),

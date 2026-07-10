@@ -49,7 +49,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   Future<void> _checkBiometrics() async {
     bool canCheckBiometrics;
     try {
-      canCheckBiometrics = await auth.canCheckBiometrics;
+      canCheckBiometrics = await BiometricService().isBiometricAvailable();
     } catch (e) {
       canCheckBiometrics = false;
     }

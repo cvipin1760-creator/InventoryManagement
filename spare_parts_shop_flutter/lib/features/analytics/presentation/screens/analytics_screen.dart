@@ -287,7 +287,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
           ),
         ),
       ),
-    );
+    ));
   }
 
   Widget _buildMetricCard(
