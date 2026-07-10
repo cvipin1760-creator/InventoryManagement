@@ -37,7 +37,7 @@ const CustomerProducts = () => {
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <Search size={20} />
+                <Search fontSize="small" />
               </InputAdornment>
             ),
           }}
