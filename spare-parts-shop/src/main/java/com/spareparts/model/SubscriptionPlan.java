@@ -42,6 +42,9 @@ public class SubscriptionPlan {
     @Column(name = "is_active", columnDefinition = "boolean default true")
     private Boolean isActive = true;
 
+    @Column(name = "is_popular", columnDefinition = "boolean default false")
+    private Boolean isPopular = false;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
     

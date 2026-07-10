@@ -96,7 +96,9 @@ export default function Users() {
         password: '',
         role: user.role === 'EMPLOYEE' ? 'STAFF' : user.role,
         enabled: user.enabled,
-        permissions: user.permissions || {},
+        permissions: Array.isArray(user.permissions) 
+          ? user.permissions.reduce((acc: any, p: string) => ({ ...acc, [p]: true }), {}) 
+          : (user.permissions || {}),
       });
     } else {
       setEditing(null);

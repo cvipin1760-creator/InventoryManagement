@@ -93,6 +93,7 @@ public class AuthService {
                 Boolean.FALSE.equals(user.getPasswordChanged()),
                 featuresDto, "Login successful");
         response.setToken(token);
+        response.setPermissions(user.getPermissions());
         return response;
     }
 
@@ -310,6 +311,7 @@ public class AuthService {
                 Boolean.FALSE.equals(existing.getPasswordChanged()),
                 featuresDto, "Login successful");
         response.setToken(token);
+        response.setPermissions(existing.getPermissions());
         return response;
     }
 
@@ -482,37 +484,55 @@ public class AuthService {
         }
         user.setRole(request.getRole());
         user.setEnabled(request.getEnabled() != null ? request.getEnabled() : true);
+        
+        if (request.getPermissions() != null) {
+            java.util.Set<String> perms = new java.util.HashSet<>();
+            request.getPermissions().forEach((k, v) -> {
+                if (Boolean.TRUE.equals(v)) perms.add(k);
+            });
+            user.setPermissions(perms);
+        }
+
         userRepository.save(user);
     }
 
     @EnforceUsageLimit(UsageLimitType.USERS)
-    public User createUser(String username, String email, String password, String role, Boolean enabled, String creatorUsername) {
+    public User createUser(com.spareparts.dto.CreateUserRequest request, String creatorUsername) {
         User creator = userRepository.findByUsername(creatorUsername).orElse(null);
-        if (userRepository.findByUsername(username).isPresent()) {
+        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
             throw new RuntimeException("Username already exists");
         }
-        if (userRepository.findByEmail(email).isPresent()) {
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException("Email already exists");
         }
 
         if (creator != null && !"SUPER_ADMIN".equals(creator.getRole())) {
-            if ("SUPER_ADMIN".equals(role) || "ADMIN".equals(role)) {
+            if ("SUPER_ADMIN".equals(request.getRole()) || "ADMIN".equals(request.getRole())) {
                 throw new RuntimeException("Only Super Admin can create Admin or Super Admin users");
             }
         }
 
         User user = new User();
-        user.setUsername(username);
-        user.setEmail(email);
-        user.setPassword(password);
-        user.setRole(role); // SUPER_ADMIN, ADMIN, STAFF
-        user.setEnabled(enabled != null ? enabled : true);
+        user.setUsername(request.getUsername());
+        user.setEmail(request.getEmail());
+        user.setPassword(request.getPassword());
+        user.setRole(request.getRole()); // SUPER_ADMIN, ADMIN, EMPLOYEE
+        user.setEnabled(request.getEnabled() != null ? request.getEnabled() : true);
         user.setPasswordChanged(false);
         if (creator != null) {
             user.setCreatedBy(creator.getId());
             user.setBusiness(creator.getBusiness());
             user.setBranch(creator.getBranch());
         }
+
+        if (request.getPermissions() != null) {
+            java.util.Set<String> perms = new java.util.HashSet<>();
+            request.getPermissions().forEach((k, v) -> {
+                if (Boolean.TRUE.equals(v)) perms.add(k);
+            });
+            user.setPermissions(perms);
+        }
+
         return userRepository.save(user);
     }
 }

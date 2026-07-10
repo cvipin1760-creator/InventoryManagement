@@ -7,6 +7,8 @@ export interface User {
   email?: string;
   role: 'SUPER_ADMIN' | 'ADMIN' | 'EMPLOYEE' | 'CUSTOMER';
   businessId?: number;
+  permissions?: string[];
+  features?: any;
 }
 
 export interface FeaturePermissions {

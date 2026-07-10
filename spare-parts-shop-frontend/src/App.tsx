@@ -34,6 +34,8 @@ import Warranties from './pages/Warranties';
 import CustomerEmi from './pages/CustomerEmi';
 import Support from './pages/Support';
 import PaymentSettings from './pages/PaymentSettings';
+import AccountingExport from './pages/AccountingExport';
+import Marketing from './pages/Marketing';
 
 
 // Protected Route component
@@ -46,7 +48,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 // Role-Based Route component
-const RoleGuard = ({ children, allowedRoles }: { children: React.ReactNode; allowedRoles: string[] }) => {
+const RoleGuard = ({ children, allowedRoles, requiredPermission }: { children: React.ReactNode; allowedRoles: string[], requiredPermission?: string }) => {
   const user = useAppSelector(selectCurrentUser);
   if (!user) {
     return <Navigate to="/dashboard" replace />;
@@ -59,6 +61,13 @@ const RoleGuard = ({ children, allowedRoles }: { children: React.ReactNode; allo
   
   if (!allowedRoles.includes(role)) {
     return <Navigate to="/dashboard" replace />;
+  }
+  
+  if (role === 'EMPLOYEE' && requiredPermission) {
+    const perms = user.permissions || [];
+    if (!perms.includes(requiredPermission)) {
+      return <Navigate to="/dashboard" replace />;
+    }
   }
   
   return <>{children}</>;
@@ -132,47 +141,47 @@ const App = () => {
 
         {/* Admin/Employee Routes */}
         <Route path="products" element={
-          <RoleGuard allowedRoles={['ADMIN', 'EMPLOYEE']}>
+          <RoleGuard allowedRoles={['ADMIN', 'EMPLOYEE']} requiredPermission="products">
             <Products />
           </RoleGuard>
         } />
         <Route path="customers" element={
-          <RoleGuard allowedRoles={['ADMIN', 'EMPLOYEE']}>
+          <RoleGuard allowedRoles={['ADMIN', 'EMPLOYEE']} requiredPermission="customers">
             <Customers />
           </RoleGuard>
         } />
         <Route path="bills" element={
-          <RoleGuard allowedRoles={['ADMIN', 'EMPLOYEE']}>
+          <RoleGuard allowedRoles={['ADMIN', 'EMPLOYEE']} requiredPermission="bills">
             <Bills />
           </RoleGuard>
         } />
         <Route path="bills/create" element={
-          <RoleGuard allowedRoles={['ADMIN', 'EMPLOYEE']}>
+          <RoleGuard allowedRoles={['ADMIN', 'EMPLOYEE']} requiredPermission="bills">
             <CreateBill />
           </RoleGuard>
         } />
         <Route path="bills/:id/edit" element={
-          <RoleGuard allowedRoles={['ADMIN', 'EMPLOYEE']}>
+          <RoleGuard allowedRoles={['ADMIN', 'EMPLOYEE']} requiredPermission="bills">
             <EditBill />
           </RoleGuard>
         } />
         <Route path="purchases" element={
-          <RoleGuard allowedRoles={['ADMIN', 'EMPLOYEE']}>
+          <RoleGuard allowedRoles={['ADMIN', 'EMPLOYEE']} requiredPermission="purchases">
             <Purchases />
           </RoleGuard>
         } />
         <Route path="purchases/create" element={
-          <RoleGuard allowedRoles={['ADMIN', 'EMPLOYEE']}>
+          <RoleGuard allowedRoles={['ADMIN', 'EMPLOYEE']} requiredPermission="purchases">
             <CreatePurchase />
           </RoleGuard>
         } />
         <Route path="suppliers" element={
-          <RoleGuard allowedRoles={['ADMIN', 'EMPLOYEE']}>
+          <RoleGuard allowedRoles={['ADMIN', 'EMPLOYEE']} requiredPermission="suppliers">
             <Suppliers />
           </RoleGuard>
         } />
         <Route path="payments" element={
-          <RoleGuard allowedRoles={['ADMIN', 'EMPLOYEE']}>
+          <RoleGuard allowedRoles={['ADMIN', 'EMPLOYEE']} requiredPermission="payments">
             <Payments />
           </RoleGuard>
         } />
@@ -192,13 +201,23 @@ const App = () => {
           </RoleGuard>
         } />
         <Route path="stock-transfers" element={
-          <RoleGuard allowedRoles={['ADMIN', 'EMPLOYEE']}>
+          <RoleGuard allowedRoles={['ADMIN', 'EMPLOYEE']} requiredPermission="products">
             <StockTransfers />
           </RoleGuard>
         } />
         <Route path="reports" element={
-          <RoleGuard allowedRoles={['ADMIN', 'EMPLOYEE', 'SUPER_ADMIN']}>
+          <RoleGuard allowedRoles={['ADMIN', 'EMPLOYEE', 'SUPER_ADMIN']} requiredPermission="reports">
             <Reports />
+          </RoleGuard>
+        } />
+        <Route path="accounting-export" element={
+          <RoleGuard allowedRoles={['ADMIN', 'SUPER_ADMIN']}>
+            <AccountingExport />
+          </RoleGuard>
+        } />
+        <Route path="marketing" element={
+          <RoleGuard allowedRoles={['ADMIN', 'SUPER_ADMIN']}>
+            <Marketing />
           </RoleGuard>
         } />
 

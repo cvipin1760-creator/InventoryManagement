@@ -11,14 +11,22 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { useTheme } from '@mui/material/styles';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../api/client';
-import { CircularProgress, Skeleton, Grid } from '@mui/material';
+import { CircularProgress, Skeleton, Grid, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { useState, useEffect } from 'react';
 
 const Analytics = () => {
   const theme = useTheme();
 
+  const [branchId, setBranchId] = useState<string>('');
+  const [branches, setBranches] = useState<any[]>([]);
+
+  useEffect(() => {
+    api.getBranches().then(setBranches).catch(console.error);
+  }, []);
+
   const { data, isLoading } = useQuery({
-    queryKey: ['analytics-full'],
-    queryFn: api.getFullAnalytics
+    queryKey: ['analytics-full', branchId],
+    queryFn: () => api.getFullAnalytics(branchId || undefined)
   });
 
   if (isLoading) {
@@ -87,9 +95,27 @@ const Analytics = () => {
 
   return (
     <Box>
-      <Typography variant="h4" sx={{ fontWeight: 700, mb: 4 }}>
-        Analytics
-      </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+        <Typography variant="h4" sx={{ fontWeight: 700 }}>
+          Analytics
+        </Typography>
+        
+        {branches.length > 0 && (
+          <FormControl sx={{ minWidth: 200 }} size="small">
+            <InputLabel>Filter by Branch</InputLabel>
+            <Select
+              value={branchId}
+              label="Filter by Branch"
+              onChange={(e) => setBranchId(e.target.value)}
+            >
+              <MenuItem value="">All Branches</MenuItem>
+              {branches.map(b => (
+                <MenuItem key={b.id} value={b.id}>{b.name}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        )}
+      </Box>
 
       {/* Key Metrics */}
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 4 }}>

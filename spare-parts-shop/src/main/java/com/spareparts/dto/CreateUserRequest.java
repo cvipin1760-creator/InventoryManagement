@@ -17,4 +17,5 @@ public class CreateUserRequest {
     private String contactNumber;
     private String businessType;
     private String subscriptionPlan;
+    private java.util.Map<String, Boolean> permissions;
 }

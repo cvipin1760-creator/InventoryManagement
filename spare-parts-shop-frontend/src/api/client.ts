@@ -151,15 +151,17 @@ export const api = {
 
   // Analytics
   getPredictiveAnalytics: () => request<any>('/analytics/predictive'),
-  getFullAnalytics: () => request<any>('/analytics/full'),
+  getFullAnalytics: (branchId?: string) => 
+    request<any>(branchId ? `/analytics/full?branchId=${branchId}` : '/analytics/full'),
   getAdminDashboard: () => request<any>('/analytics/admin-dashboard'),
   getMyTasks: () => request<any>('/tasks/me'),
   // Marketing
-  sendWhatsAppMessage: (data: { customerId: number; message: string }) =>
-    request<any>('/marketing/whatsapp/send', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }),
+  sendWhatsAppMessage: (data: { customerId: number; message: string }) => 
+    request<any>('/marketing/whatsapp/send', { method: 'POST', body: JSON.stringify(data) }),
+  sendBulkWhatsApp: (data: { message: string, audience: string }) =>
+    request<any>('/marketing/whatsapp/bulk', { method: 'POST', body: JSON.stringify(data) }),
+  sendBulkSMS: (data: { message: string, audience: string }) =>
+    request<any>('/marketing/sms/bulk', { method: 'POST', body: JSON.stringify(data) }),
 
   // Suppliers
   getSuppliers: () => request<import('../types').Supplier[]>('/suppliers'),
@@ -219,6 +221,34 @@ export const api = {
     const a = document.createElement('a')
     a.href = url
     a.download = 'products.xlsx'
+    a.click()
+    URL.revokeObjectURL(url)
+  },
+  
+  // Accounting Export
+  exportQuickBooks: async (startDate: string, endDate: string) => {
+    const res = await fetch(`${API_BASE}/export/quickbooks?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`, {
+      headers: getAuthHeaders(),
+    })
+    if (!res.ok) throw new Error(await res.text())
+    const blob = await res.blob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `quickbooks_export_${startDate}_${endDate}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  },
+  exportTally: async (startDate: string, endDate: string) => {
+    const res = await fetch(`${API_BASE}/export/tally?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`, {
+      headers: getAuthHeaders(),
+    })
+    if (!res.ok) throw new Error(await res.text())
+    const blob = await res.blob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `tally_export_${startDate}_${endDate}.xml`
     a.click()
     URL.revokeObjectURL(url)
   },

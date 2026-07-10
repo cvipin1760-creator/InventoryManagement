@@ -15,6 +15,7 @@ public class LoginResponse {
     private Long branchId;
     private Boolean mustChangePassword = false;
     private FeaturePermissionsDto features;
+    private java.util.Set<String> permissions;
     private String message;
     private String token; // For backward compatibility
 
@@ -26,6 +27,7 @@ public class LoginResponse {
         this.branchId = branchId;
         this.mustChangePassword = false;
         this.features = features;
+        this.permissions = new java.util.HashSet<>();
         this.message = message;
         this.token = null;
     }
@@ -38,6 +40,7 @@ public class LoginResponse {
         this.branchId = branchId;
         this.mustChangePassword = mustChangePassword;
         this.features = features;
+        this.permissions = new java.util.HashSet<>();
         this.message = message;
         this.token = null;
     }
@@ -50,6 +53,7 @@ public class LoginResponse {
         this.branchId = null;
         this.mustChangePassword = false;
         this.features = features;
+        this.permissions = new java.util.HashSet<>();
         this.message = message;
         this.token = null;
     }

@@ -147,11 +147,7 @@ public class AuthController {
     public ResponseEntity<String> createUser(@RequestBody com.spareparts.dto.CreateUserRequest request, java.security.Principal principal) {
         try {
             authService.createUser(
-                    request.getUsername(),
-                    request.getEmail(),
-                    request.getPassword(),
-                    request.getRole(),
-                    request.getEnabled(),
+                    request,
                     principal.getName()
             );
             return ResponseEntity.ok("User created successfully");

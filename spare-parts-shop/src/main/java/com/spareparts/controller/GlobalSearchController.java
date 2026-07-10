@@ -35,16 +35,15 @@ public class GlobalSearchController {
         String query = q.toLowerCase();
 
         // Search Products
-        List<Product> products = productRepository.findByBusinessId(businessId);
+        List<Product> products = productRepository.searchProducts(query, businessId, null, org.springframework.data.domain.PageRequest.of(0, 10)).getContent();
         results.addAll(products.stream()
-                .filter(p -> p.getName().toLowerCase().contains(query) || p.getPartNumber().toLowerCase().contains(query))
                 .map(p -> new SearchResult("Product", p.getName(), "/inventory/" + p.getId()))
                 .collect(Collectors.toList()));
 
         // Search Customers
-        List<Customer> customers = customerRepository.findByBusinessId(businessId);
+        List<Customer> customers = customerRepository.searchCustomers(query, businessId, null);
         results.addAll(customers.stream()
-                .filter(c -> c.getName().toLowerCase().contains(query) || c.getPhone().contains(query))
+                .limit(10)
                 .map(c -> new SearchResult("Customer", c.getName(), "/customers/" + c.getId()))
                 .collect(Collectors.toList()));
 

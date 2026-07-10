@@ -6,10 +6,14 @@ import com.spareparts.model.StockTransfer;
 import com.spareparts.service.StockTransferService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
+import java.security.Principal;
 import java.util.List;
 import java.util.Map;
+import com.spareparts.config.TenantContext;
+import com.spareparts.model.User;
+import com.spareparts.repository.UserRepository;
 
 @RestController
 @RequestMapping("/api/stock-transfers")
@@ -20,23 +24,31 @@ public class StockTransferController {
     private StockTransferService stockTransferService;
 
     @Autowired
-    private JwtUtil jwtUtil;
+    private UserRepository userRepository;
 
     @GetMapping
-    public List<StockTransfer> getTransfers(@RequestHeader("Authorization") String token) {
-        Long businessId = jwtUtil.extractBusinessId(token.substring(7));
-        return stockTransferService.getTransfersByBusiness(businessId);
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+    public ResponseEntity<List<StockTransfer>> getTransfers() {
+        Long businessId = TenantContext.getBusinessId();
+        if (businessId == null) return ResponseEntity.badRequest().build();
+        return ResponseEntity.ok(stockTransferService.getTransfersByBusiness(businessId));
     }
 
     @PostMapping
-    public StockTransfer createTransfer(@RequestHeader("Authorization") String token, @RequestBody StockTransferRequest request) {
-        Long userId = jwtUtil.extractUserId(token.substring(7));
-        return stockTransferService.createTransfer(userId, request);
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+    public ResponseEntity<StockTransfer> createTransfer(Principal principal, @RequestBody StockTransferRequest request) {
+        User user = userRepository.findByUsername(principal.getName()).orElse(null);
+        if (user == null) return ResponseEntity.status(401).build();
+        
+        return ResponseEntity.ok(stockTransferService.createTransfer(user.getId(), request));
     }
 
     @PutMapping("/{id}/status")
-    public StockTransfer updateStatus(@RequestHeader("Authorization") String token, @PathVariable Long id, @RequestBody Map<String, String> body) {
-        Long userId = jwtUtil.extractUserId(token.substring(7));
-        return stockTransferService.updateTransferStatus(userId, id, body.get("status"));
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+    public ResponseEntity<StockTransfer> updateStatus(Principal principal, @PathVariable Long id, @RequestBody Map<String, String> body) {
+        User user = userRepository.findByUsername(principal.getName()).orElse(null);
+        if (user == null) return ResponseEntity.status(401).build();
+        
+        return ResponseEntity.ok(stockTransferService.updateTransferStatus(user.getId(), id, body.get("status")));
     }
 }

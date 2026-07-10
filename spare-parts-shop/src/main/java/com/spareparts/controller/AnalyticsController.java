@@ -29,7 +29,7 @@ public class AnalyticsController {
 
     @GetMapping("/full")
     @Cacheable("fullAnalytics")
-    public ResponseEntity<DetailedAnalyticsResponse> getFullAnalytics() {
+    public ResponseEntity<DetailedAnalyticsResponse> getFullAnalytics(@RequestParam(required = false) Long branchId) {
         DetailedAnalyticsResponse response = new DetailedAnalyticsResponse();
         
         // Mocking arrays but getting real counts where possible

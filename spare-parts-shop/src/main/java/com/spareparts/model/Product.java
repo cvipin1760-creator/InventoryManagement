@@ -66,6 +66,9 @@ public class Product implements BelongsToBusiness {
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
     
+    @Column(name = "last_restock_notification_date")
+    private LocalDateTime lastRestockNotificationDate;
+    
     @Column(name = "updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
 }
