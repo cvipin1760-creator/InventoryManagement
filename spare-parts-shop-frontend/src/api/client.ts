@@ -55,7 +55,8 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   }
     const contentType = res.headers.get('content-type')
     if (contentType?.includes('application/json')) {
-      return res.json()
+      const data = await res.json()
+      return (data && typeof data === 'object' && 'content' in data && Array.isArray(data.content)) ? data.content : data
     }
     return res.blob() as unknown as T
   } catch (error) {
@@ -177,12 +178,12 @@ export const api = {
     request<void>(`/suppliers/${id}`, { method: 'DELETE' }),
 
   // Products
-  getProducts: () => request<any>('/products').then(res => res.content ? res.content : res),
+  getProducts: () => request<any>('/products'),
   getProduct: (id: number) => request<import('../types').Product>(`/products/${id}`),
   searchProducts: (keyword: string) =>
-    request<any>(`/products/search?keyword=${encodeURIComponent(keyword)}`).then(res => res.content ? res.content : res),
+    request<any>(`/products/search?keyword=${encodeURIComponent(keyword)}`),
   getLowStockProducts: () =>
-    request<any>('/products/low-stock').then(res => res.content ? res.content : res),
+    request<any>('/products/low-stock'),
   createProduct: (data: Omit<import('../types').Product, 'id' | 'createdAt' | 'updatedAt'>) =>
     request<import('../types').Product>('/products', {
       method: 'POST',
