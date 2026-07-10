@@ -7,6 +7,7 @@ import { CssBaseline } from '@mui/material';
 import { OfflineSyncService } from './utils/offlineSync';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { Toaster } from 'react-hot-toast';
 import { store, RootState } from './store';
 import { initializeTheme } from './store/slices/themeSlice';
 import { lightTheme, darkTheme } from './theme';
@@ -40,6 +41,7 @@ function ThemeInitializer() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
+      <Toaster position="top-right" />
       <ErrorBoundary>
         <App />
       </ErrorBoundary>

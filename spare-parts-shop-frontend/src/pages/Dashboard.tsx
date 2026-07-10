@@ -131,8 +131,13 @@ const CustomerDashboard = () => {
   );
 };
 
+import { useInventorySocket } from '../hooks/useInventorySocket';
+
 const Dashboard = () => {
   const user = useAppSelector(selectCurrentUser);
+  
+  // Connect to WebSocket for live updates (defaults to businessId 1 for now)
+  useInventorySocket(1);
   
   const renderRoleBasedDashboard = () => {
     switch (user?.role) {
