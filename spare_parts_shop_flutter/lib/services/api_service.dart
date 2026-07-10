@@ -966,13 +966,77 @@ class ApiService {
     }
   }
 
+  // --- Tally Export ---
   Future<String> exportTallyXml() async {
-    final response = await _get(Uri.parse('$baseUrl/exports/tally-xml'), headers: await _getHeaders());
-    if (response.statusCode == 200) {
-      return response.body;
-    } else {
-      throw Exception('Failed to export Tally XML');
-    }
+    final res = await _get(Uri.parse('$baseUrl/exports/tally-xml'));
+    return res.body;
+  }
+  
+  // --- B2B Portal ---
+  Future<dynamic> b2bLogin(String username, String password) async {
+    final res = await _post(
+      Uri.parse('$baseUrl/b2b/login'),
+      body: jsonEncode({'username': username, 'password': password}),
+    );
+    return jsonDecode(res.body);
+  }
+  
+  Future<List<Product>> getB2bProducts(int businessId) async {
+    final res = await _get(Uri.parse('$baseUrl/b2b/$businessId/products'));
+    final data = jsonDecode(res.body);
+    List items = data is Map && data.containsKey('content') ? data['content'] : data;
+    return items.map((e) => Product.fromJson(e)).toList();
+  }
+  
+  Future<dynamic> b2bPurchase(int businessId, Map<String, dynamic> purchaseData) async {
+    final res = await _post(
+      Uri.parse('$baseUrl/b2b/$businessId/purchase'),
+      body: jsonEncode(purchaseData),
+    );
+    return jsonDecode(res.body);
+  }
+  
+  // --- Purchase Orders ---
+  Future<List<dynamic>> getPurchaseOrders() async {
+    final res = await _get(Uri.parse('$baseUrl/purchase-orders'));
+    final data = jsonDecode(res.body);
+    return data is Map && data.containsKey('content') ? data['content'] : data;
+  }
+  
+  Future<dynamic> autoGeneratePurchaseOrders() async {
+    final res = await _post(Uri.parse('$baseUrl/purchase-orders/auto'));
+    return jsonDecode(res.body);
+  }
+  
+  Future<dynamic> updatePurchaseOrderStatus(int id, String status) async {
+    final res = await _put(
+      Uri.parse('$baseUrl/purchase-orders/$id/status'),
+      body: jsonEncode({'status': status}),
+    );
+    return jsonDecode(res.body);
+  }
+  
+  // --- Audit Tasks ---
+  Future<List<dynamic>> getAuditTasks() async {
+    final res = await _get(Uri.parse('$baseUrl/audit-tasks'));
+    final data = jsonDecode(res.body);
+    return data is Map && data.containsKey('content') ? data['content'] : data;
+  }
+  
+  Future<dynamic> createAuditTask(Map<String, dynamic> task) async {
+    final res = await _post(
+      Uri.parse('$baseUrl/audit-tasks'),
+      body: jsonEncode(task),
+    );
+    return jsonDecode(res.body);
+  }
+  
+  Future<dynamic> updateAuditTask(int id, Map<String, dynamic> task) async {
+    final res = await _put(
+      Uri.parse('$baseUrl/audit-tasks/$id'),
+      body: jsonEncode(task),
+    );
+    return jsonDecode(res.body);
   }
 
   Future<http.Response> _get(Uri url, {Map<String, String>? headers}) async {

@@ -8,6 +8,10 @@ import '../constants/app_theme.dart';
 import '../providers/auth_provider.dart';
 import '../providers/subscription_provider.dart';
 import 'users_screen.dart';
+import 'accounting_screen.dart';
+import 'purchase_orders_screen.dart';
+import 'audit_tasks_screen.dart';
+import 'b2b_shop_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
