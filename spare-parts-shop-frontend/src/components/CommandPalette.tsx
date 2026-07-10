@@ -1,12 +1,33 @@
 import { useState, useEffect } from 'react';
 import { Command } from 'cmdk';
 import { useNavigate } from 'react-router-dom';
-import { Box, Typography } from '@mui/material';
-import { LayoutDashboard, Users, PackageOpen, Receipt, Settings, Box as BoxIcon } from 'lucide-react';
+import { Box, Typography, CircularProgress } from '@mui/material';
+import { LayoutDashboard, Users, PackageOpen, Receipt, Settings, Box as BoxIcon, Search } from 'lucide-react';
+import { api } from '../api/client';
+import { useQuery } from '@tanstack/react-query';
 
 const CommandPalette = () => {
   const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState('');
   const navigate = useNavigate();
+
+  // We don't have useDebounce hook guaranteed, so let's just do a simple effect debounce or direct state
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+  
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedQuery(query), 300);
+    return () => clearTimeout(timer);
+  }, [query]);
+
+  const { data: searchResults, isLoading } = useQuery({
+    queryKey: ['globalSearch', debouncedQuery],
+    queryFn: async () => {
+      if (!debouncedQuery) return [];
+      const res = await api.get<any[]>(`/search/global?q=${encodeURIComponent(debouncedQuery)}`);
+      return res;
+    },
+    enabled: debouncedQuery.length > 0,
+  });
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -50,6 +71,8 @@ const CommandPalette = () => {
           <Command.Input 
             placeholder="Type a command or search..." 
             autoFocus
+            value={query}
+            onValueChange={setQuery}
             style={{
               width: '100%',
               padding: '16px 20px',
@@ -65,8 +88,16 @@ const CommandPalette = () => {
           
           <Command.List style={{ padding: '8px', maxHeight: '400px', overflowY: 'auto' }}>
             <Command.Empty style={{ padding: '20px', textAlign: 'center', color: '#64748B' }}>
-              No results found.
+              {isLoading ? <CircularProgress size={24} /> : 'No results found.'}
             </Command.Empty>
+
+            {searchResults && searchResults.length > 0 && (
+              <Command.Group heading="Search Results" style={{ padding: '8px 4px', color: '#64748B', fontSize: '12px', fontWeight: 600 }}>
+                {searchResults.map((result: any, i: number) => (
+                  <CommandItem key={i} onSelect={() => { navigate(result.url); setOpen(false); }} icon={<Search size={18}/>} label={`${result.type}: ${result.title}`} />
+                ))}
+              </Command.Group>
+            )}
 
             <Command.Group heading="Navigation" style={{ padding: '8px 4px', color: '#64748B', fontSize: '12px', fontWeight: 600 }}>
               <CommandItem onSelect={() => { navigate('/dashboard'); setOpen(false); }} icon={<LayoutDashboard size={18}/>} label="Go to Dashboard" />

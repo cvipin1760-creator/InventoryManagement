@@ -57,14 +57,16 @@ const Layout = () => {
 
   useInventoryWebSocket();
 
+  const isSuperAdmin = user?.role === 'SUPER_ADMIN';
+
   useEffect(() => {
-    if (user && user.role !== 'SUPER_MANAGER') {
+    if (user && !isSuperAdmin) {
       api.getBusiness().then(setBusiness).catch(() => {});
     }
     if (user) {
       api.getUnreadCount().then(setNotificationCount).catch(() => {});
     }
-  }, [user]);
+  }, [user, isSuperAdmin]);
 
   // Keep-alive ping to prevent backend
   useEffect(() => {

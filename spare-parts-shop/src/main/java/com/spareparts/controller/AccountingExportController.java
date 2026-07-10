@@ -22,7 +22,7 @@ public class AccountingExportController {
     private AccountingExportService exportService;
 
     @GetMapping("/quickbooks")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<byte[]> exportQuickBooks(
             @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
             @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
@@ -39,7 +39,7 @@ public class AccountingExportController {
     }
 
     @GetMapping("/tally")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<byte[]> exportTally(
             @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
             @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {

@@ -77,6 +77,8 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 }
 
 export const api = {
+  // Generic GET
+  get: <T>(path: string) => request<T>(path),
   // Auth (purely for login check; backend is otherwise open)
   login: (username: string, password: string) =>
     request<import('../types').LoginResponse>('/auth/login', {
@@ -371,12 +373,12 @@ export const api = {
   // Business & Subscription
   getBusiness: () => request<any>('/business'),
   updateSubscription: (id: number, subscriptionPlan: string) =>
-    request<any>(`/super-manager/businesses/${id}/subscription`, {
+    request<any>(`/super-admin/businesses/${id}/subscription`, {
       method: 'PUT',
       body: JSON.stringify({ subscriptionPlan }),
     }),
   toggleSubscriptionStatus: (id: number, isActive: boolean) =>
-    request<any>(`/super-manager/businesses/${id}/subscription/status`, {
+    request<any>(`/super-admin/businesses/${id}/subscription/status`, {
       method: 'PUT',
       body: JSON.stringify({ isActive }),
     }),

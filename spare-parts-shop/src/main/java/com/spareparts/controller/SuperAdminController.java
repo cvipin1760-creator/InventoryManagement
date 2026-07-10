@@ -14,9 +14,9 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/super-manager")
+@RequestMapping("/api/super-admin")
 @CrossOrigin(origins = "*")
-public class SuperManagerController {
+public class SuperAdminController {
 
     @Autowired
     private AuthService authService;

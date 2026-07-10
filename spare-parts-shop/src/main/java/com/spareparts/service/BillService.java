@@ -319,7 +319,7 @@ public class BillService {
             totalProducts = productRepository.countByBusinessId(businessId, branchId);
             totalCustomers = customerRepository.findByBusinessId(businessId, branchId).size();
         } else {
-            // Global stats for SUPER_MANAGER
+            // Global stats for SUPER_ADMIN
             todaySales = billRepository.getTotalSalesBetweenDates(todayStart, todayEnd);
             weeklySales = billRepository.getTotalSalesBetweenDates(weekStart, now);
             monthlySales = billRepository.getTotalSalesBetweenDates(monthStart, now);

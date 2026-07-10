@@ -34,6 +34,7 @@ import {
   Settings,
   FileSpreadsheet,
   TrendingUp,
+  Wallet,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppSelector } from '../store/hooks';
@@ -63,32 +64,34 @@ const Sidebar = ({
     const items: MenuItem[] = [];
 
     const userRole = user?.role as string | undefined;
-    if (user?.role === 'SUPER_MANAGER' || userRole === 'SUPER_ADMIN') {
+    if (userRole === 'SUPER_ADMIN') {
       items.push({ label: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> });
-      items.push({ label: 'Sales', path: '/bills', icon: <Receipt size={20} /> });
-      items.push({ label: 'Purchases', path: '/purchases', icon: <ShoppingCart size={20} /> });
-      items.push({ label: 'Reports', path: '/reports', icon: <FileSpreadsheet size={20} /> });
-      items.push({ label: 'Predictive Analytics', path: '/predictive-analytics', icon: <Activity size={20} /> });
-      items.push({ label: 'Staff', path: '/users', icon: <Users size={20} /> });
-      items.push({ label: 'Customers', path: '/customers', icon: <Users size={20} /> });
-      items.push({ label: 'Billing', path: '/billing', icon: <CreditCard size={20} /> });
-      items.push({ label: 'Settings', path: '/settings', icon: <Settings size={20} /> });
-      items.push({ label: 'Organizations', path: '/businesses', icon: <PackageOpen size={20} /> });
       items.push({ label: 'Admins', path: '/admins', icon: <UserPlus size={20} /> });
-    } else if (user?.role === 'ADMIN') {
+      items.push({ label: 'Businesses', path: '/businesses', icon: <PackageOpen size={20} /> });
+      items.push({ label: 'Users', path: '/users', icon: <Users size={20} /> });
+      items.push({ label: 'Subscriptions', path: '/subscriptions', icon: <CreditCard size={20} /> });
+      items.push({ label: 'Payment Settings', path: '/payment-settings', icon: <Wallet size={20} /> });
+      items.push({ label: 'Reports', path: '/reports', icon: <FileSpreadsheet size={20} /> });
+      items.push({ label: 'Analytics', path: '/analytics', icon: <Activity size={20} /> });
+      items.push({ label: 'Support', path: '/support', icon: <Shield size={20} /> });
+      items.push({ label: 'Audit Logs', path: '/audit-logs', icon: <History size={20} /> });
+      items.push({ label: 'Settings', path: '/settings', icon: <Settings size={20} /> });
+    } else if (userRole === 'ADMIN') {
       items.push({ label: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> });
+      items.push({ label: 'Products', path: '/products', icon: <PackageOpen size={20} /> });
+      items.push({ label: 'Inventory', path: '/stock-transfers', icon: <Database size={20} /> });
+      items.push({ label: 'Customers', path: '/customers', icon: <Users size={20} /> });
       items.push({ label: 'Sales', path: '/bills', icon: <Receipt size={20} /> });
       items.push({ label: 'Purchases', path: '/purchases', icon: <ShoppingCart size={20} /> });
       items.push({ label: 'Reports', path: '/reports', icon: <FileSpreadsheet size={20} /> });
-      items.push({ label: 'Predictive Analytics', path: '/predictive-analytics', icon: <Activity size={20} /> });
-      items.push({ label: 'Staff', path: '/users', icon: <Users size={20} /> });
-      items.push({ label: 'Customers', path: '/customers', icon: <Users size={20} /> });
+      items.push({ label: 'Employees', path: '/users', icon: <Users size={20} /> });
       items.push({ label: 'Settings', path: '/settings', icon: <Settings size={20} /> });
-    } else if (userRole === 'STAFF' || user?.role === 'EMPLOYEE') {
+    } else if (userRole === 'EMPLOYEE') {
       items.push({ label: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> });
+      items.push({ label: 'Products', path: '/products', icon: <PackageOpen size={20} /> });
+      items.push({ label: 'Customers', path: '/customers', icon: <Users size={20} /> });
       items.push({ label: 'Sales', path: '/bills', icon: <Receipt size={20} /> });
       items.push({ label: 'Purchases', path: '/purchases', icon: <ShoppingCart size={20} /> });
-      items.push({ label: 'Customers', path: '/customers', icon: <Users size={20} /> });
     } else {
       items.push({ label: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> });
     }

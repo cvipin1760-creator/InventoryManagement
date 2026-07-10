@@ -33,6 +33,7 @@ import CustomerBills from './pages/CustomerBills';
 import Warranties from './pages/Warranties';
 import CustomerEmi from './pages/CustomerEmi';
 import Support from './pages/Support';
+import PaymentSettings from './pages/PaymentSettings';
 
 
 // Protected Route component
@@ -45,19 +46,21 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 // Role-Based Route component
-const RoleBasedRoute = ({ children, allowedRoles }: { children: React.ReactNode; allowedRoles: string[] }) => {
+const RoleGuard = ({ children, allowedRoles }: { children: React.ReactNode; allowedRoles: string[] }) => {
   const user = useAppSelector(selectCurrentUser);
   if (!user) {
     return <Navigate to="/dashboard" replace />;
   }
-  const userRole = user.role as string;
-  const role = userRole === 'SUPER_ADMIN' ? 'SUPER_MANAGER' : userRole === 'STAFF' ? 'EMPLOYEE' : user.role;
-  if (role === 'SUPER_MANAGER') {
+  const role = user.role as string;
+  
+  if (role === 'SUPER_ADMIN') {
     return <>{children}</>;
   }
+  
   if (!allowedRoles.includes(role)) {
     return <Navigate to="/dashboard" replace />;
   }
+  
   return <>{children}</>;
 };
 
@@ -82,39 +85,44 @@ const App = () => {
 
         {/* Super Admin Routes */}
         <Route path="predictive-analytics" element={
-          <RoleBasedRoute allowedRoles={['SUPER_MANAGER', 'ADMIN']}>
+          <RoleGuard allowedRoles={['SUPER_ADMIN', 'ADMIN']}>
             <PredictiveAnalytics />
-          </RoleBasedRoute>
+          </RoleGuard>
         } />
         <Route path="admins" element={
-          <RoleBasedRoute allowedRoles={['SUPER_MANAGER']}>
+          <RoleGuard allowedRoles={['SUPER_ADMIN']}>
             <AdminManagement />
-          </RoleBasedRoute>
+          </RoleGuard>
+        } />
+        <Route path="payment-settings" element={
+          <RoleGuard allowedRoles={['SUPER_ADMIN']}>
+            <PaymentSettings />
+          </RoleGuard>
         } />
         <Route path="businesses" element={
-          <RoleBasedRoute allowedRoles={['SUPER_MANAGER']}>
+          <RoleGuard allowedRoles={['SUPER_ADMIN']}>
             <BusinessManagement />
-          </RoleBasedRoute>
+          </RoleGuard>
         } />
         <Route path="subscriptions" element={
-          <RoleBasedRoute allowedRoles={['SUPER_MANAGER']}>
+          <RoleGuard allowedRoles={['SUPER_ADMIN']}>
             <Subscriptions />
-          </RoleBasedRoute>
+          </RoleGuard>
         } />
         <Route path="feature-management" element={
-          <RoleBasedRoute allowedRoles={['SUPER_MANAGER']}>
+          <RoleGuard allowedRoles={['SUPER_ADMIN']}>
             <FeaturePermissions />
-          </RoleBasedRoute>
+          </RoleGuard>
         } />
         <Route path="analytics" element={
-          <RoleBasedRoute allowedRoles={['SUPER_MANAGER']}>
+          <RoleGuard allowedRoles={['SUPER_ADMIN']}>
             <Analytics />
-          </RoleBasedRoute>
+          </RoleGuard>
         } />
         <Route path="send-notifications" element={
-          <RoleBasedRoute allowedRoles={['SUPER_MANAGER']}>
+          <RoleGuard allowedRoles={['SUPER_ADMIN']}>
             <SendNotifications />
-          </RoleBasedRoute>
+          </RoleGuard>
         } />
         <Route path="notifications" element={
           <ProtectedRoute>
@@ -124,118 +132,108 @@ const App = () => {
 
         {/* Admin/Employee Routes */}
         <Route path="products" element={
-          <RoleBasedRoute allowedRoles={['ADMIN', 'EMPLOYEE']}>
+          <RoleGuard allowedRoles={['ADMIN', 'EMPLOYEE']}>
             <Products />
-          </RoleBasedRoute>
+          </RoleGuard>
         } />
         <Route path="customers" element={
-          <RoleBasedRoute allowedRoles={['ADMIN', 'EMPLOYEE']}>
+          <RoleGuard allowedRoles={['ADMIN', 'EMPLOYEE']}>
             <Customers />
-          </RoleBasedRoute>
+          </RoleGuard>
         } />
         <Route path="bills" element={
-          <RoleBasedRoute allowedRoles={['ADMIN', 'EMPLOYEE']}>
+          <RoleGuard allowedRoles={['ADMIN', 'EMPLOYEE']}>
             <Bills />
-          </RoleBasedRoute>
+          </RoleGuard>
         } />
         <Route path="bills/create" element={
-          <RoleBasedRoute allowedRoles={['ADMIN', 'EMPLOYEE']}>
+          <RoleGuard allowedRoles={['ADMIN', 'EMPLOYEE']}>
             <CreateBill />
-          </RoleBasedRoute>
+          </RoleGuard>
         } />
         <Route path="bills/:id/edit" element={
-          <RoleBasedRoute allowedRoles={['ADMIN', 'EMPLOYEE']}>
+          <RoleGuard allowedRoles={['ADMIN', 'EMPLOYEE']}>
             <EditBill />
-          </RoleBasedRoute>
+          </RoleGuard>
         } />
         <Route path="purchases" element={
-          <RoleBasedRoute allowedRoles={['ADMIN', 'EMPLOYEE']}>
+          <RoleGuard allowedRoles={['ADMIN', 'EMPLOYEE']}>
             <Purchases />
-          </RoleBasedRoute>
+          </RoleGuard>
         } />
         <Route path="purchases/create" element={
-          <RoleBasedRoute allowedRoles={['ADMIN', 'EMPLOYEE']}>
+          <RoleGuard allowedRoles={['ADMIN', 'EMPLOYEE']}>
             <CreatePurchase />
-          </RoleBasedRoute>
+          </RoleGuard>
         } />
         <Route path="suppliers" element={
-          <RoleBasedRoute allowedRoles={['ADMIN', 'EMPLOYEE']}>
+          <RoleGuard allowedRoles={['ADMIN', 'EMPLOYEE']}>
             <Suppliers />
-          </RoleBasedRoute>
+          </RoleGuard>
         } />
         <Route path="payments" element={
-          <RoleBasedRoute allowedRoles={['ADMIN', 'EMPLOYEE']}>
+          <RoleGuard allowedRoles={['ADMIN', 'EMPLOYEE']}>
             <Payments />
-          </RoleBasedRoute>
+          </RoleGuard>
         } />
         <Route path="bill-templates" element={
-          <RoleBasedRoute allowedRoles={['ADMIN']}>
+          <RoleGuard allowedRoles={['ADMIN']}>
             <BillTemplates />
-          </RoleBasedRoute>
+          </RoleGuard>
         } />
         <Route path="users" element={
-          <RoleBasedRoute allowedRoles={[]}>
+          <RoleGuard allowedRoles={['ADMIN']}>
             <Users />
-          </RoleBasedRoute>
+          </RoleGuard>
         } />
         <Route path="billing" element={
-          <RoleBasedRoute allowedRoles={['ADMIN']}>
+          <RoleGuard allowedRoles={['ADMIN']}>
             <SubscriptionBilling />
-          </RoleBasedRoute>
+          </RoleGuard>
         } />
         <Route path="stock-transfers" element={
-          <RoleBasedRoute allowedRoles={['ADMIN', 'EMPLOYEE']}>
+          <RoleGuard allowedRoles={['ADMIN', 'EMPLOYEE']}>
             <StockTransfers />
-          </RoleBasedRoute>
+          </RoleGuard>
         } />
         <Route path="reports" element={
-          <RoleBasedRoute allowedRoles={['ADMIN', 'EMPLOYEE', 'SUPER_MANAGER']}>
+          <RoleGuard allowedRoles={['ADMIN', 'EMPLOYEE', 'SUPER_ADMIN']}>
             <Reports />
-          </RoleBasedRoute>
+          </RoleGuard>
         } />
 
         {/* Customer Routes */}
         <Route path="my-products" element={
-          <RoleBasedRoute allowedRoles={['CUSTOMER']}>
+          <RoleGuard allowedRoles={['CUSTOMER']}>
             <CustomerProducts />
-          </RoleBasedRoute>
+          </RoleGuard>
         } />
         <Route path="my-bills" element={
-          <RoleBasedRoute allowedRoles={['CUSTOMER']}>
+          <RoleGuard allowedRoles={['CUSTOMER']}>
             <CustomerBills />
-          </RoleBasedRoute>
+          </RoleGuard>
         } />
         <Route path="warranties" element={
-          <RoleBasedRoute allowedRoles={['CUSTOMER', 'ADMIN', 'EMPLOYEE']}>
+          <RoleGuard allowedRoles={['CUSTOMER', 'ADMIN', 'EMPLOYEE']}>
             <Warranties />
-          </RoleBasedRoute>
+          </RoleGuard>
         } />
         <Route path="my-emi" element={
-          <RoleBasedRoute allowedRoles={['CUSTOMER']}>
+          <RoleGuard allowedRoles={['CUSTOMER']}>
             <CustomerEmi />
-          </RoleBasedRoute>
+          </RoleGuard>
         } />
         <Route path="support" element={
-          <RoleBasedRoute allowedRoles={['CUSTOMER']}>
+          <RoleGuard allowedRoles={['CUSTOMER']}>
             <Support />
-          </RoleBasedRoute>
+          </RoleGuard>
         } />
 
-        {/* Admin Routes */}
-        <Route path="users" element={
-          <RoleBasedRoute allowedRoles={['SUPER_MANAGER', 'ADMIN']}>
-            <Users />
-          </RoleBasedRoute>
-        } />
+        {/* Global Settings (Super Admin/Admin have different scopes) */}
         <Route path="settings" element={
-          <RoleBasedRoute allowedRoles={['SUPER_MANAGER', 'ADMIN']}>
+          <RoleGuard allowedRoles={['SUPER_ADMIN', 'ADMIN']}>
             <Settings />
-          </RoleBasedRoute>
-        } />
-        <Route path="billing" element={
-          <RoleBasedRoute allowedRoles={['SUPER_MANAGER']}>
-            <SubscriptionBilling />
-          </RoleBasedRoute>
+          </RoleGuard>
         } />
       </Route>
 

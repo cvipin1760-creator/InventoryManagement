@@ -60,7 +60,7 @@ public class NotificationController {
     public ResponseEntity<?> sendNotification(Principal principal, @RequestBody Map<String, Object> payload) {
         if (principal == null) return ResponseEntity.status(401).build();
         User sender = userRepository.findByUsername(principal.getName()).orElse(null);
-        if (sender == null || !"SUPER_MANAGER".equals(sender.getRole())) {
+        if (sender == null || !"SUPER_ADMIN".equals(sender.getRole())) {
             return ResponseEntity.status(403).body("Only super manager can send notifications");
         }
 

@@ -8,6 +8,8 @@ import com.spareparts.repository.BusinessRepository;
 import com.spareparts.repository.CustomerRepository;
 import com.spareparts.repository.ProductRepository;
 import com.spareparts.repository.SupplierRepository;
+import com.spareparts.repository.SubscriptionPlanRepository;
+import com.spareparts.model.SubscriptionPlan;
 import com.spareparts.service.AuthService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +30,8 @@ public class DataInitializer {
                                    ProductRepository productRepository,
                                    CustomerRepository customerRepository,
                                    SupplierRepository supplierRepository,
-                                   BusinessRepository businessRepository) {
+                                   BusinessRepository businessRepository,
+                                   SubscriptionPlanRepository subscriptionPlanRepository) {
         return args -> {
             // Initialize super manager first
             authService.createDefaultSuperManager();
@@ -40,6 +43,40 @@ public class DataInitializer {
             // Get the default business
             Business defaultBusiness = businessRepository.findAll().get(0);
             logger.info("Using business: {}", defaultBusiness.getBusinessName());
+
+            // Seed Subscription Plans
+            if (subscriptionPlanRepository.count() == 0) {
+                SubscriptionPlan basic = new SubscriptionPlan();
+                basic.setName("Basic");
+                basic.setDescription("Starter plan for small shops");
+                basic.setMonthlyPrice(new java.math.BigDecimal("999"));
+                basic.setYearlyPrice(new java.math.BigDecimal("9990"));
+                basic.setMaxBranches(1);
+                basic.setMaxUsers(3);
+                basic.setMaxInvoices(500);
+                
+                SubscriptionPlan premium = new SubscriptionPlan();
+                premium.setName("Premium");
+                premium.setDescription("Best for growing businesses");
+                premium.setMonthlyPrice(new java.math.BigDecimal("2999"));
+                premium.setYearlyPrice(new java.math.BigDecimal("29990"));
+                premium.setMaxBranches(3);
+                premium.setMaxUsers(10);
+                premium.setMaxInvoices(2000);
+                premium.setIsPopular(true);
+                
+                SubscriptionPlan enterprise = new SubscriptionPlan();
+                enterprise.setName("Enterprise");
+                enterprise.setDescription("Unlimited power for large chains");
+                enterprise.setMonthlyPrice(new java.math.BigDecimal("5999"));
+                enterprise.setYearlyPrice(new java.math.BigDecimal("59990"));
+                enterprise.setMaxBranches(-1);
+                enterprise.setMaxUsers(-1);
+                enterprise.setMaxInvoices(-1);
+                
+                subscriptionPlanRepository.saveAll(Arrays.asList(basic, premium, enterprise));
+                logger.info("Subscription Plans seeded");
+            }
 
             // Add dummy products if empty
             if (productRepository.count() == 0) {

@@ -17,7 +17,7 @@ public class PredictiveAnalyticsController {
     private PredictiveAnalyticsService analyticsService;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('MANAGER', 'SUPER_MANAGER')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'SUPER_ADMIN')")
     public ResponseEntity<PredictiveAnalyticsDto> getPredictiveAnalytics() {
         return ResponseEntity.ok(analyticsService.getPredictiveAnalytics());
     }

@@ -14,7 +14,7 @@ public class TenantSecurity {
         Long currentBusinessId = TenantContext.getBusinessId();
         
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_SUPER_MANAGER") || a.getAuthority().equals("ROLE_SUPER_ADMIN"))) {
+        if (auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_SUPER_ADMIN"))) {
             return; // Super admins have access to all records
         }
 

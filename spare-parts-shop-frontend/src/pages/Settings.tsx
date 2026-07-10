@@ -62,7 +62,7 @@ const Settings = () => {
   });
 
   useEffect(() => {
-    if (user && user.role !== 'SUPER_MANAGER') {
+    if (user && user.role !== 'SUPER_ADMIN') {
       api.getBusiness()
         .then(setBusiness)
         .catch(err => console.error("Error fetching business:", err));
@@ -159,7 +159,7 @@ const Settings = () => {
           </Card>
 
           {/* Subscription Card (if not super manager) */}
-          {user?.role !== 'SUPER_MANAGER' && business && (
+          {user?.role !== 'SUPER_ADMIN' && business && (
             <Card sx={{ borderRadius: 3 }}>
               <CardContent sx={{ p: 3 }}>
                 <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>

@@ -10,7 +10,7 @@ import java.util.Map;
 public class MarketingController {
 
     @PostMapping("/whatsapp/send")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Map<String, String>> sendWhatsAppMessage(@RequestBody Map<String, String> payload) {
         String customerId = payload.get("customerId");
         String message = payload.get("message");

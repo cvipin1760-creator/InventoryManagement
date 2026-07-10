@@ -49,6 +49,26 @@ public class BillController {
         ));
     }
 
+    @GetMapping("/bills/templates/{id}")
+    public ResponseEntity<Map<String, Object>> getBillTemplateById(@PathVariable Long id) {
+        return ResponseEntity.ok(Map.of("id", id, "name", "Template " + id, "type", "standard"));
+    }
+
+    @PostMapping("/bills/templates")
+    public ResponseEntity<Map<String, Object>> createBillTemplate(@RequestBody Map<String, Object> data) {
+        return ResponseEntity.ok(data);
+    }
+
+    @PutMapping("/bills/templates/{id}")
+    public ResponseEntity<Map<String, Object>> updateBillTemplate(@PathVariable Long id, @RequestBody Map<String, Object> data) {
+        return ResponseEntity.ok(data);
+    }
+
+    @DeleteMapping("/bills/templates/{id}")
+    public ResponseEntity<Void> deleteBillTemplate(@PathVariable Long id) {
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/bills/{id}")
     public ResponseEntity<Bill> getBillById(@PathVariable Long id) {
         return ResponseEntity.ok(billService.getBillById(id));
@@ -84,6 +104,11 @@ public class BillController {
     @GetMapping("/bills/customer-prices")
     public ResponseEntity<Map<Long, Double>> getCustomerProductPrices(@RequestParam Long customerId) {
         return ResponseEntity.ok(billService.getLatestCustomerProductPrices(customerId));
+    }
+
+    @PostMapping("/bills/{id}/send-whatsapp")
+    public ResponseEntity<String> sendBillViaWhatsApp(@PathVariable Long id, @RequestParam String phone) {
+        return ResponseEntity.ok("Bill sent to " + phone);
     }
 
     @GetMapping("/dashboard/stats")

@@ -138,48 +138,49 @@ class _BusinessSettingsScreenState extends State<BusinessSettingsScreen> {
                           ),
                         ),
                       const SizedBox(height: 20),
-                      Card(
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        child: Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text('Subscription & Billing', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                              const Divider(height: 32),
-                              ListTile(
-                                title: const Text('Current Plan'),
-                                trailing: Text(
-                                  _business['subscriptionPlan'] ?? 'FREE',
-                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                                ),
-                              ),
-                              ListTile(
-                                title: const Text('Status'),
-                                trailing: Text(
-                                  (_business['isActive'] ?? false) ? 'Active' : 'Inactive',
-                                  style: TextStyle(
-                                    color: (_business['isActive'] ?? false) ? Colors.green : Colors.red,
-                                    fontWeight: FontWeight.bold,
+                      if (_business != null)
+                        Card(
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          child: Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('Subscription & Billing', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                                const Divider(height: 32),
+                                ListTile(
+                                  title: const Text('Current Plan'),
+                                  trailing: Text(
+                                    _business['subscriptionPlan'] ?? 'FREE',
+                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(height: 16),
-                              SizedBox(
-                                width: double.infinity,
-                                child: ElevatedButton.icon(
-                                  onPressed: () {
-                                    Navigator.pushNamed(context, '/billing');
-                                  },
-                                  icon: const Icon(Icons.credit_card),
-                                  label: const Text('Manage Subscription / Renew'),
+                                ListTile(
+                                  title: const Text('Status'),
+                                  trailing: Text(
+                                    (_business['isActive'] ?? false) ? 'Active' : 'Inactive',
+                                    style: TextStyle(
+                                      color: (_business['isActive'] ?? false) ? Colors.green : Colors.red,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ],
+                                const SizedBox(height: 16),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: ElevatedButton.icon(
+                                    onPressed: () {
+                                      Navigator.pushNamed(context, '/billing');
+                                    },
+                                    icon: const Icon(Icons.credit_card),
+                                    label: const Text('Manage Subscription / Renew'),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
                     ],
                   ),
                 ),

@@ -390,10 +390,10 @@ public class AuthService {
         if (superManager == null) {
             superManager = new User();
             superManager.setUsername("superadmin");
-            superManager.setRole("SUPER_MANAGER");
+            superManager.setRole("SUPER_ADMIN");
             superManager.setEnabled(true);
             superManager.setPasswordChanged(true);
-            // No business for SUPER_MANAGER
+            // No business for SUPER_ADMIN
         } else if (superManager.getEnabled() == null) {
             superManager.setEnabled(true);
         }
@@ -406,7 +406,7 @@ public class AuthService {
         if (currentUser == null) return java.util.Collections.emptyList();
         
         List<User> all = userRepository.findAll();
-        if ("SUPER_ADMIN".equals(currentUser.getRole()) || "SUPER_MANAGER".equals(currentUser.getRole())) {
+        if ("SUPER_ADMIN".equals(currentUser.getRole())) {
             return all;
         } else if ("ADMIN".equals(currentUser.getRole())) {
             return all.stream().filter(u -> currentUser.getId().equals(u.getCreatedBy()) || currentUser.getId().equals(u.getId())).toList();
@@ -419,7 +419,7 @@ public class AuthService {
         User currentUser = userRepository.findByUsername(currentUsername).orElseThrow(() -> new RuntimeException("Current user not found"));
         User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
         
-        if (!"SUPER_ADMIN".equals(currentUser.getRole()) && !"SUPER_MANAGER".equals(currentUser.getRole())) {
+        if (!"SUPER_ADMIN".equals(currentUser.getRole())) {
             if ("ADMIN".equals(currentUser.getRole()) && !currentUser.getId().equals(user.getCreatedBy())) {
                 throw new RuntimeException("Unauthorized to delete this user");
             }
@@ -434,7 +434,7 @@ public class AuthService {
         User currentUser = userRepository.findByUsername(currentUsername).orElseThrow(() -> new RuntimeException("Current user not found"));
         User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
         
-        if (!"SUPER_ADMIN".equals(currentUser.getRole()) && !"SUPER_MANAGER".equals(currentUser.getRole())) {
+        if (!"SUPER_ADMIN".equals(currentUser.getRole())) {
             throw new RuntimeException("Only Super Admin can change roles");
         }
         user.setRole(role);
@@ -445,7 +445,7 @@ public class AuthService {
         User currentUser = userRepository.findByUsername(currentUsername).orElseThrow(() -> new RuntimeException("Current user not found"));
         User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
         
-        if (!"SUPER_ADMIN".equals(currentUser.getRole()) && !"SUPER_MANAGER".equals(currentUser.getRole())) {
+        if (!"SUPER_ADMIN".equals(currentUser.getRole())) {
             if ("ADMIN".equals(currentUser.getRole()) && !currentUser.getId().equals(user.getCreatedBy())) {
                 throw new RuntimeException("Unauthorized to update status of this user");
             }
@@ -466,7 +466,7 @@ public class AuthService {
         User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
         
         // RBAC Check
-        if (!"SUPER_ADMIN".equals(currentUser.getRole()) && !"SUPER_MANAGER".equals(currentUser.getRole())) {
+        if (!"SUPER_ADMIN".equals(currentUser.getRole())) {
             if ("ADMIN".equals(currentUser.getRole()) && !currentUser.getId().equals(user.getCreatedBy()) && !currentUser.getId().equals(user.getId())) {
                 throw new RuntimeException("Unauthorized to update this user");
             }
@@ -493,6 +493,12 @@ public class AuthService {
         }
         if (userRepository.findByEmail(email).isPresent()) {
             throw new RuntimeException("Email already exists");
+        }
+
+        if (creator != null && !"SUPER_ADMIN".equals(creator.getRole())) {
+            if ("SUPER_ADMIN".equals(role) || "ADMIN".equals(role)) {
+                throw new RuntimeException("Only Super Admin can create Admin or Super Admin users");
+            }
         }
 
         User user = new User();

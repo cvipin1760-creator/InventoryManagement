@@ -29,7 +29,7 @@ public class BranchService {
     public List<Branch> getAllBranches(String currentUsername) {
         if (currentUsername != null) {
             com.spareparts.model.User user = userRepository.findByUsername(currentUsername).orElse(null);
-            if (user != null && ("SUPER_ADMIN".equals(user.getRole()) || "SUPER_MANAGER".equals(user.getRole()))) {
+            if (user != null && ("SUPER_ADMIN".equals(user.getRole()))) {
                 return branchRepository.findAll();
             }
         }
