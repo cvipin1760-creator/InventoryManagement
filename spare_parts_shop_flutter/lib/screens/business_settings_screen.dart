@@ -81,33 +81,40 @@ class _BusinessSettingsScreenState extends State<BusinessSettingsScreen> {
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : _business == null
-              ? const Center(child: Text('No business data found'))
-              : Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Card(
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        child: Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                _business['name'] ?? 'Your Business',
-                                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(height: 8),
-                              Text('Email: ${_business['email'] ?? 'N/A'}'),
-                              Text('Phone: ${_business['phone'] ?? 'N/A'}'),
-                            ],
-                          ),
+          : Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (_business != null)
+                    Card(
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _business['name'] ?? 'Your Business',
+                              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 8),
+                            Text('Email: ${_business['email'] ?? 'N/A'}'),
+                            Text('Phone: ${_business['phone'] ?? 'N/A'}'),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 20),
+                    ),
+                  if (_business == null)
+                    const Card(
+                      elevation: 0,
+                      child: Padding(
+                        padding: EdgeInsets.all(20),
+                        child: Text('No business data found for this account.'),
+                      ),
+                    ),
+                  const SizedBox(height: 20),
                       if (_biometricAvailable)
                         Card(
                           elevation: 0,
