@@ -17,7 +17,7 @@ export default function Products() {
   const lowStockOnly = searchParams.get('lowStock') === '1'
   const [search, setSearch] = useState('')
   
-  const { data: products = [], isLoading: loading, error: queryError } = useQuery({
+  const { data = [], isLoading: loading, error: queryError } = useQuery({
     queryKey: ['products', lowStockOnly, search],
     queryFn: () => {
       if (lowStockOnly) return api.getLowStockProducts();
@@ -25,6 +25,8 @@ export default function Products() {
       return api.getProducts();
     }
   })
+  
+  const products: Product[] = Array.isArray(data) ? data : (data?.content || data?._embedded?.products || []);
   
   const [modal, setModal] = useState<'add' | 'edit' | 'bulk' | null>(null)
   const [editing, setEditing] = useState<Product | null>(null)
