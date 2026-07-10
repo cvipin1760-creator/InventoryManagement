@@ -86,8 +86,11 @@ const Sidebar = ({
       items.push({ label: 'Settings', path: '/settings', icon: <Settings size={20} /> });
     } else if (userRole === 'ADMIN') {
       items.push({ label: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> });
+      if (user?.features?.multiBranchEnabled) {
+        items.push({ label: 'Branches', path: '/branches', icon: <Database size={20} /> });
+      }
       items.push({ label: 'Products', path: '/products', icon: <PackageOpen size={20} /> });
-      items.push({ label: 'Inventory', path: '/stock-transfers', icon: <Database size={20} /> });
+      items.push({ label: 'Stock Transfers', path: '/stock-transfers', icon: <Truck size={20} /> });
       if (user?.features?.inventoryEnabled) {
         items.push({ label: 'Inventory Audit', path: '/audit', icon: <ClipboardList size={20} /> });
       }
@@ -95,6 +98,7 @@ const Sidebar = ({
       items.push({ label: 'Sales', path: '/bills', icon: <Receipt size={20} /> });
       items.push({ label: 'Purchases', path: '/purchases', icon: <ShoppingCart size={20} /> });
       items.push({ label: 'Purchase Orders', path: '/purchase-orders', icon: <Brain size={20} /> });
+      items.push({ label: 'AI Forecast', path: '/predictive-analytics', icon: <TrendingUp size={20} /> });
       items.push({ label: 'Reports', path: '/reports', icon: <FileSpreadsheet size={20} /> });
       items.push({ label: 'Marketing', path: '/marketing', icon: <MessageSquare size={20} /> });
       if (user?.features?.accountingExportEnabled) {

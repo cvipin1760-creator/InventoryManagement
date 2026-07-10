@@ -119,7 +119,7 @@ class _BillTemplatesScreenState extends State<BillTemplatesScreen> {
                     final template = _templates[index];
                     return ListTile(
                       title: Text(template['name']),
-                      subtitle: Text(template['isDefault'] ? 'Default Template' : ''),
+                      subtitle: Text((template['isDefault'] == true) ? 'Default Template' : ''),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [

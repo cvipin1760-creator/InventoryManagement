@@ -1,0 +1,170 @@
+import 'package:flutter/material.dart';
+import '../services/api_service.dart';
+
+class MarketingScreen extends StatefulWidget {
+  const MarketingScreen({super.key});
+
+  @override
+  State<MarketingScreen> createState() => _MarketingScreenState();
+}
+
+class _MarketingScreenState extends State<MarketingScreen> with SingleTickerProviderStateMixin {
+  final ApiService _apiService = ApiService();
+  late TabController _tabController;
+  final _messageController = TextEditingController();
+  String _audience = 'all';
+  bool _loading = false;
+
+  final _audiences = [
+    {'value': 'all', 'label': 'All Customers'},
+    {'value': 'active', 'label': 'Active Customers (Last 30 days)'},
+    {'value': 'inactive', 'label': 'Inactive Customers (90+ days)'},
+    {'value': 'vip', 'label': 'VIP Customers (High Loyalty Points)'},
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    _messageController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _send() async {
+    if (_messageController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a message'), backgroundColor: Colors.red),
+      );
+      return;
+    }
+    setState(() => _loading = true);
+    try {
+      final data = {'message': _messageController.text.trim(), 'audience': _audience};
+      if (_tabController.index == 0) {
+        await _apiService.sendBulkWhatsApp(data);
+      } else {
+        await _apiService.sendBulkSMS(data);
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${_tabController.index == 0 ? 'WhatsApp' : 'SMS'} campaign queued successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        _messageController.clear();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to send: $e'), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhatsApp = _tabController.index == 0;
+    final previewColor = isWhatsApp ? const Color(0xFFe7f5eb) : const Color(0xFFf3f4f6);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Marketing & Promotions'),
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: const [
+            Tab(icon: Icon(Icons.phone_android), text: 'WhatsApp'),
+            Tab(icon: Icon(Icons.sms), text: 'SMS'),
+          ],
+        ),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Compose Campaign', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const SizedBox(height: 16),
+            DropdownButtonFormField<String>(
+              value: _audience,
+              decoration: InputDecoration(
+                labelText: 'Target Audience',
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                prefixIcon: const Icon(Icons.group),
+              ),
+              items: _audiences.map((a) => DropdownMenuItem(
+                value: a['value'],
+                child: Text(a['label']!),
+              )).toList(),
+              onChanged: (v) => setState(() => _audience = v!),
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _messageController,
+              maxLines: 6,
+              decoration: InputDecoration(
+                labelText: 'Message Content',
+                hintText: 'Hi {Name}, get 20% off on your next purchase...',
+                helperText: 'Use {Name} to personalize the message',
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              onChanged: (_) => setState(() {}),
+            ),
+            const SizedBox(height: 24),
+            const Text('Message Preview', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: previewColor,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _messageController.text.isEmpty
+                        ? 'Your message preview will appear here...'
+                        : _messageController.text,
+                    style: TextStyle(color: _messageController.text.isEmpty ? Colors.grey : Colors.black87),
+                  ),
+                  const SizedBox(height: 8),
+                  Align(
+                    alignment: Alignment.bottomRight,
+                    child: Text('10:42 AM', style: TextStyle(fontSize: 11, color: Colors.grey[600])),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _loading ? null : _send,
+                icon: _loading
+                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    : const Icon(Icons.send),
+                label: Text(_loading ? 'Sending...' : 'Send ${isWhatsApp ? 'WhatsApp' : 'SMS'} Campaign'),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  backgroundColor: isWhatsApp ? const Color(0xFF25D366) : Colors.blue,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

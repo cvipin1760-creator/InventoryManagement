@@ -307,7 +307,9 @@ class _UsersScreenState extends State<UsersScreen> {
                                 leading: CircleAvatar(
                                   backgroundColor: AppTheme.primaryColor,
                                   child: Text(
-                                    user['username']?.substring(0, 1).toUpperCase() ?? '?',
+                                    (user['username'] != null && user['username'].isNotEmpty)
+                                        ? user['username'].substring(0, 1).toUpperCase()
+                                        : '?',
                                     style: const TextStyle(color: Colors.white),
                                   ),
                                 ),

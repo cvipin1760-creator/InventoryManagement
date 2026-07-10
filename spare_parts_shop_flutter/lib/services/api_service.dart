@@ -594,6 +594,33 @@ class ApiService {
     throw Exception('Failed to update staff');
   }
 
+  // --- STOCK TRANSFERS ---
+  Future<List<dynamic>> getStockTransfers() async {
+    final response = await _get(Uri.parse('$baseUrl/stock-transfers'), headers: await _getHeaders());
+    if (response.statusCode == 200) return jsonDecode(response.body);
+    throw Exception('Failed to load stock transfers');
+  }
+
+  Future<dynamic> createStockTransfer(Map<String, dynamic> data) async {
+    final response = await _post(
+      Uri.parse('$baseUrl/stock-transfers'),
+      headers: await _getHeaders(),
+      body: jsonEncode(data),
+    );
+    if (response.statusCode == 200) return jsonDecode(response.body);
+    throw Exception('Failed to create stock transfer');
+  }
+
+  Future<dynamic> updateStockTransferStatus(int id, String status) async {
+    final response = await _put(
+      Uri.parse('$baseUrl/stock-transfers/$id/status'),
+      headers: await _getHeaders(),
+      body: jsonEncode({'status': status}),
+    );
+    if (response.statusCode == 200) return jsonDecode(response.body);
+    throw Exception('Failed to update stock transfer status');
+  }
+
   // --- BUSINESS ---
   Future<dynamic> getBusiness() async {
     final response = await _get(Uri.parse('$baseUrl/business'), headers: await _getHeaders());
@@ -949,7 +976,7 @@ class ApiService {
   // SaaS Features
 
   Future<Map<String, dynamic>> getPredictiveAnalytics() async {
-    final response = await _get(Uri.parse('$baseUrl/predictive-analytics'), headers: await _getHeaders());
+    final response = await _get(Uri.parse('$baseUrl/analytics/predictive'), headers: await _getHeaders());
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
@@ -964,6 +991,52 @@ class ApiService {
     } else {
       throw Exception('Failed to load loyalty account');
     }
+  }
+
+  // --- WARRANTIES ---
+  Future<List<dynamic>> getWarranties() async {
+    final response = await _get(Uri.parse('$baseUrl/warranties'), headers: await _getHeaders());
+    if (response.statusCode == 200) return jsonDecode(response.body);
+    throw Exception('Failed to load warranties');
+  }
+
+  // --- EMIs ---
+  Future<List<dynamic>> getEmis() async {
+    final response = await _get(Uri.parse('$baseUrl/emis'), headers: await _getHeaders());
+    if (response.statusCode == 200) return jsonDecode(response.body);
+    throw Exception('Failed to load EMIs');
+  }
+
+  // --- MARKETING ---
+  Future<dynamic> sendBulkWhatsApp(Map<String, dynamic> data) async {
+    final response = await _post(
+      Uri.parse('$baseUrl/marketing/whatsapp/bulk'),
+      headers: await _getHeaders(),
+      body: jsonEncode(data),
+    );
+    if (response.statusCode == 200) return jsonDecode(response.body);
+    throw Exception('Failed to send bulk WhatsApp');
+  }
+
+  Future<dynamic> sendBulkSMS(Map<String, dynamic> data) async {
+    final response = await _post(
+      Uri.parse('$baseUrl/marketing/sms/bulk'),
+      headers: await _getHeaders(),
+      body: jsonEncode(data),
+    );
+    if (response.statusCode == 200) return jsonDecode(response.body);
+    throw Exception('Failed to send bulk SMS');
+  }
+
+  // --- ADMIN NOTIFICATIONS ---
+  Future<dynamic> sendAdminNotification(Map<String, dynamic> data) async {
+    final response = await _post(
+      Uri.parse('$baseUrl/notifications/send'),
+      headers: await _getHeaders(),
+      body: jsonEncode(data),
+    );
+    if (response.statusCode == 200) return jsonDecode(response.body);
+    throw Exception('Failed to send notification');
   }
 
   // --- Tally Export ---

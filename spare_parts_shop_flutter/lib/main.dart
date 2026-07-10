@@ -19,10 +19,16 @@ import 'package:stock_pilot/screens/predictive_analytics_screen.dart';
 import 'package:stock_pilot/screens/accounting_screen.dart';
 import 'package:stock_pilot/screens/bill_templates_screen.dart';
 import 'package:stock_pilot/screens/branches_screen.dart';
+import 'package:stock_pilot/screens/stock_transfers_screen.dart';
 import 'package:stock_pilot/screens/staff_screen.dart';
 import 'package:stock_pilot/screens/business_settings_screen.dart';
 import 'package:stock_pilot/screens/notifications_screen.dart';
 import 'package:stock_pilot/screens/subscription_billing_screen.dart';
+import 'package:stock_pilot/screens/reports_screen.dart';
+import 'package:stock_pilot/screens/marketing_screen.dart';
+import 'package:stock_pilot/screens/warranties_screen.dart';
+import 'package:stock_pilot/screens/customer_emi_screen.dart';
+import 'package:stock_pilot/screens/send_notifications_screen.dart';
 import 'package:stock_pilot/services/api_service.dart';
 import 'package:stock_pilot/services/fcm_service.dart';
 import 'package:stock_pilot/services/offline_sync_service.dart';
@@ -70,9 +76,12 @@ class MyApp extends StatelessWidget {
               '/products': (context) => const ProductsScreen(),
               '/customers': (context) => const CustomersScreen(),
               '/suppliers': (context) => const SuppliersScreen(),
+              '/staff': (context) => const StaffScreen(),
+              '/branches': (context) => const BranchesScreen(),
+              '/stock-transfers': (context) => const StockTransfersScreen(),
+              '/payments': (context) => const PaymentsScreen(),
               '/bills': (context) => const BillsScreen(),
               '/purchases': (context) => const PurchasesScreen(),
-              '/payments': (context) => const PaymentsScreen(),
               '/create-bill': (context) => const CreateBillScreen(),
               '/create-purchase': (context) => const CreatePurchaseScreen(),
               '/register': (context) => const RegisterScreen(),
@@ -84,6 +93,11 @@ class MyApp extends StatelessWidget {
               '/business-settings': (context) => const BusinessSettingsScreen(),
               '/notifications': (context) => const NotificationsScreen(),
               '/billing': (context) => const BillingScreen(),
+              '/reports': (context) => const ReportsScreen(),
+              '/marketing': (context) => const MarketingScreen(),
+              '/warranties': (context) => const WarrantiesScreen(),
+              '/customer-emi': (context) => const CustomerEmiScreen(),
+              '/send-notifications': (context) => const SendNotificationsScreen(),
             },
           );
         },

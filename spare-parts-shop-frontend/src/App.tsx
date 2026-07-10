@@ -27,6 +27,7 @@ import Subscriptions from './pages/Subscriptions';
 import FeaturePermissions from './pages/FeaturePermissions';
 import SubscriptionBilling from './pages/SubscriptionBilling';
 import StockTransfers from './pages/StockTransfers';
+import Branches from './pages/Branches';
 import PredictiveAnalytics from './pages/PredictiveAnalytics';
 import CustomerProducts from './pages/CustomerProducts';
 import CustomerBills from './pages/CustomerBills';

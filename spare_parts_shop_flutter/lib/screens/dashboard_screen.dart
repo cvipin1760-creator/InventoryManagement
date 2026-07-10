@@ -318,6 +318,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Navigator.pushNamed(context, '/accounting');
               },
             ),
+            ListTile(
+              leading: const Icon(Icons.bar_chart),
+              title: const Text('Reports'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/reports');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.verified_user_outlined),
+              title: const Text('Warranties'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/warranties');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.account_balance_wallet_outlined),
+              title: const Text('EMI Options'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/customer-emi');
+              },
+            ),
             const Divider(),
             if (isAdmin) ...[
               const Padding(
@@ -330,6 +354,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 onTap: () {
                   Navigator.pop(context);
                   Navigator.pushNamed(context, '/branches');
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.swap_horiz),
+                title: const Text('Stock Transfers'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/stock-transfers');
                 },
               ),
               ListTile(
@@ -346,6 +378,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 onTap: () {
                   Navigator.pop(context);
                   Navigator.pushNamed(context, '/business-settings');
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.campaign_outlined),
+                title: const Text('Marketing'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/marketing');
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.notification_add_outlined),
+                title: const Text('Send Notifications'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/send-notifications');
                 },
               ),
             ],

@@ -27,8 +27,10 @@ class Bill {
   });
 
   factory Bill.fromJson(Map<String, dynamic> json) {
-    var itemsList = json['items'] as List;
-    List<BillItem> items = itemsList.map((i) => BillItem.fromJson(i)).toList();
+    final rawItems = json['items'];
+    List<BillItem> items = (rawItems != null)
+        ? (rawItems as List).map((i) => BillItem.fromJson(i)).toList()
+        : [];
 
     return Bill(
       id: json['id'],
