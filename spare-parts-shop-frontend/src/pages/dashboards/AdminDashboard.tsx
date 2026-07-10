@@ -117,16 +117,16 @@ const AdminDashboard = () => {
         <Skeleton variant="rectangular" height={60} sx={{ borderRadius: 3 }} />
         <Grid container spacing={3}>
           {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-            <Grid size={{ xs: 12, sm: 6, md: 3 }} key={i}>
+            <Grid item xs={12} sm={6} md={3} key={i}>
               <Skeleton variant="rectangular" height={140} sx={{ borderRadius: 3 }} />
             </Grid>
           ))}
         </Grid>
         <Grid container spacing={3}>
-          <Grid size={{ xs: 12, lg: 8 }}>
+          <Grid item xs={12} lg={8}>
             <Skeleton variant="rectangular" height={360} sx={{ borderRadius: 3 }} />
           </Grid>
-          <Grid size={{ xs: 12, lg: 4 }}>
+          <Grid item xs={12} lg={4}>
             <Skeleton variant="rectangular" height={360} sx={{ borderRadius: 3 }} />
           </Grid>
         </Grid>

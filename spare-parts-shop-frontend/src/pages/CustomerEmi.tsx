@@ -23,7 +23,7 @@ const CustomerEmi = () => {
       </Typography>
 
       <Grid container spacing={3}>
-        <Grid size={{ xs: 12, md: 8 }}>
+        <Grid item xs={12} md={8}>
           {isLoading ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}>
               <CircularProgress />
@@ -96,7 +96,7 @@ const CustomerEmi = () => {
           </Card>
         </Grid>
 
-        <Grid size={{ xs: 12, md: 4 }}>
+        <Grid item xs={12} md={4}>
           <Card sx={{ borderRadius: 3, height: '100%', bgcolor: theme.palette.primary.main, color: 'primary.contrastText' }}>
             <CardContent sx={{ p: 4, textAlign: 'center' }}>
               <AccountBalanceWallet sx={{ fontSize: 64, mb: 2, opacity: 0.8 }} />
