@@ -142,6 +142,7 @@ const Dashboard = () => {
   const renderRoleBasedDashboard = () => {
     switch (user?.role) {
       case 'SUPER_ADMIN':
+      case 'SUPER_MANAGER':
         return <SuperAdminDashboard />;
       case 'ADMIN':
         return <AdminDashboard />;

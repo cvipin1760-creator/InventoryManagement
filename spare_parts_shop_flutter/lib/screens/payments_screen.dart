@@ -300,7 +300,7 @@ class _CustomerPaymentsScreenState extends State<CustomerPaymentsScreen> {
                                 style: const TextStyle(fontWeight: FontWeight.bold),
                               ),
                               subtitle: Text(
-                                payment.note.isNotEmpty ? payment.note : 'Payment received',
+                                (payment.note?.trim().isNotEmpty ?? false) ? payment.note! : 'Payment received',
                               ),
                               trailing: Text(
                                 payment.paymentDate.length >= 10

@@ -36,6 +36,13 @@ public class User implements BelongsToBusiness {
     @Column(nullable = false)
     private String role = "CUSTOMER"; // SUPER_ADMIN, ADMIN, EMPLOYEE, CUSTOMER
 
+    public String getRole() {
+        if ("SUPER_MANAGER".equals(this.role)) {
+            return "SUPER_ADMIN";
+        }
+        return this.role;
+    }
+
     @Column(name = "is_enabled")
     private Boolean enabled = true;
 

@@ -60,7 +60,7 @@ const RoleGuard = ({ children, allowedRoles, requiredPermission }: { children: R
   }
   const role = user.role as string;
   
-  if (role === 'SUPER_ADMIN') {
+  if (role === 'SUPER_ADMIN' || role === 'SUPER_MANAGER') {
     return <>{children}</>;
   }
   

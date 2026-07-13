@@ -70,7 +70,7 @@ const Sidebar = ({
     const items: MenuItem[] = [];
 
     const userRole = user?.role as string | undefined;
-    if (userRole === 'SUPER_ADMIN') {
+    if (userRole === 'SUPER_ADMIN' || userRole === 'SUPER_MANAGER') {
       items.push({ label: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> });
       items.push({ label: 'Admins', path: '/admins', icon: <UserPlus size={20} /> });
       items.push({ label: 'Businesses', path: '/businesses', icon: <PackageOpen size={20} /> });

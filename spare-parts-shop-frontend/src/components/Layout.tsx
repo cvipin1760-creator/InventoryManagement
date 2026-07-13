@@ -57,7 +57,7 @@ const Layout = () => {
 
   useInventoryWebSocket();
 
-  const isSuperAdmin = user?.role === 'SUPER_ADMIN';
+  const isSuperAdmin = user?.role === 'SUPER_ADMIN' || user?.role === 'SUPER_MANAGER';
 
   useEffect(() => {
     if (user && !isSuperAdmin) {
