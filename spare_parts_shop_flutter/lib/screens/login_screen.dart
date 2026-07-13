@@ -271,11 +271,28 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                         // Username
                         TextFormField(
                           controller: _usernameController,
+                          style: TextStyle(
+                            color: Theme.of(context).brightness == Brightness.dark 
+                                ? Colors.white 
+                                : Colors.black87,
+                          ),
                           decoration: InputDecoration(
                             labelText: 'Username',
-                            prefixIcon: const Icon(Icons.person_outline),
+                            labelStyle: TextStyle(
+                              color: Theme.of(context).brightness == Brightness.dark 
+                                  ? Colors.grey.shade400 
+                                  : Colors.grey.shade700,
+                            ),
+                            prefixIcon: Icon(
+                              Icons.person_outline,
+                              color: Theme.of(context).brightness == Brightness.dark 
+                                  ? Colors.grey.shade400 
+                                  : Colors.grey.shade700,
+                            ),
                             filled: true,
-                            fillColor: Colors.grey.shade50,
+                            fillColor: Theme.of(context).brightness == Brightness.dark 
+                                ? const Color(0xFF1E293B) 
+                                : Colors.grey.shade100,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
                               borderSide: BorderSide.none,
@@ -289,17 +306,39 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                         TextFormField(
                           controller: _passwordController,
                           obscureText: _obscurePassword,
+                          style: TextStyle(
+                            color: Theme.of(context).brightness == Brightness.dark 
+                                ? Colors.white 
+                                : Colors.black87,
+                          ),
                           decoration: InputDecoration(
                             labelText: 'Password',
-                            prefixIcon: const Icon(Icons.lock_outline),
+                            labelStyle: TextStyle(
+                              color: Theme.of(context).brightness == Brightness.dark 
+                                  ? Colors.grey.shade400 
+                                  : Colors.grey.shade700,
+                            ),
+                            prefixIcon: Icon(
+                              Icons.lock_outline,
+                              color: Theme.of(context).brightness == Brightness.dark 
+                                  ? Colors.grey.shade400 
+                                  : Colors.grey.shade700,
+                            ),
                             filled: true,
-                            fillColor: Colors.grey.shade50,
+                            fillColor: Theme.of(context).brightness == Brightness.dark 
+                                ? const Color(0xFF1E293B) 
+                                : Colors.grey.shade100,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
                               borderSide: BorderSide.none,
                             ),
                             suffixIcon: IconButton(
-                              icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
+                              icon: Icon(
+                                _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                                color: Theme.of(context).brightness == Brightness.dark 
+                                    ? Colors.grey.shade400 
+                                    : Colors.grey.shade700,
+                              ),
                               onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                             ),
                           ),
