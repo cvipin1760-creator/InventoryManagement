@@ -18,6 +18,9 @@ import '../models/login_response.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'sqlite_service.dart';
 import '../core/exceptions/payment_required_exception.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart' show FlutterSecureStorage;
+import 'package:shared_preferences/shared_preferences.dart';
+import '../core/navigator_key.dart';
 
 class ApiService {
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
@@ -1193,11 +1196,12 @@ class ApiService {
       
       switch (response.statusCode) {
         case 401:
-          throw Exception('Unauthorized: $errorMessage');
+        case 403:
+          // Token expired or forbidden — clear credentials and redirect to login
+          await _clearStorageAndLogout();
+          throw Exception('Session expired. Please log in again.');
         case 402:
           throw PaymentRequiredException('Payment Required: $errorMessage');
-        case 403:
-          throw Exception('Forbidden: $errorMessage');
         case 404:
           throw Exception('Not Found: $errorMessage');
         case 500:
@@ -1206,5 +1210,19 @@ class ApiService {
           throw Exception(errorMessage);
       }
     }
+  }
+  Future<void> _clearStorageAndLogout() async {
+    try {
+      const storage = FlutterSecureStorage();
+      await storage.delete(key: AppConstants.storageKeyToken);
+      await storage.delete(key: 'role');
+      await storage.delete(key: 'userId');
+      await storage.delete(key: 'businessId');
+      await storage.delete(key: 'active_branch_id');
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
+    } catch (_) {}
+    // Navigate to login from anywhere in the app
+    navigatorKey.currentState?.pushNamedAndRemoveUntil('/login', (_) => false);
   }
 }

@@ -33,6 +33,7 @@ import 'package:stock_pilot/services/api_service.dart';
 import 'package:stock_pilot/services/fcm_service.dart';
 import 'package:stock_pilot/services/offline_sync_service.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:stock_pilot/core/navigator_key.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -63,6 +64,7 @@ class MyApp extends StatelessWidget {
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
           return MaterialApp(
+            navigatorKey: navigatorKey,
             title: 'Stock Pilot',
             debugShowCheckedModeBanner: false,
             theme: AppTheme.lightTheme,

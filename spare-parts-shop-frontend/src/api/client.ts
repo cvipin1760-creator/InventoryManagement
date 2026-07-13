@@ -51,6 +51,15 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     } catch {
       /* use text as fallback */
     }
+    // Token expired or forbidden — clear session and redirect to login
+    if (res.status === 401 || res.status === 403) {
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+      localStorage.removeItem('role')
+      localStorage.removeItem('activeBranchId')
+      window.location.href = '/login'
+      throw new Error('Session expired. Please log in again.')
+    }
     throw new Error(errMsg)
   }
     const contentType = res.headers.get('content-type')
