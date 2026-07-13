@@ -40,6 +40,14 @@ public class SuperAdminController {
 
     @PostMapping("/admins")
     public User createAdmin(@RequestBody CreateUserRequest request) {
+        // Check if username or email already exists first
+        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
+            throw new RuntimeException("Username already exists");
+        }
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new RuntimeException("Email already exists");
+        }
+
         // 1. Create and save Business
         Business business = new Business();
         business.setBusinessName(request.getBusinessName());
