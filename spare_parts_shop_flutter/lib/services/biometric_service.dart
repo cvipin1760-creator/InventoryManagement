@@ -5,6 +5,15 @@ import 'package:flutter/foundation.dart';
 class BiometricService {
   final LocalAuthentication _auth = LocalAuthentication();
 
+  Future<List<BiometricType>> getAvailableBiometrics() async {
+    try {
+      return await _auth.getAvailableBiometrics();
+    } catch (e) {
+      debugPrint("Error getting available biometrics: $e");
+      return [];
+    }
+  }
+
   Future<bool> isBiometricAvailable() async {
     try {
       final bool canAuthenticateWithBiometrics = await _auth.canCheckBiometrics;
@@ -16,13 +25,24 @@ class BiometricService {
     }
   }
 
-  Future<bool> authenticate(String reason) async {
+  Future<bool> isFingerprintAvailable() async {
+    final biometrics = await getAvailableBiometrics();
+    return biometrics.contains(BiometricType.fingerprint) || biometrics.contains(BiometricType.weak);
+  }
+
+  Future<bool> isFaceUnlockAvailable() async {
+    final biometrics = await getAvailableBiometrics();
+    return biometrics.contains(BiometricType.face) || biometrics.contains(BiometricType.strong);
+  }
+
+  Future<bool> authenticate({
+    String reason = 'Authenticate to access Stock Pilot',
+    bool biometricOnly = false,
+  }) async {
     try {
       return await _auth.authenticate(
         localizedReason: reason,
-        biometricOnly: true,
-        persistAcrossBackgrounding: true,
-        sensitiveTransaction: true,
+        biometricOnly: biometricOnly,
       );
     } on PlatformException catch (e) {
       debugPrint('Biometric Error: ${e.code} - ${e.message}');
@@ -59,6 +79,14 @@ class BiometricService {
       throw Exception(errorMessage);
     } catch (e) {
       throw Exception('An unexpected error occurred during authentication.');
+    }
+  }
+
+  Future<void> stopAuthentication() async {
+    try {
+      await _auth.stopAuthentication();
+    } catch (e) {
+      debugPrint('Error stopping authentication: $e');
     }
   }
 }

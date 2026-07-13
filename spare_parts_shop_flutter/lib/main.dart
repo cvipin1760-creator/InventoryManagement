@@ -32,6 +32,7 @@ import 'package:stock_pilot/screens/send_notifications_screen.dart';
 import 'package:stock_pilot/services/api_service.dart';
 import 'package:stock_pilot/services/fcm_service.dart';
 import 'package:stock_pilot/services/offline_sync_service.dart';
+import 'package:stock_pilot/services/biometric_service.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:stock_pilot/core/navigator_key.dart';
 
@@ -115,10 +116,15 @@ class AuthWrapper extends StatefulWidget {
   State<AuthWrapper> createState() => _AuthWrapperState();
 }
 
-class _AuthWrapperState extends State<AuthWrapper> {
+class _AuthWrapperState extends State<AuthWrapper> with WidgetsBindingObserver {
+  final BiometricService _biometricService = BiometricService();
+  bool _isAuthenticating = false;
+  DateTime? _lastPausedTime;
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     // Try to create default admin on app start
     Future.microtask(() async {
       try {
@@ -128,6 +134,49 @@ class _AuthWrapperState extends State<AuthWrapper> {
         // Ignore, admin might already exist
       }
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    if (state == AppLifecycleState.paused) {
+      _lastPausedTime = DateTime.now();
+    } else if (state == AppLifecycleState.resumed) {
+      if (_lastPausedTime != null && authProvider.isAuthenticated) {
+        final inactivityDuration = DateTime.now().difference(_lastPausedTime!);
+        if (inactivityDuration.inSeconds >= authProvider.securitySettings.autoLockInactivitySeconds &&
+            (authProvider.securitySettings.enableFingerprint || 
+             authProvider.securitySettings.enableFaceUnlock ||
+             authProvider.securitySettings.requireAuthOnAppOpen)) {
+          authProvider.setLocked(true);
+          _authenticate(authProvider);
+        }
+      }
+    }
+  }
+
+  Future<void> _authenticate(AuthProvider authProvider) async {
+    if (_isAuthenticating) return;
+    _isAuthenticating = true;
+    try {
+      final success = await _biometricService.authenticate(
+        reason: 'Authenticate to access Stock Pilot',
+      );
+      if (success && mounted) {
+        authProvider.setLocked(false);
+        await authProvider.updateLastActivity();
+      }
+    } catch (e) {
+      debugPrint('Authentication error: $e');
+    } finally {
+      _isAuthenticating = false;
+    }
   }
 
   @override
@@ -141,7 +190,39 @@ class _AuthWrapperState extends State<AuthWrapper> {
             ),
           );
         }
+        
         if (auth.isAuthenticated) {
+          if (auth.isLocked) {
+            return Scaffold(
+              body: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.lock, size: 80, color: Colors.grey),
+                    const SizedBox(height: 24),
+                    Text(
+                      'Stock Pilot is locked',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton.icon(
+                      onPressed: () => _authenticate(auth),
+                      icon: const Icon(Icons.fingerprint),
+                      label: const Text('Authenticate to Unlock'),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+          
+          // Check if we need to authenticate on app open
+          if (auth.securitySettings.requireAuthOnAppOpen ||
+              auth.securitySettings.enableFingerprint ||
+              auth.securitySettings.enableFaceUnlock) {
+            Future.microtask(() => _authenticate(auth));
+          }
+          
           return const DashboardScreen();
         } else {
           return const LoginScreen();

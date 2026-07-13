@@ -42,7 +42,7 @@ class _BusinessSettingsScreenState extends State<BusinessSettingsScreen> {
     if (value) {
       // Trying to enable it, verify first
       try {
-        final authenticated = await _biometricService.authenticate('Authenticate to enable biometric login');
+        final authenticated = await _biometricService.authenticate(reason: 'Authenticate to enable biometric login');
         if (authenticated) {
           await _storageService.saveBiometricEnabled(true);
           setState(() => _biometricEnabled = true);

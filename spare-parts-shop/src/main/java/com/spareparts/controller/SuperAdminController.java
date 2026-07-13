@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/super-admin")
+@RequestMapping({"/api/super-admin", "/api/super-manager"})
 @CrossOrigin(origins = "*")
 public class SuperAdminController {
 
