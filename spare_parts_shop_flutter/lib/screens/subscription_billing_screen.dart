@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/api_service.dart';
 import '../constants/app_theme.dart';
+import '../providers/auth_provider.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class BillingScreen extends StatefulWidget {
@@ -23,19 +24,19 @@ class _BillingScreenState extends State<BillingScreen> {
         '1 Branch',
         'Up to 3 Users',
         '500 Invoices/month',
-        'Basic Support',
+        'Standard Email Support',
       ],
       'color': Colors.blue,
     },
     {
-      'name': 'Premium',
-      'price': '₹2999/mo',
+      'name': 'Pro',
+      'price': '₹2499/mo',
       'features': [
-        'Up to 3 Branches',
-        'Up to 10 Users',
-        '2000 Invoices/month',
-        'Priority Support',
-        'Advanced Analytics',
+        'Up to 5 Branches',
+        'Up to 15 Users',
+        'Unlimited Invoices',
+        'Priority Phone Support',
+        'AI Predictive Analytics',
       ],
       'color': Colors.purple,
       'isPopular': true,
@@ -55,6 +56,7 @@ class _BillingScreenState extends State<BillingScreen> {
   ];
 
   Future<void> _upgradePlan(String planName) async {
+    final businessId = Provider.of<AuthProvider>(context, listen: false).businessId ?? 0;
     setState(() => _isLoading = true);
     try {
       // Mocking payment checkout session
@@ -62,7 +64,7 @@ class _BillingScreenState extends State<BillingScreen> {
       
       // Navigate to payment mock screen or trigger backend upgrade
       // For now we'll just hit the upgrade endpoint directly to simulate successful payment
-      final response = await _apiService.updateSubscription(0, planName); // 0 is dummy id, backend uses TenantContext
+      final response = await _apiService.updateSubscription(businessId, planName);
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

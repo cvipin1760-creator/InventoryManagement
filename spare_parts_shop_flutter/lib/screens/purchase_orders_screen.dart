@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 
 class PurchaseOrdersScreen extends StatefulWidget {
+  const PurchaseOrdersScreen({super.key});
+
   @override
-  _PurchaseOrdersScreenState createState() => _PurchaseOrdersScreenState();
+  State<PurchaseOrdersScreen> createState() => _PurchaseOrdersScreenState();
 }
 
 class _PurchaseOrdersScreenState extends State<PurchaseOrdersScreen> {
+  final ApiService _apiService = ApiService();
   List<dynamic> _orders = [];
   bool _isLoading = false;
 
@@ -19,34 +22,42 @@ class _PurchaseOrdersScreenState extends State<PurchaseOrdersScreen> {
   Future<void> _loadOrders() async {
     setState(() => _isLoading = true);
     try {
-      final data = await ApiService().getPurchaseOrders();
-      setState(() => _orders = data);
+      final data = await _apiService.getPurchaseOrders();
+      if (mounted) setState(() => _orders = data);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to load POs')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to load POs')));
+      }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   Future<void> _autoGenerate() async {
     setState(() => _isLoading = true);
     try {
-      await ApiService().autoGeneratePurchaseOrders();
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Purchase Orders Auto-Generated')));
+      await _apiService.autoGeneratePurchaseOrders();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Purchase Orders Auto-Generated')));
+      }
       await _loadOrders();
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to generate POs')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to generate POs')));
+      }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   Future<void> _updateStatus(int id, String newStatus) async {
     try {
-      await ApiService().updatePurchaseOrderStatus(id, newStatus);
+      await _apiService.updatePurchaseOrderStatus(id, newStatus);
       _loadOrders();
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to update status')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to update status')));
+      }
     }
   }
 
@@ -54,34 +65,35 @@ class _PurchaseOrdersScreenState extends State<PurchaseOrdersScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Purchase Orders'),
+        title: const Text('Purchase Orders'),
         actions: [
           IconButton(
-            icon: Icon(Icons.auto_awesome),
+            icon: const Icon(Icons.auto_awesome),
             onPressed: _autoGenerate,
             tooltip: 'Auto-Generate',
           ),
-          IconButton(icon: Icon(Icons.refresh), onPressed: _loadOrders),
+          IconButton(icon: const Icon(Icons.refresh), onPressed: _loadOrders),
         ],
       ),
       body: _isLoading 
-        ? Center(child: CircularProgressIndicator())
+        ? const Center(child: CircularProgressIndicator())
         : ListView.builder(
             itemCount: _orders.length,
             itemBuilder: (context, index) {
               final order = _orders[index];
+              final supplierName = order['supplier'] != null ? order['supplier']['name'] : 'Unknown';
               return Card(
-                margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: ListTile(
-                  title: Text('PO #${order['id']} - ${order['supplier']['name']}'),
-                  subtitle: Text('Status: ${order['status']} | Total: \$${order['totalAmount']}'),
+                  title: Text('PO #${order['id']} - $supplierName'),
+                  subtitle: Text('Status: ${order['status']} | Total: ₹${order['totalAmount'] ?? 0}'),
                   trailing: PopupMenuButton<String>(
                     onSelected: (value) => _updateStatus(order['id'], value),
                     itemBuilder: (context) => [
-                      PopupMenuItem(value: 'DRAFT', child: Text('Draft')),
-                      PopupMenuItem(value: 'PENDING', child: Text('Pending')),
-                      PopupMenuItem(value: 'APPROVED', child: Text('Approved')),
-                      PopupMenuItem(value: 'COMPLETED', child: Text('Completed')),
+                      const PopupMenuItem(value: 'DRAFT', child: Text('Draft')),
+                      const PopupMenuItem(value: 'PENDING', child: Text('Pending')),
+                      const PopupMenuItem(value: 'APPROVED', child: Text('Approved')),
+                      const PopupMenuItem(value: 'COMPLETED', child: Text('Completed')),
                     ],
                   ),
                 ),

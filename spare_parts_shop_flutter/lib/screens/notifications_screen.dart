@@ -51,11 +51,40 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     }
   }
 
+  Future<void> _markAllAsRead() async {
+    final unread = _notifications.where((n) => !(n['isRead'] ?? false)).toList();
+    if (unread.isEmpty) return;
+
+    setState(() => _isLoading = true);
+    try {
+      await Future.wait(
+        unread.map((n) => _apiService.markNotificationAsRead(n['id'] as int)),
+      );
+      _loadNotifications();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to mark all as read: $e')),
+        );
+      }
+      _loadNotifications();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final hasUnread = _notifications.any((n) => !(n['isRead'] ?? false));
     return Scaffold(
       appBar: AppBar(
         title: const Text('Notifications'),
+        actions: [
+          if (hasUnread)
+            IconButton(
+              icon: const Icon(Icons.mark_chat_read),
+              onPressed: _markAllAsRead,
+              tooltip: 'Mark all as read',
+            ),
+        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())

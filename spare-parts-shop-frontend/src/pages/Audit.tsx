@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Card, Typography, TextField, Button, List, ListItem, ListItemText, Alert, IconButton, Chip } from '@mui/material';
-import { ScanBarcode, CheckCircle, Search, ClipboardList } from 'lucide-react';
+import { Box, Card, Typography, TextField, Button, List, ListItem, ListItemText, Alert, IconButton, Chip, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { ScanBarcode, ClipboardList } from 'lucide-react';
 import { api } from '../api/client';
 import type { Product, AuditTask } from '../types';
 
 export default function Audit() {
   const [tasks, setTasks] = useState<AuditTask[]>([]);
-  const [search, setSearch] = useState('');
-  const [scanning, setScanning] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [selectedProductId, setSelectedProductId] = useState<number | ''>('');
   const [selectedTask, setSelectedTask] = useState<AuditTask | null>(null);
   const [actualQty, setActualQty] = useState<string>('');
+  const [error, setError] = useState<string>('');
 
   const fetchTasks = async () => {
     try {
@@ -17,46 +18,51 @@ export default function Audit() {
       setTasks(data);
     } catch (e) {
       console.error(e);
+      setError('Failed to fetch audit tasks');
+    }
+  };
+
+  const fetchProducts = async () => {
+    try {
+      const data = await api.get<Product[]>('/products');
+      setProducts(data);
+    } catch (e) {
+      console.error(e);
     }
   };
 
   useEffect(() => {
     fetchTasks();
+    fetchProducts();
   }, []);
 
-  const handleCreateTask = async (productId: number) => {
+  const handleCreateTask = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedProductId) return;
     try {
-      await fetch('http://localhost:8080/api/audit-tasks', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ productId })
-      });
+      setError('');
+      await api.post('/audit-tasks', { productId: selectedProductId });
+      setSelectedProductId('');
       fetchTasks();
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
+      setError(e.message || 'Failed to create audit task');
     }
   };
 
   const handleCompleteTask = async () => {
     if (!selectedTask || !actualQty) return;
     try {
-      await fetch(`http://localhost:8080/api/audit-tasks/${selectedTask.id}/complete`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ actualQuantity: parseInt(actualQty) })
+      setError('');
+      await api.put(`/audit-tasks/${selectedTask.id}/complete`, { 
+        actualQuantity: parseInt(actualQty) 
       });
       setActualQty('');
       setSelectedTask(null);
       fetchTasks();
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      // Let offlineSync handle it implicitly or show alert
+      setError(e.message || 'Failed to complete task');
     }
   };
 
@@ -64,11 +70,17 @@ export default function Audit() {
   const completedTasks = tasks.filter(t => t.status !== 'PENDING');
 
   return (
-    <Box sx={{ p: 2, maxWidth: 600, mx: 'auto' }}>
+    <Box sx={{ p: 2, maxWidth: 650, mx: 'auto' }}>
       <Typography variant="h5" sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1, fontWeight: 'bold' }}>
         <ClipboardList color="#2563eb" />
         Inventory Audit
       </Typography>
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
+          {error}
+        </Alert>
+      )}
 
       {!navigator.onLine && (
         <Alert severity="warning" sx={{ mb: 2 }}>
@@ -105,6 +117,32 @@ export default function Audit() {
         </Card>
       ) : (
         <>
+          {/* Create Audit Task Form */}
+          <Card sx={{ p: 3, mb: 3 }}>
+            <Typography variant="h6" sx={{ mb: 2 }}>Start a New Audit Task</Typography>
+            <Box component="form" onSubmit={handleCreateTask} sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+              <FormControl fullWidth variant="outlined" size="small">
+                <InputLabel id="product-select-label">Select Product</InputLabel>
+                <Select
+                  labelId="product-select-label"
+                  value={selectedProductId}
+                  onChange={(e) => setSelectedProductId(Number(e.target.value))}
+                  label="Select Product"
+                  required
+                >
+                  {products.map(p => (
+                    <MenuItem key={p.id} value={p.id}>
+                      {p.name} ({p.partNumber})
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <Button type="submit" variant="contained" disabled={!selectedProductId}>
+                Create
+              </Button>
+            </Box>
+          </Card>
+
           <Card sx={{ p: 2, mb: 3 }}>
             <Typography variant="h6" sx={{ mb: 2 }}>Pending Audits ({pendingTasks.length})</Typography>
             <List>

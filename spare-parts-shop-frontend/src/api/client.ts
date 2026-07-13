@@ -86,8 +86,10 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 }
 
 export const api = {
-  // Generic GET
+  // Generic helper methods
   get: <T>(path: string) => request<T>(path),
+  post: <T>(path: string, body: any) => request<T>(path, { method: 'POST', body: JSON.stringify(body) }),
+  put: <T>(path: string, body: any) => request<T>(path, { method: 'PUT', body: JSON.stringify(body) }),
   // Auth (purely for login check; backend is otherwise open)
   login: (username: string, password: string) =>
     request<import('../types').LoginResponse>('/auth/login', {

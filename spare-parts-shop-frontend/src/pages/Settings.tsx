@@ -35,7 +35,7 @@ import {
   Save,
 } from '@mui/icons-material';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
-import { selectCurrentUser, logout } from '../store/slices/authSlice';
+import { selectCurrentUser, logout, setCredentials } from '../store/slices/authSlice';
 import { toggleTheme, selectThemeMode } from '../store/slices/themeSlice';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
@@ -57,9 +57,19 @@ const Settings = () => {
 
   const [profileForm, setProfileForm] = useState({
     username: user?.username || '',
-    email: '',
-    phone: '',
+    email: user?.email || '',
+    phone: (user as any)?.contactNumber || '',
   });
+
+  useEffect(() => {
+    if (user) {
+      setProfileForm({
+        username: user.username || '',
+        email: user.email || '',
+        phone: (user as any).contactNumber || '',
+      });
+    }
+  }, [user]);
 
   useEffect(() => {
     if (user && user.role !== 'SUPER_ADMIN') {
@@ -72,6 +82,46 @@ const Settings = () => {
   const handleLogout = () => {
     dispatch(logout());
     navigate('/login');
+  };
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user?.id) return;
+    setLoading(true);
+    try {
+      await api.updateStaff(user.id, {
+        username: user.username,
+        email: profileForm.email,
+        contactNumber: profileForm.phone,
+        role: user.role,
+      });
+
+      const updatedUser = {
+        ...user,
+        email: profileForm.email,
+        contactNumber: profileForm.phone,
+      };
+
+      dispatch(setCredentials({
+        user: updatedUser,
+        token: localStorage.getItem('token') || undefined,
+      }));
+
+      setSnackbar({
+        open: true,
+        message: 'Profile updated successfully!',
+        severity: 'success',
+      });
+    } catch (err: any) {
+      console.error(err);
+      setSnackbar({
+        open: true,
+        message: err.message || 'Failed to update profile',
+        severity: 'error',
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleUpdateSubscription = async (subscriptionPlan: string) => {
@@ -195,7 +245,7 @@ const Settings = () => {
                 <Person sx={{ mr: 1, verticalAlign: 'middle' }} />
                 Profile
               </Typography>
-              <Box component="form" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box component="form" onSubmit={handleSaveProfile} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <TextField
                   label="Username"
                   value={profileForm.username}
@@ -216,7 +266,9 @@ const Settings = () => {
                   fullWidth
                 />
                 <Button
+                  type="submit"
                   variant="contained"
+                  disabled={loading}
                   startIcon={<Save />}
                   sx={{ alignSelf: 'flex-start' }}
                 >

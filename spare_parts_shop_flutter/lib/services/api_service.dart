@@ -1043,8 +1043,24 @@ class ApiService {
   }
 
   // --- Tally Export ---
-  Future<String> exportTallyXml() async {
-    final res = await _get(Uri.parse('$baseUrl/exports/tally-xml'));
+  Future<String> exportTallyXml({String? startDate, String? endDate}) async {
+    final start = startDate ?? DateTime.now().subtract(const Duration(days: 30)).toIso8601String().substring(0, 19);
+    final end = endDate ?? DateTime.now().toIso8601String().substring(0, 19);
+    final res = await _get(
+      Uri.parse('$baseUrl/export/tally?startDate=$start&endDate=$end'),
+      headers: await _getHeaders(),
+    );
+    return res.body;
+  }
+
+  // --- QuickBooks Export ---
+  Future<String> exportQuickBooksCsv({String? startDate, String? endDate}) async {
+    final start = startDate ?? DateTime.now().subtract(const Duration(days: 30)).toIso8601String().substring(0, 19);
+    final end = endDate ?? DateTime.now().toIso8601String().substring(0, 19);
+    final res = await _get(
+      Uri.parse('$baseUrl/export/quickbooks?startDate=$start&endDate=$end'),
+      headers: await _getHeaders(),
+    );
     return res.body;
   }
   
@@ -1074,19 +1090,20 @@ class ApiService {
   
   // --- Purchase Orders ---
   Future<List<dynamic>> getPurchaseOrders() async {
-    final res = await _get(Uri.parse('$baseUrl/purchase-orders'));
+    final res = await _get(Uri.parse('$baseUrl/purchase-orders'), headers: await _getHeaders());
     final data = jsonDecode(res.body);
     return data is Map && data.containsKey('content') ? data['content'] : data;
   }
   
   Future<dynamic> autoGeneratePurchaseOrders() async {
-    final res = await _post(Uri.parse('$baseUrl/purchase-orders/auto'));
+    final res = await _post(Uri.parse('$baseUrl/purchase-orders/auto'), headers: await _getHeaders());
     return jsonDecode(res.body);
   }
   
   Future<dynamic> updatePurchaseOrderStatus(int id, String status) async {
     final res = await _put(
       Uri.parse('$baseUrl/purchase-orders/$id/status'),
+      headers: await _getHeaders(),
       body: jsonEncode({'status': status}),
     );
     return jsonDecode(res.body);
@@ -1094,7 +1111,7 @@ class ApiService {
   
   // --- Audit Tasks ---
   Future<List<dynamic>> getAuditTasks() async {
-    final res = await _get(Uri.parse('$baseUrl/audit-tasks'));
+    final res = await _get(Uri.parse('$baseUrl/audit-tasks'), headers: await _getHeaders());
     final data = jsonDecode(res.body);
     return data is Map && data.containsKey('content') ? data['content'] : data;
   }
@@ -1102,6 +1119,7 @@ class ApiService {
   Future<dynamic> createAuditTask(Map<String, dynamic> task) async {
     final res = await _post(
       Uri.parse('$baseUrl/audit-tasks'),
+      headers: await _getHeaders(),
       body: jsonEncode(task),
     );
     return jsonDecode(res.body);
@@ -1110,6 +1128,7 @@ class ApiService {
   Future<dynamic> updateAuditTask(int id, Map<String, dynamic> task) async {
     final res = await _put(
       Uri.parse('$baseUrl/audit-tasks/$id'),
+      headers: await _getHeaders(),
       body: jsonEncode(task),
     );
     return jsonDecode(res.body);
@@ -1143,10 +1162,15 @@ class ApiService {
       defaultHeaders.addAll(headers);
     }
     
+    final safeHeaders = Map<String, String>.from(defaultHeaders);
+    if (safeHeaders.containsKey('Authorization')) {
+      safeHeaders['Authorization'] = 'Bearer [MASKED]';
+    }
+    
     print('=== API Request ===');
     print('URL: $url');
     print('Method: $method');
-    print('Headers: $defaultHeaders');
+    print('Headers: $safeHeaders');
     if (body != null) print('Body: $body');
 
     http.Response response;

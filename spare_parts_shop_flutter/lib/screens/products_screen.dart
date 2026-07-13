@@ -18,11 +18,18 @@ class _ProductsScreenState extends State<ProductsScreen> {
   final ApiService _apiService = ApiService();
   List<Product> _products = [];
   bool _isLoading = true;
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _loadProducts();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadProducts() async {
@@ -39,6 +46,28 @@ class _ProductsScreenState extends State<ProductsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to load products: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _searchProducts(String query) async {
+    if (query.trim().isEmpty) {
+      _loadProducts();
+      return;
+    }
+    setState(() => _isLoading = true);
+    try {
+      final results = await _apiService.searchProducts(query);
+      setState(() {
+        _products = results;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Search failed: $e')),
         );
       }
     }
@@ -124,40 +153,70 @@ class _ProductsScreenState extends State<ProductsScreen> {
           ),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _products.isEmpty
-              ? const Center(child: Text('No products found'))
-              : ListView.builder(
-                  itemCount: _products.length,
-                  itemBuilder: (context, index) {
-                    final product = _products[index];
-                    return ListTile(
-                      title: Text(product.name),
-                      subtitle: Text('Part: ${product.partNumber} | Stock: ${product.quantity}'),
-                      trailing: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              '₹${product.price.toStringAsFixed(2)}',
-                              style: const TextStyle(fontWeight: FontWeight.bold),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                labelText: 'Search Products',
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: _searchController.text.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          _searchController.clear();
+                          _loadProducts();
+                        },
+                      )
+                    : null,
+                border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
+              ),
+              onChanged: _searchProducts,
+            ),
+          ),
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _products.isEmpty
+                    ? const Center(child: Text('No products found'))
+                    : ListView.builder(
+                        itemCount: _products.length,
+                        itemBuilder: (context, index) {
+                          final product = _products[index];
+                          return Card(
+                            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                            child: ListTile(
+                              title: Text(product.name),
+                              subtitle: Text('Part: ${product.partNumber} | Stock: ${product.quantity}'),
+                              trailing: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      '₹${product.price.toStringAsFixed(2)}',
+                                      style: const TextStyle(fontWeight: FontWeight.bold),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.edit),
+                                      onPressed: () => _showProductDialog(product: product),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete, color: Colors.red),
+                                      onPressed: () => _deleteProduct(product),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
-                            IconButton(
-                              icon: const Icon(Icons.edit),
-                              onPressed: () => _showProductDialog(product: product),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () => _deleteProduct(product.id),
-                            ),
-                          ],
-                        ),
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -219,7 +278,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
             onPressed: () => Navigator.pop(context),
             child: const Text('Cancel'),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () async {
               try {
                 if (product == null) {
@@ -273,16 +332,35 @@ class _ProductsScreenState extends State<ProductsScreen> {
     );
   }
 
-  Future<void> _deleteProduct(int id) async {
-    try {
-      await _apiService.deleteProduct(id);
-      _loadProducts();
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to delete product: $e')),
-        );
+  Future<void> _deleteProduct(Product product) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Product'),
+        content: Text('Are you sure you want to delete ${product.name}?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirm == true) {
+      setState(() => _isLoading = true);
+      try {
+        await _apiService.deleteProduct(product.id);
+        _loadProducts();
+      } catch (e) {
+        setState(() => _isLoading = false);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to delete product: $e')),
+          );
+        }
       }
     }
-  }
+  } }
 }

@@ -75,15 +75,15 @@ class _PredictiveAnalyticsScreenState extends State<PredictiveAnalyticsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         _buildSectionHeader('Dead Stock', 'No sales in last 60 days', FontAwesomeIcons.arrowTrendDown, AppTheme.errorColor),
-                        _buildDeadStockList(_data!['deadStock'] as List),
+                        _buildDeadStockList((_data!['deadStock'] as List?) ?? []),
                         const SizedBox(height: 24),
                         
                         _buildSectionHeader('Fast Moving', 'Top sellers in last 30 days', FontAwesomeIcons.arrowTrendUp, AppTheme.successColor),
-                        _buildFastMovingList(_data!['fastMovingProducts'] as List),
+                        _buildFastMovingList((_data!['fastMovingProducts'] as List?) ?? []),
                         const SizedBox(height: 24),
 
                         _buildSectionHeader('Churned Customers', 'No purchases in last 90 days', FontAwesomeIcons.usersSlash, AppTheme.warningColor),
-                        _buildChurnedCustomersList(_data!['churnedCustomers'] as List),
+                        _buildChurnedCustomersList((_data!['churnedCustomers'] as List?) ?? []),
                       ],
                     ),
                   ),

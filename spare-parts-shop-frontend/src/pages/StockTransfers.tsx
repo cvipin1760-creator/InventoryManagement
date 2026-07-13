@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Button,
@@ -24,7 +24,7 @@ import {
 } from '@mui/material';
 import { Add, Refresh, Check, Close } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import apiClient from '../api';
+import { api } from '../api/client';
 import { format } from 'date-fns';
 
 interface Branch {
@@ -34,7 +34,7 @@ interface Branch {
 
 interface Product {
   id: number;
-  productName: string;
+  name: string;
   quantity: number;
 }
 
@@ -64,36 +64,28 @@ const StockTransfers: React.FC = () => {
 
   const { data: transfers = [], isLoading, refetch } = useQuery({
     queryKey: ['stock-transfers'],
-    queryFn: async (): Promise<StockTransfer[]> => {
-      const res = await apiClient.get('/stock-transfers');
-      return res.data;
-    },
+    queryFn: () => api.get<StockTransfer[]>('/stock-transfers'),
   });
 
   const { data: branches = [] } = useQuery({
     queryKey: ['branches'],
-    queryFn: async (): Promise<Branch[]> => {
-      const res = await apiClient.get('/branches');
-      return res.data;
-    },
+    queryFn: () => api.get<Branch[]>('/branches'),
   });
 
   const { data: products = [] } = useQuery({
     queryKey: ['products'],
-    queryFn: async (): Promise<Product[]> => {
-      const res = await apiClient.get('/products');
-      return res.data;
-    },
+    queryFn: () => api.get<Product[]>('/products'),
   });
 
   const createMutation = useMutation({
-    mutationFn: async (data: typeof formData) => {
-      const res = await apiClient.post('/stock-transfers', {
+    mutationFn: (data: typeof formData) => 
+      api.post('/stock-transfers', {
         ...data,
+        sourceBranchId: parseInt(data.sourceBranchId),
+        destinationBranchId: parseInt(data.destinationBranchId),
+        productId: parseInt(data.productId),
         quantity: parseInt(data.quantity),
-      });
-      return res.data;
-    },
+      }),
     onSuccess: () => {
       setSnackbar({ open: true, message: 'Transfer created successfully', severity: 'success' });
       queryClient.invalidateQueries({ queryKey: ['stock-transfers'] });
@@ -102,27 +94,29 @@ const StockTransfers: React.FC = () => {
       setFormData({ sourceBranchId: '', destinationBranchId: '', productId: '', quantity: '', notes: '' });
     },
     onError: (err: any) => {
-      setSnackbar({ open: true, message: err.response?.data?.message || err.message, severity: 'error' });
+      setSnackbar({ open: true, message: err.message || 'Failed to create transfer', severity: 'error' });
     },
   });
 
   const statusMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: number; status: string }) => {
-      const res = await apiClient.put(`/stock-transfers/${id}/status`, { status });
-      return res.data;
-    },
+    mutationFn: ({ id, status }: { id: number; status: string }) => 
+      api.put(`/stock-transfers/${id}/status`, { status }),
     onSuccess: () => {
       setSnackbar({ open: true, message: 'Status updated', severity: 'success' });
       queryClient.invalidateQueries({ queryKey: ['stock-transfers'] });
       queryClient.invalidateQueries({ queryKey: ['products'] });
     },
     onError: (err: any) => {
-      setSnackbar({ open: true, message: err.response?.data?.message || err.message, severity: 'error' });
+      setSnackbar({ open: true, message: err.message || 'Failed to update status', severity: 'error' });
     },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (formData.sourceBranchId === formData.destinationBranchId) {
+      setSnackbar({ open: true, message: 'Source and Destination branches cannot be the same', severity: 'error' });
+      return;
+    }
     createMutation.mutate(formData);
   };
 
@@ -176,10 +170,10 @@ const StockTransfers: React.FC = () => {
               transfers.map((t) => (
                 <TableRow key={t.id}>
                   <TableCell>#{t.id}</TableCell>
-                  <TableCell>{format(new Date(t.transferDate), 'dd MMM yyyy, HH:mm')}</TableCell>
-                  <TableCell>{t.product.productName}</TableCell>
-                  <TableCell>{t.sourceBranch.name}</TableCell>
-                  <TableCell>{t.destinationBranch.name}</TableCell>
+                  <TableCell>{t.transferDate ? format(new Date(t.transferDate), 'dd MMM yyyy, HH:mm') : 'N/A'}</TableCell>
+                  <TableCell>{t.product ? t.product.name : 'Unknown Product'}</TableCell>
+                  <TableCell>{t.sourceBranch ? t.sourceBranch.name : 'N/A'}</TableCell>
+                  <TableCell>{t.destinationBranch ? t.destinationBranch.name : 'N/A'}</TableCell>
                   <TableCell>{t.quantity}</TableCell>
                   <TableCell>
                     <Chip label={t.status} color={getStatusColor(t.status) as any} size="small" />
@@ -222,7 +216,7 @@ const StockTransfers: React.FC = () => {
               >
                 {products.map((p) => (
                   <MenuItem key={p.id} value={p.id}>
-                    {p.productName} (Available: {p.quantity})
+                    {p.name} (Available: {p.quantity})
                   </MenuItem>
                 ))}
               </TextField>

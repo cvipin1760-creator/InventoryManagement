@@ -132,7 +132,54 @@ class _StaffScreenState extends State<StaffScreen> {
                         title: Text(staff['username'], style: const TextStyle(fontWeight: FontWeight.bold)),
                         subtitle: Text('${staff['email']}\nRole: ${staff['role']}'),
                         isThreeLine: true,
-                        trailing: IconButton(icon: const Icon(Icons.edit), onPressed: () => _showStaffDialog(staff)),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit),
+                              onPressed: () => _showStaffDialog(staff),
+                              tooltip: 'Edit Staff',
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              onPressed: () async {
+                                final confirm = await showDialog<bool>(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: const Text('Delete Staff'),
+                                    content: Text('Are you sure you want to delete ${staff['username']}?'),
+                                    actions: [
+                                      TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+                                      ElevatedButton(
+                                        onPressed: () => Navigator.pop(context, true),
+                                        style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+                                        child: const Text('Delete'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                                if (confirm == true) {
+                                  try {
+                                    await _apiService.deleteUser(staff['id']);
+                                    if (mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('Staff deleted successfully'), backgroundColor: Colors.green),
+                                      );
+                                    }
+                                    _loadStaff();
+                                  } catch (e) {
+                                    if (mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text('Failed to delete staff: $e'), backgroundColor: Colors.red),
+                                      );
+                                    }
+                                  }
+                                }
+                              },
+                              tooltip: 'Delete Staff',
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   },

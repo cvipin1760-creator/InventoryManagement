@@ -62,32 +62,28 @@ const Analytics = () => {
     {
       title: 'Total Revenue',
       value: apiMetrics?.totalRevenue || '₹0',
-      change: '12.5%',
-      changeType: 'increase',
+      subtitle: 'Total revenue generated to date',
       icon: <AttachMoney />,
       color: theme.palette.success.main
     },
     {
       title: 'Total Sales',
       value: apiMetrics?.totalSales || '0',
-      change: '8.2%',
-      changeType: 'increase',
+      subtitle: 'Total orders completed',
       icon: <Receipt />,
       color: theme.palette.primary.main
     },
     {
       title: 'Total Customers',
       value: apiMetrics?.totalCustomers || '0',
-      change: '5.1%',
-      changeType: 'increase',
+      subtitle: 'Active customer directory',
       icon: <People />,
       color: theme.palette.info.main
     },
     {
       title: 'Low Stock Items',
       value: apiMetrics?.lowStockItems || '0',
-      change: '3.4%',
-      changeType: 'decrease',
+      subtitle: 'Items below safety stock threshold',
       icon: <Warning />,
       color: theme.palette.warning.main
     },
@@ -138,29 +134,15 @@ const Analytics = () => {
                   >
                     {metric.icon}
                   </Box>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 0.5,
-                      px: 1.5,
-                      py: 0.5,
-                      borderRadius: 1,
-                      backgroundColor: `${metric.changeType === 'increase' ? theme.palette.success.main : theme.palette.error.main}20`,
-                      color: metric.changeType === 'increase' ? theme.palette.success.main : theme.palette.error.main
-                    }}
-                  >
-                    {metric.changeType === 'increase' ? <TrendingUp fontSize="small" /> : <TrendingDown fontSize="small" />}
-                    <Typography variant="caption" sx={{ fontWeight: 700 }}>
-                      {metric.change}
-                    </Typography>
-                  </Box>
                 </Box>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
                   {metric.title}
                 </Typography>
-                <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
                   {metric.value}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {metric.subtitle}
                 </Typography>
               </CardContent>
             </Card>
