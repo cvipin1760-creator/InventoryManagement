@@ -41,6 +41,7 @@ import {
   Target,
   Megaphone,
   ClipboardList,
+  IndianRupee,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppSelector } from '../store/hooks';
@@ -81,6 +82,8 @@ const Sidebar = ({
       items.push({ label: 'Reports', path: '/reports', icon: <FileSpreadsheet size={20} /> });
       items.push({ label: 'Accounting Export', path: '/accounting-export', icon: <FileText size={20} /> });
       items.push({ label: 'Analytics', path: '/analytics', icon: <Activity size={20} /> });
+      items.push({ label: 'EMI', path: '/emis', icon: <IndianRupee size={20} /> });
+      items.push({ label: 'Warranty', path: '/warranties', icon: <Shield size={20} /> });
       items.push({ label: 'Support', path: '/support', icon: <Shield size={20} /> });
       items.push({ label: 'Audit Logs', path: '/audit-logs', icon: <History size={20} /> });
       items.push({ label: 'Settings', path: '/settings', icon: <Settings size={20} /> });
@@ -96,6 +99,13 @@ const Sidebar = ({
       }
       items.push({ label: 'Customers', path: '/customers', icon: <Users size={20} /> });
       items.push({ label: 'Sales', path: '/bills', icon: <Receipt size={20} /> });
+      if (user?.features?.emiEnabled) {
+        items.push({ label: 'EMI', path: '/emis', icon: <IndianRupee size={20} /> });
+      }
+      if (user?.features?.warrantyEnabled) {
+        items.push({ label: 'Warranty', path: '/warranties', icon: <Shield size={20} /> });
+      }
+      items.push({ label: 'Support Tickets', path: '/support-tickets', icon: <MessageSquare size={20} /> });
       items.push({ label: 'Purchases', path: '/purchases', icon: <ShoppingCart size={20} /> });
       items.push({ label: 'Purchase Orders', path: '/purchase-orders', icon: <Brain size={20} /> });
       items.push({ label: 'AI Forecast', path: '/predictive-analytics', icon: <TrendingUp size={20} /> });

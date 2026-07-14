@@ -43,6 +43,12 @@ public class EMIInstallment implements BelongsToBusiness {
     @Column(name = "amount", nullable = false)
     private Double amount;
 
+    @Column(name = "paid_amount")
+    private Double paidAmount = 0.0;
+
+    @Column(name = "remaining_amount")
+    private Double remainingAmount;
+
     @Column(name = "status", nullable = false)
     private String status = "PENDING"; // PENDING, PAID, OVERDUE, PARTIALLY_PAID, CANCELLED
 
@@ -60,4 +66,11 @@ public class EMIInstallment implements BelongsToBusiness {
 
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @PrePersist
+    protected void prePersist() {
+        if (this.remainingAmount == null) {
+            this.remainingAmount = this.amount;
+        }
+    }
 }

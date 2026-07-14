@@ -293,6 +293,7 @@ export default function CreateBill() {
         price: i.price,
         gstPercent: i.gstPercent,
         discount: (i.price * i.quantity * i.discount) / 100,
+        serialNumber: i.serialNumber,
       }))
 
       // Prepare warranties

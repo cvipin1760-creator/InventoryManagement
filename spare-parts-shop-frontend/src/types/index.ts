@@ -66,6 +66,8 @@ export interface EMIInstallment {
   installmentNumber: number
   dueDate: string
   amount: number
+  paidAmount: number
+  remainingAmount: number
   status: string
   paidDate?: string
   paymentMethod?: string
@@ -269,6 +271,21 @@ export interface LoginResponse {
   }
   token?: string
   message: string
+}
+
+export interface SupportTicket {
+  id: number;
+  customer: Customer;
+  warranty?: Warranty;
+  billItem?: BillItem;
+  subject: string;
+  description: string;
+  ticketType: 'GENERAL' | 'WARRANTY' | 'RETURN' | 'EXCHANGE';
+  attachmentPath?: string;
+  resolution?: string;
+  status: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED';
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface AuditTask {

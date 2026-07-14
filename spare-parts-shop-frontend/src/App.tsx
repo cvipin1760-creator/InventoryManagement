@@ -40,7 +40,9 @@ import Marketing from './pages/Marketing';
 import PurchaseOrders from './pages/PurchaseOrders';
 import B2bLogin from './pages/B2bLogin';
 import B2bShop from './pages/B2bShop';
-import Audit from './pages/Audit';
+import Audit from './pages/Audit'
+import Emis from './pages/Emis';
+import SupportTickets from './pages/SupportTickets';
 
 
 // Protected Route component
@@ -242,8 +244,18 @@ const App = () => {
           </RoleGuard>
         } />
         <Route path="warranties" element={
-          <RoleGuard allowedRoles={['CUSTOMER', 'ADMIN', 'EMPLOYEE']}>
+          <RoleGuard allowedRoles={['CUSTOMER', 'ADMIN', 'EMPLOYEE', 'SUPER_ADMIN', 'SUPER_MANAGER']}>
             <Warranties />
+          </RoleGuard>
+        } />
+        <Route path="emis" element={
+          <RoleGuard allowedRoles={['ADMIN', 'EMPLOYEE', 'SUPER_ADMIN', 'SUPER_MANAGER']}>
+            <Emis />
+          </RoleGuard>
+        } />
+        <Route path="support-tickets" element={
+          <RoleGuard allowedRoles={['ADMIN', 'EMPLOYEE', 'SUPER_ADMIN', 'SUPER_MANAGER']}>
+            <SupportTickets />
           </RoleGuard>
         } />
         <Route path="my-emi" element={

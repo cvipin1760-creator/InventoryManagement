@@ -29,11 +29,30 @@ public class SupportTicket implements BelongsToBusiness {
     @JsonIgnoreProperties({"business", "branch", "createdAt", "address", "loyaltyPoints"})
     private Customer customer;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "warranty_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private Warranty warranty;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "bill_item_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private BillItem billItem;
+
     @Column(nullable = false)
     private String subject;
 
     @Column(columnDefinition = "TEXT", nullable = false)
     private String description;
+
+    @Column(name = "ticket_type", nullable = false)
+    private String ticketType = "GENERAL"; // GENERAL, WARRANTY, RETURN, EXCHANGE
+
+    @Column(name = "attachment_path")
+    private String attachmentPath;
+
+    @Column(columnDefinition = "TEXT")
+    private String resolution;
 
     @Column(nullable = false)
     private String status = "OPEN"; // OPEN, IN_PROGRESS, RESOLVED, CLOSED
