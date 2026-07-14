@@ -10,6 +10,7 @@ class Product {
   final String? attachmentPath;
   final String? createdAt;
   final String? updatedAt;
+  final int? warrantyDays;
 
   Product({
     required this.id,
@@ -23,6 +24,7 @@ class Product {
     this.attachmentPath,
     this.createdAt,
     this.updatedAt,
+    this.warrantyDays,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
@@ -38,6 +40,7 @@ class Product {
       attachmentPath: json['attachmentPath']?.toString(),
       createdAt: json['createdAt']?.toString(),
       updatedAt: json['updatedAt']?.toString(),
+      warrantyDays: (json['warrantyDays'] as num?)?.toInt(),
     );
   }
 
@@ -54,6 +57,7 @@ class Product {
       'attachmentPath': attachmentPath,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
+      'warrantyDays': warrantyDays,
     };
   }
 }

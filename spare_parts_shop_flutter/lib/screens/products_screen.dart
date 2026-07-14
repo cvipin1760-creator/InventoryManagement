@@ -5,6 +5,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:io';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 import 'barcode_scanner_screen.dart';
 
 class ProductsScreen extends StatefulWidget {
@@ -228,6 +230,10 @@ class _ProductsScreenState extends State<ProductsScreen> {
     final gstPercentController = TextEditingController(text: product?.gstPercent.toString() ?? '');
     final quantityController = TextEditingController(text: product?.quantity.toString() ?? '');
     final lowStockThresholdController = TextEditingController(text: product?.lowStockThreshold.toString() ?? '');
+    final warrantyDaysController = TextEditingController(text: product?.warrantyDays?.toString() ?? '');
+
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final bool warrantyEnabled = authProvider.account?.features?['warrantyEnabled'] ?? false;
 
     await showDialog(
       context: context,
@@ -270,6 +276,12 @@ class _ProductsScreenState extends State<ProductsScreen> {
                 decoration: const InputDecoration(labelText: 'Low Stock Threshold'),
                 keyboardType: TextInputType.number,
               ),
+              if (warrantyEnabled)
+                TextField(
+                  controller: warrantyDaysController,
+                  decoration: const InputDecoration(labelText: 'Warranty Days (0 for none)'),
+                  keyboardType: TextInputType.number,
+                ),
             ],
           ),
         ),
@@ -288,12 +300,13 @@ class _ProductsScreenState extends State<ProductsScreen> {
                       name: nameController.text,
                       partNumber: partNumberController.text,
                       costPrice: double.tryParse(costPriceController.text) ?? 0,
-                      price: double.tryParse(priceController.text) ?? 0,
-                      gstPercent: double.tryParse(gstPercentController.text) ?? 0,
+                      price: double.tryParse(priceController.text) ?? 0.0,
+                      gstPercent: double.tryParse(gstPercentController.text) ?? 0.0,
                       quantity: int.tryParse(quantityController.text) ?? 0,
-                      lowStockThreshold: int.tryParse(lowStockThresholdController.text) ?? 0,
-                      createdAt: DateTime.now().toIso8601String(),
-                      updatedAt: DateTime.now().toIso8601String(),
+                      lowStockThreshold: int.tryParse(lowStockThresholdController.text) ?? 10,
+                      warrantyDays: (warrantyEnabled && warrantyDaysController.text.isNotEmpty)
+                          ? (int.tryParse(warrantyDaysController.text) ?? 0)
+                          : null,
                     ),
                   );
                 } else {
@@ -304,12 +317,13 @@ class _ProductsScreenState extends State<ProductsScreen> {
                       name: nameController.text,
                       partNumber: partNumberController.text,
                       costPrice: double.tryParse(costPriceController.text) ?? 0,
-                      price: double.tryParse(priceController.text) ?? 0,
-                      gstPercent: double.tryParse(gstPercentController.text) ?? 0,
+                      price: double.tryParse(priceController.text) ?? 0.0,
+                      gstPercent: double.tryParse(gstPercentController.text) ?? 0.0,
                       quantity: int.tryParse(quantityController.text) ?? 0,
-                      lowStockThreshold: int.tryParse(lowStockThresholdController.text) ?? 0,
-                      createdAt: product.createdAt,
-                      updatedAt: DateTime.now().toIso8601String(),
+                      lowStockThreshold: int.tryParse(lowStockThresholdController.text) ?? 10,
+                      warrantyDays: (warrantyEnabled && warrantyDaysController.text.isNotEmpty)
+                          ? (int.tryParse(warrantyDaysController.text) ?? 0)
+                          : null,
                     ),
                   );
                 }
