@@ -175,6 +175,7 @@ export default function EditBill() {
         items: billItems,
         discount,
         gstType,
+        paymentMode: 'FULL', // Default to FULL for existing bills
       })
       navigate('/bills')
     } catch (err) {

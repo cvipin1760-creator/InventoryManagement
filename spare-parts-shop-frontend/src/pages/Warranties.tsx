@@ -47,7 +47,7 @@ const Warranties = () => {
 
   const handleOpenClaim = (war: any) => {
     setClaimProduct(war);
-    setClaimSubject(`Warranty Claim for ${war.productName || 'Product'}`);
+    setClaimSubject(`Warranty Claim for ${war.product?.name || 'Product'}`);
     setClaimDescription(`Filing a warranty claim for WAR-${war.id}. Please specify the issues encountered here...`);
     setOpenClaimDialog(true);
   };
@@ -113,7 +113,7 @@ const Warranties = () => {
                         />
                       </Box>
                       <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
-                        {war.productName || 'Product'}
+                        {war.product?.name || 'Product'}
                       </Typography>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 2 }}>
                         {isActive ? <VerifiedUser color="success" fontSize="small" /> : <GppBad color="error" fontSize="small" />}

@@ -14,7 +14,8 @@ import java.util.Set;
 public interface EMIInstallmentRepository extends JpaRepository<EMIInstallment, Long> {
     List<EMIInstallment> findByEmiId(Long emiId);
     List<EMIInstallment> findByBusinessId(Long businessId);
-    List<EMIInstallment> findByCustomerId(Long customerId);
+    @Query("SELECT e FROM EMIInstallment e WHERE e.emi.customer.id = :customerId")
+    List<EMIInstallment> findByCustomerId(@Param("customerId") Long customerId);
 
     @Query("SELECT COUNT(e) FROM EMIInstallment e WHERE e.business.id = :businessId AND e.dueDate = :today AND e.status = 'PENDING'")
     Long countTodayDue(@Param("businessId") Long businessId, @Param("today") LocalDate today);
