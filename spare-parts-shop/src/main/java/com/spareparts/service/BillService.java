@@ -400,10 +400,12 @@ public class BillService {
     public DashboardStats getDashboardStats() {
         Long businessId = com.spareparts.config.TenantContext.getBusinessId();
         LocalDateTime now = LocalDateTime.now();
+        LocalDate todayDate = LocalDate.now();
         LocalDateTime todayStart = now.with(LocalTime.MIN);
         LocalDateTime todayEnd = now.with(LocalTime.MAX);
         LocalDateTime weekStart = now.minusDays(7);
         LocalDateTime monthStart = now.minusDays(30);
+        LocalDate next30Days = todayDate.plusDays(30);
         
         Double todaySales;
         Double weeklySales;
@@ -452,6 +454,18 @@ public class BillService {
         stats.setActiveCustomers(stats.getTotalCustomers()); // Mocked
         stats.setNewCustomers(3); // Mocked
         stats.setCustomerGrowthPercent(12.5); // Mocked
+
+        // EMI & Warranty Stats
+        if (businessId != null) {
+            stats.setTodayEMIDue(emiInstallmentRepository.countTodayDue(businessId, todayDate) != null ? emiInstallmentRepository.countTodayDue(businessId, todayDate) : 0L);
+            stats.setOverdueEMI(emiInstallmentRepository.countOverdue(businessId, todayDate) != null ? emiInstallmentRepository.countOverdue(businessId, todayDate) : 0L);
+            stats.setTotalEMICollection(emiInstallmentRepository.sumPaidAmount(businessId) != null ? emiInstallmentRepository.sumPaidAmount(businessId) : 0.0);
+            stats.setPendingEMIAmount(emiInstallmentRepository.sumPendingAmount(businessId) != null ? emiInstallmentRepository.sumPendingAmount(businessId) : 0.0);
+            stats.setUpcomingWarrantyExpiry(warrantyRepository.countUpcomingExpiry(businessId, todayDate, next30Days) != null ? warrantyRepository.countUpcomingExpiry(businessId, todayDate, next30Days) : 0L);
+            stats.setExpiredWarranty(warrantyRepository.countExpired(businessId, todayDate) != null ? warrantyRepository.countExpired(businessId, todayDate) : 0L);
+            stats.setActiveWarrantyCustomers(warrantyRepository.countActiveWarrantyCustomers(businessId, todayDate) != null ? warrantyRepository.countActiveWarrantyCustomers(businessId, todayDate) : 0L);
+            stats.setExpiredWarrantyCustomers(warrantyRepository.countExpiredWarrantyCustomers(businessId, todayDate) != null ? warrantyRepository.countExpiredWarrantyCustomers(businessId, todayDate) : 0L);
+        }
 
         return stats;
     }

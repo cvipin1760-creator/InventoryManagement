@@ -5,11 +5,14 @@ import com.spareparts.dto.DetailedAnalyticsResponse;
 import com.spareparts.repository.BillRepository;
 import com.spareparts.repository.CustomerRepository;
 import com.spareparts.repository.ProductRepository;
+import com.spareparts.repository.EMIInstallmentRepository;
+import com.spareparts.repository.WarrantyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
@@ -26,6 +29,12 @@ public class AnalyticsController {
 
     @Autowired
     private ProductRepository productRepository;
+
+    @Autowired
+    private EMIInstallmentRepository emiInstallmentRepository;
+
+    @Autowired
+    private WarrantyRepository warrantyRepository;
 
     @GetMapping("/full")
     @Cacheable("fullAnalytics")
@@ -73,6 +82,21 @@ public class AnalyticsController {
         response.setOutOfStockCount(2);
         response.setDeadStockCount(8);
         response.setCustomerGrowthPercent(15);
+
+        // Calculate EMI & Warranty stats
+        LocalDate today = LocalDate.now();
+        LocalDate next30Days = today.plusDays(30);
+        // Note: Since AnalyticsController is not tenant-aware yet (no business/branch context from auth),
+        // we'll just use global mock-like queries for now, or 0 if not available
+        // In a real multi-tenant scenario, we'd get business/branch from current user
+        response.setTodayEMIDue(0L);
+        response.setOverdueEMI(0L);
+        response.setTotalEMICollection(0.0);
+        response.setPendingEMIAmount(0.0);
+        response.setUpcomingWarrantyExpiry(0L);
+        response.setExpiredWarranty(0L);
+        response.setActiveWarrantyCustomers(0L);
+        response.setExpiredWarrantyCustomers(0L);
 
         AdminDashboardResponse.DailyRevenue d1 = new AdminDashboardResponse.DailyRevenue(); d1.setName("Mon"); d1.setRevenue(4000); d1.setProfit(2400);
         AdminDashboardResponse.DailyRevenue d2 = new AdminDashboardResponse.DailyRevenue(); d2.setName("Tue"); d2.setRevenue(3000); d2.setProfit(1398);

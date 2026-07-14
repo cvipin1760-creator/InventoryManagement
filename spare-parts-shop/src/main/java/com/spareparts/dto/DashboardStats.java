@@ -26,4 +26,14 @@ public class DashboardStats {
     private Integer newCustomers = 0;
     private Integer activeCustomers = 0;
     private Double customerGrowthPercent = 0.0;
+
+    // EMI & Warranty KPIs
+    private Long todayEMIDue = 0L;
+    private Long overdueEMI = 0L;
+    private Double totalEMICollection = 0.0;
+    private Double pendingEMIAmount = 0.0;
+    private Long upcomingWarrantyExpiry = 0L;
+    private Long expiredWarranty = 0L;
+    private Long activeWarrantyCustomers = 0L;
+    private Long expiredWarrantyCustomers = 0L;
 }

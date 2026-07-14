@@ -9,8 +9,38 @@ function formatCurrency(n: number) {
   return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(n)
 }
 
+const EMI_TENURES = [3, 6, 9, 12, 18, 24, 36]
+const WARRANTY_TYPES = [
+  { value: 'NO_WARRANTY', label: 'No Warranty' },
+  { value: 'MANUFACTURER', label: 'Manufacturer Warranty' },
+  { value: 'SELLER', label: 'Seller Warranty' },
+  { value: 'EXTENDED', label: 'Extended Warranty' },
+  { value: 'CUSTOM', label: 'Custom Warranty' },
+]
+
+const WARRANTY_DURATIONS = [
+  { days: 30, label: '30 Days' },
+  { days: 90, label: '90 Days' },
+  { days: 180, label: '6 Months' },
+  { days: 365, label: '1 Year' },
+  { days: 730, label: '2 Years' },
+  { days: 1095, label: '3 Years' },
+  { days: 1825, label: '5 Years' },
+  { days: null, label: 'Custom' },
+]
+
+const STEPS = [
+  { id: 'customer', label: 'Customer' },
+  { id: 'products', label: 'Products' },
+  { id: 'discounts', label: 'Discounts' },
+  { id: 'payment', label: 'Payment Mode' },
+  { id: 'warranty', label: 'Warranty' },
+  { id: 'review', label: 'Review' },
+]
+
 export default function CreateBill() {
   const navigate = useNavigate()
+  const [currentStep, setCurrentStep] = useState(0)
 
   const [customers, setCustomers] = useState<Customer[]>([])
   const [products, setProducts] = useState<Product[]>([])
@@ -32,7 +62,7 @@ export default function CreateBill() {
     firstEmiDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     emiNotes: ''
   })
-  const [warranties, setWarranties] = useState<WarrantyItemDto[]>([])
+  const [itemWarranties, setItemWarranties] = useState<Record<number, WarrantyItemDto>>({})
 
   const [items, setItems] = useState<Array<{
     productId: number
@@ -103,17 +133,29 @@ export default function CreateBill() {
   // ➕ Add item
   const addItem = (p: Product) => {
     const customerPrice = customerPrices[String(p.id)]
-    setItems([
-      ...items,
-      {
+    const newItem = {
+      productId: p.id,
+      product: p,
+      quantity: 1,
+      price: customerPrice ?? p.price,
+      gstPercent: p.gstPercent,
+      discount: 0,
+    }
+    setItems([...items, newItem])
+    // Initialize warranty for this item
+    setItemWarranties(prev => ({
+      ...prev,
+      [p.id]: {
         productId: p.id,
-        product: p,
-        quantity: 1,
-        price: customerPrice ?? p.price,
-        gstPercent: p.gstPercent,
-        discount: 0,
-      },
-    ])
+        serialNumber: '',
+        modelNumber: p.partNumber,
+        warrantyType: 'NO_WARRANTY',
+        warrantyPeriodMonths: p.warrantyDays ? Math.floor(p.warrantyDays / 30) : undefined,
+        warrantyStartDate: new Date().toISOString().split('T')[0],
+        warrantyNotes: '',
+        warrantyTerms: ''
+      }
+    }))
     setSearch('')
     setShowDropdown(false)
   }
@@ -138,37 +180,43 @@ export default function CreateBill() {
   }
 
   const removeItem = (idx: number) => {
+    const removedItem = items[idx]
     setItems(items.filter((_, i) => i !== idx))
+    // Remove warranty for this item
+    setItemWarranties(prev => {
+      const next = { ...prev }
+      delete next[removedItem.productId]
+      return next
+    })
   }
 
   const grossTotal = items.reduce((sum, i) => sum + (i.price * i.quantity), 0)
-const lineDiscountTotal = items.reduce(
-  (sum, i) => sum + (i.price * i.quantity * i.discount) / 100,
-  0
-)
-
+  const lineDiscountTotal = items.reduce(
+    (sum, i) => sum + (i.price * i.quantity * i.discount) / 100,
+    0
+  )
 
   const subtotal = grossTotal - lineDiscountTotal
-    const percentDiscountAmount = (subtotal * discount) / 100
-const totalDiscount = lineDiscountTotal + percentDiscountAmount
+  const percentDiscountAmount = (subtotal * discount) / 100
+  const totalDiscount = lineDiscountTotal + percentDiscountAmount
 
   const gstAmount = items.reduce((sum, i) => {
-  const lineBase = i.price * i.quantity
-  const lineDiscount = (lineBase * i.discount) / 100
-  const line = lineBase - lineDiscount
+    const lineBase = i.price * i.quantity
+    const lineDiscount = (lineBase * i.discount) / 100
+    const line = lineBase - lineDiscount
 
-  if (gstType === 'INCLUDED') {
-    const rate = i.gstPercent / 100
-    return sum + (line * rate) / (1 + rate)
-  }
+    if (gstType === 'INCLUDED') {
+      const rate = i.gstPercent / 100
+      return sum + (line * rate) / (1 + rate)
+    }
 
-  return sum + line * (i.gstPercent / 100)
-}, 0)
+    return sum + line * (i.gstPercent / 100)
+  }, 0)
 
- const finalAmount =
-  gstType === 'INCLUDED'
-    ? subtotal - percentDiscountAmount
-    : subtotal + gstAmount - percentDiscountAmount
+  const finalAmount =
+    gstType === 'INCLUDED'
+      ? subtotal - percentDiscountAmount
+      : subtotal + gstAmount - percentDiscountAmount
   const previousRemaining = customerBalance?.remainingAmount ?? 0
   const remainingAfterBill = previousRemaining + finalAmount - paidAmount
 
@@ -189,6 +237,12 @@ const totalDiscount = lineDiscountTotal + percentDiscountAmount
     return loanAmount > 0 ? loanAmount / emi.totalEmis : 0
   })()
 
+  const totalAmountPayable = monthlyEMI * emi.totalEmis + (emi.processingFee || 0)
+
+  // Step navigation
+  const nextStep = () => setCurrentStep(Math.min(currentStep + 1, STEPS.length - 1))
+  const prevStep = () => setCurrentStep(Math.max(currentStep - 1, 0))
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -206,23 +260,25 @@ const totalDiscount = lineDiscountTotal + percentDiscountAmount
         quantity: i.quantity,
         price: i.price,
         gstPercent: i.gstPercent,
-       discount: (i.price * i.quantity * i.discount) / 100,
+        discount: (i.price * i.quantity * i.discount) / 100,
       }))
 
-      // Prepare warranties (one per item, default NO WARRANTY)
-      const billWarranties = items.map(item => ({
-        productId: item.productId,
-        serialNumber: item.serialNumber,
-        modelNumber: item.product.partNumber,
-        warrantyType: 'NO_WARRANTY',
-        warrantyPeriodMonths: item.product.warrantyDays ? Math.floor(item.product.warrantyDays / 30) : undefined,
-        warrantyStartDate: new Date().toISOString().split('T')[0],
-        warrantyNotes: '',
-        warrantyTerms: ''
-      }))
+      // Prepare warranties
+      const billWarranties = items.map(item => {
+        const itemWarranty = itemWarranties[item.productId]
+        return {
+          productId: item.productId,
+          serialNumber: item.serialNumber,
+          modelNumber: item.product.partNumber,
+          warrantyType: itemWarranty?.warrantyType || 'NO_WARRANTY',
+          warrantyPeriodMonths: itemWarranty?.warrantyPeriodMonths,
+          warrantyStartDate: itemWarranty?.warrantyStartDate,
+          warrantyNotes: itemWarranty?.warrantyNotes || '',
+          warrantyTerms: itemWarranty?.warrantyTerms || ''
+        }
+      })
 
-      // Optimistic navigation: instantly take user to bills list
-      // Backend cache will ensure the subsequent load is instant.
+      // Optimistic navigation
       api.createBill({
         customerId: Number(customerId),
         items: billItems,
@@ -234,7 +290,6 @@ const totalDiscount = lineDiscountTotal + percentDiscountAmount
         warranties: billWarranties
       }).catch(err => {
          console.error('Failed to create bill:', err)
-         // In a real app with a toast library, show an error here
          alert('Failed to create bill: ' + (err instanceof Error ? err.message : 'Unknown error'))
       })
 
@@ -244,16 +299,11 @@ const totalDiscount = lineDiscountTotal + percentDiscountAmount
     }
   }
 
-  return (
-    <div className="create-bill-container">
-      <div className="create-bill-header">
-        <h1>Create Bill</h1>
-      </div>
-
-      {error && <div className="error">{error}</div>}
-
-      <div className="create-bill-card">
-        <form onSubmit={handleSubmit}>
+  // Render step content
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 0: // Customer
+        return (
           <div className="form-section">
             <div className="form-group">
               <label>Customer</label>
@@ -271,7 +321,194 @@ const totalDiscount = lineDiscountTotal + percentDiscountAmount
                 ))}
               </select>
             </div>
+            {customerId && customerBalance && (
+              <div className="summary-box">
+                <div className="summary-row">
+                  <span>Total Billed:</span>
+                  <span>{formatCurrency(customerBalance.totalBilled)}</span>
+                </div>
+                <div className="summary-row">
+                  <span>Total Paid:</span>
+                  <span>{formatCurrency(customerBalance.totalPaid)}</span>
+                </div>
+                <div className="summary-row total">
+                  <span>Remaining:</span>
+                  <span>{formatCurrency(customerBalance.remainingAmount)}</span>
+                </div>
+              </div>
+            )}
+          </div>
+        )
+      case 1: // Products
+        return (
+          <>
+            <div className="product-search-section">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                <label style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--text-muted)' }}>
+                  Add Products
+                </label>
+                <button 
+                  type="button" 
+                  onClick={() => setShowScanner(true)}
+                  style={{ background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.875rem' }}
+                >
+                  📷 Scan Barcode
+                </button>
+              </div>
+              
+              <input
+                type="search"
+                placeholder="Search product by name or part number..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                onFocus={() => {
+                  if (products.length > 0) setShowDropdown(true)
+                }}
+                className="form-control"
+                style={{ width: '100%' }}
+              />
+              
+              {showScanner && (
+                <BarcodeScanner 
+                  onScan={(text) => {
+                    setSearch(text);
+                    setShowScanner(false);
+                  }} 
+                  onClose={() => setShowScanner(false)} 
+                />
+              )}
 
+              {showDropdown && products.length > 0 && (
+                <div className="product-dropdown">
+                  {products.map((p) => (
+                    <div 
+                      key={p.id} 
+                      className="product-option"
+                      onClick={() => addItem(p)}
+                    >
+                      <div>
+                        <div style={{ fontWeight: 600 }}>{p.name}</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{p.partNumber}</div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontWeight: 600, color: 'var(--accent)' }}>
+                          {formatCurrency(customerPrices[String(p.id)] ?? p.price)}
+                        </div>
+                        {customerPrices[String(p.id)] !== undefined && (
+                          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Customer price</div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {productLoading && <p className="text-muted">Searching...</p>}
+            </div>
+
+            <table className="items-table">
+              <thead>
+                <tr>
+                  <th>Product Details</th>
+                  <th style={{ textAlign: 'center' }}>Qty</th>
+                  <th style={{ textAlign: 'right' }}>Price</th>
+                  <th style={{ textAlign: 'center' }}>GST %</th>
+                  <th style={{ textAlign: 'center' }}>Discount %</th>
+                  <th style={{ textAlign: 'right' }}>Total</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {items.map((item, idx) => {
+                  const lineTotal = item.price * item.quantity
+                  const lineDiscount = (lineTotal * item.discount) / 100
+                  const taxable = lineTotal - lineDiscount
+                  let lineFinal = taxable
+                  if (gstType === 'EXCLUDED') {
+                    lineFinal = taxable * (1 + item.gstPercent / 100)
+                  }
+
+                  return (
+                    <tr key={idx}>
+                      <td>
+                        <div style={{ fontWeight: 600 }}>{item.product.name}</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{item.product.partNumber}</div>
+                        {item.product.requiresSerialNumber && (
+                          <input
+                            type="text"
+                            placeholder="Enter Serial No."
+                            value={item.serialNumber || ''}
+                            onChange={(e) => updateItem(idx, 'serialNumber', e.target.value)}
+                            className="form-control"
+                            style={{ marginTop: '0.5rem', width: '100%', fontSize: '0.8rem', padding: '0.2rem 0.5rem' }}
+                          />
+                        )}
+                      </td>
+                      <td style={{ textAlign: 'center' }}>
+                        <input
+                          type="number"
+                          min="1"
+                          value={item.quantity}
+                          onChange={(e) => updateItem(idx, 'quantity', +e.target.value)}
+                          className="form-control"
+                          style={{ width: 80, textAlign: 'center' }}
+                        />
+                      </td>
+                      <td style={{ textAlign: 'right' }}>
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={item.price}
+                          onChange={(e) => updateItem(idx, 'price', +e.target.value)}
+                          className="form-control"
+                          style={{ width: 110, textAlign: 'right' }}
+                        />
+                      </td>
+                      <td style={{ textAlign: 'center' }}>
+                        <input
+                          type="number"
+                          step="0.1"
+                          min="0"
+                          value={item.gstPercent}
+                          onChange={(e) => updateItem(idx, 'gstPercent', +e.target.value)}
+                          className="form-control"
+                          style={{ width: 70, textAlign: 'center' }}
+                        />
+                      </td>
+                      <td style={{ textAlign: 'center' }}>
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={item.discount}
+                          onChange={(e) => updateItem(idx, 'discount', +e.target.value)}
+                          className="form-control"
+                          style={{ width: 70, textAlign: 'center' }}
+                        />
+                      </td>
+                      <td style={{ textAlign: 'right', fontWeight: 600 }}>
+                        {formatCurrency(lineFinal)}
+                      </td>
+                      <td style={{ textAlign: 'right' }}>
+                        <button
+                          type="button"
+                          className="btn btn-ghost btn-sm"
+                          style={{ color: 'var(--danger)' }}
+                          onClick={() => removeItem(idx)}
+                        >
+                          Remove
+                        </button>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </>
+        )
+      case 2: // Discounts
+        return (
+          <div className="form-section">
             <div className="form-group">
               <label>GST Type</label>
               <select
@@ -285,7 +522,7 @@ const totalDiscount = lineDiscountTotal + percentDiscountAmount
             </div>
 
             <div className="form-group">
-              <label>Discount (₹)</label>
+              <label>Overall Discount (₹)</label>
               <input
                 type="number"
                 step="0.01"
@@ -295,225 +532,457 @@ const totalDiscount = lineDiscountTotal + percentDiscountAmount
                 className="form-control"
               />
             </div>
+
+            <div className="bill-summary">
+              <div className="summary-box">
+                <div className="summary-row">
+                  <span>Gross Total:</span>
+                  <span>{formatCurrency(grossTotal)}</span>
+                </div>
+                <div className="summary-row">
+                  <span>Total Discount:</span>
+                  <span>-{formatCurrency(totalDiscount)}</span>
+                </div>
+                <div className="summary-row">
+                  <span>Taxable Amount:</span>
+                  <span>{formatCurrency(subtotal - percentDiscountAmount)}</span>
+                </div>
+                <div className="summary-row">
+                  <span>GST ({gstType === 'INCLUDED' ? 'Incl.' : 'Excl.'}):</span>
+                  <span>{formatCurrency(gstAmount)}</span>
+                </div>
+                <div className="summary-row total">
+                  <span>Grand Total:</span>
+                  <span>{formatCurrency(finalAmount)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      case 3: // Payment Mode
+        return (
+          <div className="form-section">
             <div className="form-group">
-              <label>Paid Now (â‚¹)</label>
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                value={paidAmount}
-                onChange={(e) => setPaidAmount(+e.target.value)}
-                className="form-control"
-              />
+              <label>Payment Mode</label>
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                  <input
+                    type="radio"
+                    name="paymentMode"
+                    value="FULL"
+                    checked={paymentMode === 'FULL'}
+                    onChange={(e) => setPaymentMode(e.target.value)}
+                  />
+                  Full Payment
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                  <input
+                    type="radio"
+                    name="paymentMode"
+                    value="EMI"
+                    checked={paymentMode === 'EMI'}
+                    onChange={(e) => setPaymentMode(e.target.value)}
+                  />
+                  EMI
+                </label>
+              </div>
             </div>
-          </div>
 
-          <div className="product-search-section">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-              <label style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-                Add Products
-              </label>
-              <button 
-                type="button" 
-                onClick={() => setShowScanner(true)}
-                style={{ background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.875rem' }}
-              >
-                📷 Scan Barcode
-              </button>
-            </div>
-            
-            <input
-              type="search"
-              placeholder="Search product by name or part number..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onFocus={() => {
-                if (products.length > 0) setShowDropdown(true)
-              }}
-              className="form-control"
-              style={{ width: '100%' }}
-            />
-            
-            {showScanner && (
-              <BarcodeScanner 
-                onScan={(text) => {
-                  setSearch(text);
-                  setShowScanner(false);
-                }} 
-                onClose={() => setShowScanner(false)} 
-              />
+            {paymentMode === 'FULL' && (
+              <div className="form-group">
+                <label>Paid Now (₹)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={paidAmount}
+                  onChange={(e) => setPaidAmount(+e.target.value)}
+                  className="form-control"
+                />
+              </div>
             )}
 
-            {showDropdown && products.length > 0 && (
-              <div className="product-dropdown">
-                {products.map((p) => (
-                  <div 
-                    key={p.id} 
-                    className="product-option"
-                    onClick={() => addItem(p)}
+            {paymentMode === 'EMI' && (
+              <div className="emi-section" style={{ padding: '1.5rem', background: 'var(--bg-secondary)', borderRadius: '0.5rem' }}>
+                <div className="form-group">
+                  <label>Down Payment (₹)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={emi.downPayment}
+                    onChange={(e) => setEmi({ ...emi, downPayment: +e.target.value })}
+                    className="form-control"
+                  />
+                </div>
+
+                <div className="summary-row" style={{ padding: '0.75rem', background: 'var(--bg)', borderRadius: '0.25rem', marginBottom: '1rem' }}>
+                  <span>Loan Amount:</span>
+                  <span style={{ fontWeight: 600 }}>{formatCurrency(loanAmount)}</span>
+                </div>
+
+                <div className="form-group">
+                  <label>EMI Tenure</label>
+                  <select
+                    value={emi.totalEmis}
+                    onChange={(e) => setEmi({ ...emi, totalEmis: +e.target.value })}
+                    className="form-control"
                   >
-                    <div>
-                      <div style={{ fontWeight: 600 }}>{p.name}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{p.partNumber}</div>
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontWeight: 600, color: 'var(--accent)' }}>
-                        {formatCurrency(customerPrices[String(p.id)] ?? p.price)}
-                      </div>
-                      {customerPrices[String(p.id)] !== undefined && (
-                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Customer price</div>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                    {EMI_TENURES.map(months => (
+                      <option key={months} value={months}>{months} Months</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Interest Rate (%) (Optional)</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    value={emi.interestRate}
+                    onChange={(e) => setEmi({ ...emi, interestRate: +e.target.value })}
+                    className="form-control"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>First EMI Date</label>
+                  <input
+                    type="date"
+                    value={emi.firstEmiDate}
+                    onChange={(e) => setEmi({ ...emi, firstEmiDate: e.target.value })}
+                    className="form-control"
+                  />
+                </div>
+
+                <div className="summary-row" style={{ padding: '0.75rem', background: 'var(--bg)', borderRadius: '0.25rem', marginBottom: '1rem' }}>
+                  <span>Monthly EMI Amount:</span>
+                  <span style={{ fontWeight: 600 }}>{formatCurrency(monthlyEMI)}</span>
+                </div>
+
+                <div className="form-group">
+                  <label>Processing Fee (₹) (Optional)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={emi.processingFee}
+                    onChange={(e) => setEmi({ ...emi, processingFee: +e.target.value })}
+                    className="form-control"
+                  />
+                </div>
+
+                <div className="summary-row" style={{ padding: '0.75rem', background: 'var(--accent-light)', borderRadius: '0.25rem', marginBottom: '1rem' }}>
+                  <span style={{ fontWeight: 600 }}>Total Amount Payable:</span>
+                  <span style={{ fontWeight: 600 }}>{formatCurrency(totalAmountPayable)}</span>
+                </div>
+
+                <div className="form-group">
+                  <label>EMI Notes (Optional)</label>
+                  <textarea
+                    value={emi.emiNotes}
+                    onChange={(e) => setEmi({ ...emi, emiNotes: e.target.value })}
+                    className="form-control"
+                    rows={3}
+                  />
+                </div>
               </div>
             )}
-            {productLoading && <p className="text-muted">Searching...</p>}
           </div>
-
-          <table className="items-table">
-            <thead>
-              <tr>
-                <th>Product Details</th>
-                <th style={{ textAlign: 'center' }}>Qty</th>
-                <th style={{ textAlign: 'right' }}>Price</th>
-                <th style={{ textAlign: 'center' }}>GST %</th>
-                <th style={{ textAlign: 'center' }}>Discount %</th>
-                <th style={{ textAlign: 'right' }}>Total</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((item, idx) => {
-                const lineTotal = item.price * item.quantity
-                const lineDiscount = (lineTotal * item.discount) / 100
-                const taxable = lineTotal - lineDiscount
-                let lineFinal = taxable
-                if (gstType === 'EXCLUDED') {
-                  lineFinal = taxable * (1 + item.gstPercent / 100)
-                }
-
+        )
+      case 4: // Warranty
+        return (
+          <div className="form-section">
+            <h3 style={{ marginBottom: '1rem' }}>Product Warranties</h3>
+            {items.length === 0 ? (
+              <p className="text-muted">Add products to configure warranties</p>
+            ) : (
+              items.map((item, idx) => {
+                const warranty = itemWarranties[item.productId]
                 return (
-                  <tr key={idx}>
-                    <td>
-                      <div style={{ fontWeight: 600 }}>{item.product.name}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{item.product.partNumber}</div>
-                      {item.product.requiresSerialNumber && (
-                        <input
-                          type="text"
-                          placeholder="Enter Serial No."
-                          value={item.serialNumber || ''}
-                          onChange={(e) => updateItem(idx, 'serialNumber', e.target.value)}
-                          className="form-control"
-                          style={{ marginTop: '0.5rem', width: '100%', fontSize: '0.8rem', padding: '0.2rem 0.5rem' }}
-                        />
-                      )}
-                    </td>
-                    <td style={{ textAlign: 'center' }}>
-                      <input
-                        type="number"
-                        min="1"
-                        value={item.quantity}
-                        onChange={(e) => updateItem(idx, 'quantity', +e.target.value)}
-                        className="form-control"
-                        style={{ width: 80, textAlign: 'center' }}
-                      />
-                    </td>
-                    <td style={{ textAlign: 'right' }}>
-                      <input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        value={item.price}
-                        onChange={(e) => updateItem(idx, 'price', +e.target.value)}
-                        className="form-control"
-                        style={{ width: 110, textAlign: 'right' }}
-                      />
-                    </td>
-                    <td style={{ textAlign: 'center' }}>
-                      <input
-                        type="number"
-                        step="0.1"
-                        min="0"
-                        value={item.gstPercent}
-                        onChange={(e) => updateItem(idx, 'gstPercent', +e.target.value)}
-                        className="form-control"
-                        style={{ width: 70, textAlign: 'center' }}
-                      />
-                    </td>
-                    <td style={{ textAlign: 'center' }}>
-                      <input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        value={item.discount}
-                        onChange={(e) => updateItem(idx, 'discount', +e.target.value)}
-                        className="form-control"
-                        style={{ width: 70, textAlign: 'center' }}
-                      />
-                    </td>
-                    <td style={{ textAlign: 'right', fontWeight: 600 }}>
-                      {formatCurrency(lineFinal)}
-                    </td>
-                    <td style={{ textAlign: 'right' }}>
-                      <button
-                        type="button"
-                        className="btn btn-ghost btn-sm"
-                        style={{ color: 'var(--danger)' }}
-                        onClick={() => removeItem(idx)}
-                      >
-                        Remove
-                      </button>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
+                  <div key={item.productId} style={{ padding: '1rem', background: 'var(--bg-secondary)', borderRadius: '0.5rem', marginBottom: '1rem' }}>
+                    <div style={{ fontWeight: 600, marginBottom: '0.75rem' }}>
+                      {item.product.name} ({item.product.partNumber})
+                    </div>
 
-          <div className="bill-summary">
-            <div className="summary-box">
-              <div className="summary-row">
-                <span>Gross Total:</span>
-                <span>{formatCurrency(grossTotal)}</span>
-              </div>
-              <div className="summary-row">
-                <span>Total Discount:</span>
-                <span>-{formatCurrency(totalDiscount)}</span>
-              </div>
-              <div className="summary-row">
-                <span>Taxable Amount:</span>
-                <span>{formatCurrency(subtotal - percentDiscountAmount)}</span>
-              </div>
-              <div className="summary-row">
-                <span>GST ({gstType === 'INCLUDED' ? 'Incl.' : 'Excl.'}):</span>
-                <span>{formatCurrency(gstAmount)}</span>
-              </div>
-              <div className="summary-row total">
-                <span>Grand Total:</span>
-                <span>{formatCurrency(finalAmount)}</span>
-              </div>
-              <div className="summary-row">
-                <span>Previous Remaining:</span>
-                <span>{formatCurrency(previousRemaining)}</span>
-              </div>
-              <div className="summary-row">
-                <span>Paid Now:</span>
-                <span>-{formatCurrency(paidAmount)}</span>
-              </div>
-              <div className="summary-row total">
-                <span>Remaining After Bill:</span>
-                <span>{formatCurrency(remainingAfterBill)}</span>
+                    <div className="form-group">
+                      <label>Warranty Type</label>
+                      <select
+                        value={warranty?.warrantyType || 'NO_WARRANTY'}
+                        onChange={(e) => setItemWarranties(prev => ({
+                          ...prev,
+                          [item.productId]: { ...prev[item.productId], warrantyType: e.target.value }
+                        }))}
+                        className="form-control"
+                      >
+                        {WARRANTY_TYPES.map(type => (
+                          <option key={type.value} value={type.value}>{type.label}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {warranty?.warrantyType !== 'NO_WARRANTY' && (
+                      <>
+                        <div className="form-group">
+                          <label>Warranty Duration</label>
+                          <select
+                            value={warranty?.warrantyPeriodMonths ? Math.floor(warranty.warrantyPeriodMonths * 30) : 'custom'}
+                            onChange={(e) => {
+                              const days = e.target.value === 'custom' ? null : +e.target.value
+                              setItemWarranties(prev => ({
+                                ...prev,
+                                [item.productId]: { 
+                                  ...prev[item.productId], 
+                                  warrantyPeriodMonths: days ? Math.floor(days / 30) : undefined 
+                                }
+                              }))
+                            }}
+                            className="form-control"
+                          >
+                            {WARRANTY_DURATIONS.map(dur => (
+                              <option key={dur.days || 'custom'} value={dur.days || 'custom'}>{dur.label}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {!warranty?.warrantyPeriodMonths && (
+                          <div className="form-group">
+                            <label>Custom Duration (Months)</label>
+                            <input
+                              type="number"
+                              min="1"
+                              value={warranty?.warrantyPeriodMonths || ''}
+                              onChange={(e) => setItemWarranties(prev => ({
+                                ...prev,
+                                [item.productId]: { 
+                                  ...prev[item.productId], 
+                                  warrantyPeriodMonths: +e.target.value 
+                                }
+                              }))}
+                              className="form-control"
+                            />
+                          </div>
+                        )}
+
+                        <div className="form-group">
+                          <label>Warranty Start Date</label>
+                          <input
+                            type="date"
+                            value={warranty?.warrantyStartDate || new Date().toISOString().split('T')[0]}
+                            onChange={(e) => setItemWarranties(prev => ({
+                              ...prev,
+                              [item.productId]: { ...prev[item.productId], warrantyStartDate: e.target.value }
+                            }))}
+                            className="form-control"
+                          />
+                        </div>
+
+                        {warranty?.warrantyStartDate && warranty?.warrantyPeriodMonths && (
+                          <div className="summary-row" style={{ padding: '0.5rem', background: 'var(--bg)', borderRadius: '0.25rem', marginBottom: '0.75rem' }}>
+                            <span>Warranty End Date:</span>
+                            <span style={{ fontWeight: 600 }}>
+                              {(() => {
+                                const startDate = new Date(warranty.warrantyStartDate);
+                                startDate.setMonth(startDate.getMonth() + warranty.warrantyPeriodMonths);
+                                return startDate.toISOString().split('T')[0];
+                              })()}
+                            </span>
+                          </div>
+                        )}
+
+                        <div className="form-group">
+                          <label>Warranty Notes (Optional)</label>
+                          <textarea
+                            value={warranty?.warrantyNotes || ''}
+                            onChange={(e) => setItemWarranties(prev => ({
+                              ...prev,
+                              [item.productId]: { ...prev[item.productId], warrantyNotes: e.target.value }
+                            }))}
+                            className="form-control"
+                            rows={2}
+                          />
+                        </div>
+
+                        <div className="form-group">
+                          <label>Warranty Terms (Optional)</label>
+                          <textarea
+                            value={warranty?.warrantyTerms || ''}
+                            onChange={(e) => setItemWarranties(prev => ({
+                              ...prev,
+                              [item.productId]: { ...prev[item.productId], warrantyTerms: e.target.value }
+                            }))}
+                            className="form-control"
+                            rows={2}
+                          />
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )
+              })
+            )}
+          </div>
+        )
+      case 5: // Review
+        return (
+          <div className="form-section">
+            <h3 style={{ marginBottom: '1rem' }}>Review Bill</h3>
+            
+            <div style={{ marginBottom: '1.5rem', padding: '1rem', background: 'var(--bg-secondary)', borderRadius: '0.5rem' }}>
+              <h4 style={{ marginBottom: '0.5rem' }}>Customer</h4>
+              {customers.find(c => c.id === customerId) && (
+                <div>
+                  <div style={{ fontWeight: 600 }}>{customers.find(c => c.id === customerId)?.name}</div>
+                  <div style={{ color: 'var(--text-muted)' }}>{customers.find(c => c.id === customerId)?.phone}</div>
+                </div>
+              )}
+            </div>
+
+            <h4 style={{ marginBottom: '0.75rem' }}>Products</h4>
+            <table className="items-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th style={{ textAlign: 'center' }}>Qty</th>
+                  <th style={{ textAlign: 'right' }}>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {items.map((item, idx) => {
+                  const lineTotal = item.price * item.quantity
+                  const lineDiscount = (lineTotal * item.discount) / 100
+                  const taxable = lineTotal - lineDiscount
+                  let lineFinal = taxable
+                  if (gstType === 'EXCLUDED') {
+                    lineFinal = taxable * (1 + item.gstPercent / 100)
+                  }
+                  return (
+                    <tr key={idx}>
+                      <td>{item.product.name}</td>
+                      <td style={{ textAlign: 'center' }}>{item.quantity}</td>
+                      <td style={{ textAlign: 'right' }}>{formatCurrency(lineFinal)}</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+
+            <div className="bill-summary" style={{ marginTop: '1.5rem' }}>
+              <div className="summary-box">
+                <div className="summary-row">
+                  <span>Gross Total:</span>
+                  <span>{formatCurrency(grossTotal)}</span>
+                </div>
+                <div className="summary-row">
+                  <span>Total Discount:</span>
+                  <span>-{formatCurrency(totalDiscount)}</span>
+                </div>
+                <div className="summary-row">
+                  <span>GST:</span>
+                  <span>{formatCurrency(gstAmount)}</span>
+                </div>
+                <div className="summary-row total">
+                  <span>Grand Total:</span>
+                  <span>{formatCurrency(finalAmount)}</span>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="create-bill-footer">
+            <div style={{ marginTop: '1.5rem', padding: '1rem', background: 'var(--bg-secondary)', borderRadius: '0.5rem' }}>
+              <h4 style={{ marginBottom: '0.5rem' }}>Payment Mode</h4>
+              <div style={{ fontWeight: 600 }}>{paymentMode === 'FULL' ? 'Full Payment' : 'EMI'}</div>
+              {paymentMode === 'EMI' && (
+                <div style={{ marginTop: '0.5rem' }}>
+                  <div>Down Payment: {formatCurrency(emi.downPayment)}</div>
+                  <div>Loan Amount: {formatCurrency(loanAmount)}</div>
+                  <div>Tenure: {emi.totalEmis} months</div>
+                  <div>Monthly EMI: {formatCurrency(monthlyEMI)}</div>
+                </div>
+              )}
+            </div>
+
+            <div style={{ marginTop: '1.5rem', padding: '1rem', background: 'var(--bg-secondary)', borderRadius: '0.5rem' }}>
+              <h4 style={{ marginBottom: '0.5rem' }}>Warranties</h4>
+              {items.length === 0 ? (
+                <p className="text-muted">No products</p>
+              ) : (
+                items.map(item => {
+                  const warranty = itemWarranties[item.productId]
+                  return (
+                    <div key={item.productId} style={{ marginBottom: '0.5rem' }}>
+                      <div style={{ fontWeight: 600 }}>{item.product.name}</div>
+                      <div style={{ color: 'var(--text-muted)' }}>
+                        {warranty?.warrantyType === 'NO_WARRANTY' ? 'No Warranty' : warranty?.warrantyType}
+                      </div>
+                    </div>
+                  )
+                })
+              )}
+            </div>
+          </div>
+        )
+      default:
+        return null
+    }
+  }
+
+  return (
+    <div className="create-bill-container">
+      <div className="create-bill-header">
+        <h1>Create Bill</h1>
+      </div>
+
+      {/* Step Indicator */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem', padding: '0 1rem' }}>
+        {STEPS.map((step, idx) => (
+          <div key={step.id} style={{ flex: 1, textAlign: 'center' }}>
+            <div 
+              style={{ 
+                width: 40, 
+                height: 40, 
+                borderRadius: '50%', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                margin: '0 auto 0.5rem auto',
+                background: idx <= currentStep ? 'var(--accent)' : 'var(--bg-secondary)',
+                color: idx <= currentStep ? 'white' : 'var(--text-muted)',
+                fontWeight: 600
+              }}
+            >
+              {idx + 1}
+            </div>
+            <div style={{ fontSize: '0.875rem', color: idx <= currentStep ? 'var(--text)' : 'var(--text-muted)' }}>
+              {step.label}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {error && <div className="error">{error}</div>}
+
+      <div className="create-bill-card">
+        <form onSubmit={handleSubmit}>
+          {renderStepContent()}
+
+          <div className="create-bill-footer" style={{ marginTop: '2rem' }}>
+            {currentStep > 0 && (
+              <button type="button" className="btn btn-ghost" onClick={prevStep}>
+                Previous
+              </button>
+            )}
+            {currentStep < STEPS.length - 1 ? (
+              <button type="button" className="btn btn-primary" onClick={nextStep}>
+                Next
+              </button>
+            ) : (
+              <button type="submit" className="btn btn-primary" disabled={loading}>
+                {loading ? 'Creating Bill...' : 'Generate Invoice'}
+              </button>
+            )}
             <button type="button" className="btn btn-ghost" onClick={() => navigate('/bills')}>
               Cancel
-            </button>
-            <button type="submit" className="btn btn-primary" disabled={loading}>
-              {loading ? 'Creating Bill...' : 'Create Bill'}
             </button>
           </div>
         </form>

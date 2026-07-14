@@ -218,11 +218,28 @@ export interface PurchaseRequest {
 }
 
 export interface DashboardStats {
-  todaySales: number
-  weeklySales: number
-  monthlySales: number
-  todayBillsCount: number
-  lowStockCount: number
+  todaySales: number;
+  weeklySales: number;
+  monthlySales: number;
+  todayBillsCount: number;
+  lowStockCount: number;
+  outOfStockCount: number;
+  deadStockCount: number;
+  fastMovingProductsCount: number;
+  netProfit: number;
+  gstCollected: number;
+  totalCustomers: number;
+  newCustomers: number;
+  activeCustomers: number;
+  customerGrowthPercent: number;
+  todayEMIDue: number;
+  overdueEMI: number;
+  totalEMICollection: number;
+  pendingEMIAmount: number;
+  upcomingWarrantyExpiry: number;
+  expiredWarranty: number;
+  activeWarrantyCustomers: number;
+  expiredWarrantyCustomers: number;
 }
 
 export interface LoginRequest {

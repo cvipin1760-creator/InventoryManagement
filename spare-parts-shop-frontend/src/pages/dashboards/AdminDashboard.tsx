@@ -64,6 +64,15 @@ interface DashboardStats {
   newCustomers: number;
   activeCustomers: number;
   customerGrowthPercent: number;
+
+  todayEMIDue: number;
+  overdueEMI: number;
+  totalEMICollection: number;
+  pendingEMIAmount: number;
+  upcomingWarrantyExpiry: number;
+  expiredWarranty: number;
+  activeWarrantyCustomers: number;
+  expiredWarrantyCustomers: number;
 }
 
 // Reusable KPI Card
@@ -165,6 +174,101 @@ const AdminDashboard = () => {
           <Grid item xs={12} sm={6} md={3}><KPICard title="Low Stock" value={stats?.lowStockCount?.toString() || "0"} icon={<AlertCircle />} trend="down" trendValue="-3" subtitle="Requires attention" color="warning" /></Grid>
           <Grid item xs={12} sm={6} md={3}><KPICard title="Out of Stock" value={stats?.outOfStockCount?.toString() || "0"} icon={<Activity />} trend="down" trendValue="+2" subtitle="Lost revenue" color="error" /></Grid>
           <Grid item xs={12} sm={6} md={3}><KPICard title="Dead Stock" value={stats?.deadStockCount?.toString() || "0"} icon={<PackageOpen />} trend="up" trendValue="+5%" subtitle="Requires attention" color="success" /></Grid>
+        </Grid>
+      </Box>
+
+      {/* EMI & Warranty KPIs */}
+      <Box>
+        <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>EMI & Warranty Overview</Typography>
+        <Grid container spacing={3}>
+          <Grid item xs={12} sm={6} md={3}>
+            <KPICard 
+              title="Today's EMI Due" 
+              value={stats?.todayEMIDue?.toString() || "0"} 
+              icon={<Clock />} 
+              trend="up" 
+              trendValue="+3" 
+              subtitle="Requires attention" 
+              color="warning" 
+            />
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <KPICard 
+              title="Overdue EMI" 
+              value={stats?.overdueEMI?.toString() || "0"} 
+              icon={<AlertCircle />} 
+              trend="down" 
+              trendValue="-1" 
+              subtitle="Action required" 
+              color="error" 
+            />
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <KPICard 
+              title="Total EMI Collection" 
+              value={`₹${stats?.totalEMICollection?.toLocaleString() || 0}`} 
+              icon={<DollarSign />} 
+              trend="up" 
+              trendValue="+8%" 
+              subtitle="This month" 
+              color="success" 
+            />
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <KPICard 
+              title="Pending EMI Amount" 
+              value={`₹${stats?.pendingEMIAmount?.toLocaleString() || 0}`} 
+              icon={<TrendingDown />} 
+              trend="down" 
+              trendValue="-2%" 
+              subtitle="Outstanding" 
+              color="primary" 
+            />
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <KPICard 
+              title="Upcoming Warranty Expiry" 
+              value={stats?.upcomingWarrantyExpiry?.toString() || "0"} 
+              icon={<PackageOpen />} 
+              trend="up" 
+              trendValue="+5" 
+              subtitle="Next 30 days" 
+              color="info" 
+            />
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <KPICard 
+              title="Expired Warranty" 
+              value={stats?.expiredWarranty?.toString() || "0"} 
+              icon={<AlertCircle />} 
+              trend="up" 
+              trendValue="+2" 
+              subtitle="Expired" 
+              color="error" 
+            />
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <KPICard 
+              title="Active Warranty Customers" 
+              value={stats?.activeWarrantyCustomers?.toString() || "0"} 
+              icon={<Users />} 
+              trend="up" 
+              trendValue="+10%" 
+              subtitle="With active coverage" 
+              color="success" 
+            />
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <KPICard 
+              title="Expired Warranty Customers" 
+              value={stats?.expiredWarrantyCustomers?.toString() || "0"} 
+              icon={<Users />} 
+              trend="up" 
+              trendValue="+3" 
+              subtitle="Coverage expired" 
+              color="warning" 
+            />
+          </Grid>
         </Grid>
       </Box>
 

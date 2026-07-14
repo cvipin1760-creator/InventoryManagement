@@ -20,6 +20,16 @@ public class AdminDashboardResponse {
     private List<Activity> recentActivity;
     private List<NotificationAlert> notifications;
 
+    // EMI & Warranty Stats
+    private long todayEMIDue;
+    private long overdueEMI;
+    private double totalEMICollection;
+    private double pendingEMIAmount;
+    private long upcomingWarrantyExpiry;
+    private long expiredWarranty;
+    private long activeWarrantyCustomers;
+    private long expiredWarrantyCustomers;
+
     @Data
     public static class DailyRevenue {
         private String name;

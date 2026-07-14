@@ -29,6 +29,7 @@ export default function Bills() {
   const [dateFilter, setDateFilter] = useState<'all' | 'range'>('all')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
+  const [paymentModeFilter, setPaymentModeFilter] = useState<'all' | 'FULL' | 'EMI'>('all')
   const [pdfLoading, setPdfLoading] = useState<number | null>(null)
   const [backupLoading, setBackupLoading] = useState(false)
   const [previewBill, setPreviewBill] = useState<Bill | null>(null)
@@ -42,24 +43,33 @@ export default function Bills() {
     if (search.trim()) {
       if (searchType === 'customer') {
         api.searchBills(search.trim())
-          .then(setBills)
+          .then(bills => {
+            const filtered = paymentModeFilter === 'all' ? bills : bills.filter(b => b.paymentMode === paymentModeFilter)
+            setBills(filtered)
+          })
           .catch((e) => setError(e instanceof Error ? e.message : String(e)))
           .finally(() => setLoading(false))
       } else {
         api.searchBillsByProduct(search.trim())
-          .then(setBills)
+          .then(bills => {
+            const filtered = paymentModeFilter === 'all' ? bills : bills.filter(b => b.paymentMode === paymentModeFilter)
+            setBills(filtered)
+          })
           .catch(async (e) => {
             setError(e instanceof Error ? e.message : String(e))
             try {
               const all = await api.getBills()
               const keyword = search.trim().toLowerCase()
-              const filtered = all.filter((b) =>
+              let filtered = all.filter((b) =>
                 (b.items || []).some((it) =>
                   it.product &&
                   (it.product.name?.toLowerCase().includes(keyword) ||
                    it.product.partNumber?.toLowerCase().includes(keyword))
                 )
               )
+              if (paymentModeFilter !== 'all') {
+                filtered = filtered.filter(b => b.paymentMode === paymentModeFilter)
+              }
               setBills(filtered)
             } catch {
               /* keep error as is */
@@ -72,17 +82,23 @@ export default function Bills() {
       const startStr = `${startDate}T00:00:00`
       const endStr = `${endDate}T23:59:59`
       api.getBillsByDateRange(startStr, endStr)
-        .then(setBills)
+        .then(bills => {
+          const filtered = paymentModeFilter === 'all' ? bills : bills.filter(b => b.paymentMode === paymentModeFilter)
+          setBills(filtered)
+        })
         .catch((e) => setError(e instanceof Error ? e.message : String(e)))
         .finally(() => setLoading(false))
     } else {
-      api.getBills().then(setBills).catch((e) => setError(e instanceof Error ? e.message : String(e))).finally(() => setLoading(false))
+      api.getBills().then(bills => {
+        const filtered = paymentModeFilter === 'all' ? bills : bills.filter(b => b.paymentMode === paymentModeFilter)
+        setBills(filtered)
+      }).catch((e) => setError(e instanceof Error ? e.message : String(e))).finally(() => setLoading(false))
     }
   }
 
   useEffect(() => {
     load()
-  }, [search, searchType, dateFilter, startDate, endDate])
+  }, [search, searchType, dateFilter, startDate, endDate, paymentModeFilter])
 
   const handleDownloadPdf = async (id: number) => {
     setPdfLoading(id)
@@ -171,6 +187,16 @@ export default function Bills() {
               />
             </>
           )}
+          <select
+            value={paymentModeFilter}
+            onChange={(e) => setPaymentModeFilter(e.target.value as 'all' | 'FULL' | 'EMI')}
+            className="search-input"
+            style={{ width: 'auto' }}
+          >
+            <option value="all">All Payment Modes</option>
+            <option value="FULL">Full Payment</option>
+            <option value="EMI">EMI</option>
+          </select>
           <button
             type="button"
             className="btn btn-secondary"
@@ -219,6 +245,7 @@ export default function Bills() {
                 <th>Invoice #</th>
                 <th>Customer</th>
                 <th>Date</th>
+                <th>Payment Mode</th>
                 <th>Amount</th>
                 <th style={{ textAlign: 'right' }}>Actions</th>
               </tr>
@@ -229,6 +256,14 @@ export default function Bills() {
                   <td><strong>{b.invoiceNumber}</strong></td>
                   <td>{b.customer.name}</td>
                   <td>{formatDate(b.billDate)}</td>
+                  <td><span style={{ 
+                    padding: '0.25rem 0.5rem', 
+                    borderRadius: '0.25rem', 
+                    backgroundColor: b.paymentMode === 'EMI' ? 'var(--warning-light)' : 'var(--success-light)', 
+                    color: b.paymentMode === 'EMI' ? 'var(--warning-dark)' : 'var(--success-dark)',
+                    fontWeight: 600,
+                    fontSize: '0.75rem'
+                  }}>{b.paymentMode}</span></td>
                   <td>{formatCurrency(b.finalAmount)}</td>
                   <td style={{ textAlign: 'right' }}>
                     <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
@@ -361,6 +396,81 @@ export default function Bills() {
                   <span>{formatCurrency(previewBill.finalAmount)}</span>
                 </div>
               </div>
+
+              {/* EMI Details */}
+              {previewBill.emis && previewBill.emis.length > 0 && (
+                <div style={{ marginTop: '2rem', padding: '1rem', backgroundColor: 'var(--bg-secondary)', borderRadius: '0.5rem' }}>
+                  <h4 style={{ marginBottom: '1rem' }}>EMI Details</h4>
+                  {previewBill.emis.map((emi) => (
+                    <div key={emi.id} style={{ marginBottom: '1rem' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                        <p><strong>Total Amount:</strong> {formatCurrency(emi.totalAmount)}</p>
+                        <p><strong>Down Payment:</strong> {formatCurrency(emi.downPayment)}</p>
+                        <p><strong>Loan Amount:</strong> {formatCurrency(emi.loanAmount)}</p>
+                        <p><strong>Total EMIs:</strong> {emi.totalEmis}</p>
+                        <p><strong>EMI Amount:</strong> {formatCurrency(emi.emiAmount)}</p>
+                        <p><strong>EMIs Paid:</strong> {emi.emisPaid}</p>
+                        <p><strong>EMIs Remaining:</strong> {emi.emisRemaining}</p>
+                        <p><strong>Next EMI Date:</strong> {emi.nextEmiDate ? new Date(emi.nextEmiDate).toLocaleDateString('en-IN') : 'N/A'}</p>
+                        <p><strong>Interest Rate:</strong> {emi.interestRate}%</p>
+                        <p><strong>Processing Fee:</strong> {formatCurrency(emi.processingFee)}</p>
+                      </div>
+                      {emi.installments && emi.installments.length > 0 && (
+                        <div style={{ marginTop: '1rem' }}>
+                          <h5 style={{ marginBottom: '0.5rem' }}>EMI Schedule</h5>
+                          <table className="invoice-items-table" style={{ fontSize: '0.875rem' }}>
+                            <thead>
+                              <tr>
+                                <th>Installment #</th>
+                                <th>Due Date</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {emi.installments.map((installment) => (
+                                <tr key={installment.id}>
+                                  <td>{installment.installmentNumber}</td>
+                                  <td>{new Date(installment.dueDate).toLocaleDateString('en-IN')}</td>
+                                  <td>{formatCurrency(installment.amount)}</td>
+                                  <td><span style={{ 
+                                    padding: '0.25rem 0.5rem', 
+                                    borderRadius: '0.25rem', 
+                                    backgroundColor: installment.status === 'PAID' ? 'var(--success-light)' : installment.status === 'OVERDUE' ? 'var(--danger-light)' : 'var(--warning-light)', 
+                                    color: installment.status === 'PAID' ? 'var(--success-dark)' : installment.status === 'OVERDUE' ? 'var(--danger-dark)' : 'var(--warning-dark)',
+                                    fontWeight: 600,
+                                    fontSize: '0.75rem'
+                                  }}>{installment.status}</span></td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Warranty Details */}
+              {previewBill.warranties && previewBill.warranties.length > 0 && (
+                <div style={{ marginTop: '2rem', padding: '1rem', backgroundColor: 'var(--bg-secondary)', borderRadius: '0.5rem' }}>
+                  <h4 style={{ marginBottom: '1rem' }}>Warranty Details</h4>
+                  {previewBill.warranties.map((warranty) => (
+                    <div key={warranty.id} style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border-color)' }}>
+                      <h5 style={{ marginBottom: '0.5rem' }}>{warranty.product.name} ({warranty.product.partNumber})</h5>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                        <p><strong>Warranty Type:</strong> {warranty.warrantyType}</p>
+                        <p><strong>Start Date:</strong> {new Date(warranty.warrantyStartDate).toLocaleDateString('en-IN')}</p>
+                        <p><strong>End Date:</strong> {new Date(warranty.warrantyEndDate).toLocaleDateString('en-IN')}</p>
+                        {warranty.serialNumber && <p><strong>Serial #:</strong> {warranty.serialNumber}</p>}
+                        {warranty.warrantyNotes && <p><strong>Notes:</strong> {warranty.warrantyNotes}</p>}
+                        {warranty.warrantyTerms && <p><strong>Terms:</strong> {warranty.warrantyTerms}</p>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="invoice-modal-footer">
