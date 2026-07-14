@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useSearchParams } from 'react-router-dom'
+import { useAppSelector } from '../store/hooks';
+import { selectFeatures } from '../store/slices/authSlice';
 import { api } from '../api/client'
 import type { Product } from '../types'
 import BarcodeScanner from '../components/BarcodeScanner'
@@ -12,6 +14,7 @@ function formatCurrency(n: number) {
 }
 
 export default function Products() {
+  const features = useAppSelector(selectFeatures)
   const queryClient = useQueryClient()
   const [searchParams] = useSearchParams()
   const lowStockOnly = searchParams.get('lowStock') === '1'
@@ -364,10 +367,12 @@ export default function Products() {
                     </div>
                   </div>
                   <div className="form-row">
-                    <div className="form-group">
-                      <label>Warranty Days</label>
-                      <input type="number" min="0" value={form.warrantyDays || 0} onChange={(e) => setForm({ ...form, warrantyDays: +e.target.value })} />
-                    </div>
+                    {features?.warrantyEnabled && (
+                      <div className="form-group">
+                        <label>Warranty Days</label>
+                        <input type="number" min="0" value={form.warrantyDays || 0} onChange={(e) => setForm({ ...form, warrantyDays: +e.target.value })} />
+                      </div>
+                    )}
                     <div className="form-group" style={{ display: 'flex', alignItems: 'flex-end', paddingBottom: '0.5rem' }}>
                       <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
                         <input 

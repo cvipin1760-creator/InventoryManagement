@@ -53,7 +53,9 @@ export default function AdminManagement() {
     address: '',
     businessType: '',
     subscriptionPlan: 'TRIAL',
-    password: ''
+    password: '',
+    emiEnabled: false,
+    warrantyEnabled: false
   })
 
   const businessTypes = ['Spare Parts Shop', 'Electronics Shop', 'Mobile Shop', 'Hardware Shop', 'Medical Store', 'Furniture Shop', 'Other']
@@ -94,7 +96,11 @@ export default function AdminManagement() {
           address: formData.address,
           contactNumber: formData.phone,
           businessType: formData.businessType,
-          subscriptionPlan: formData.subscriptionPlan
+          subscriptionPlan: formData.subscriptionPlan,
+          permissions: {
+            emiEnabled: formData.emiEnabled,
+            warrantyEnabled: formData.warrantyEnabled
+          }
         })
       }
       setOpenDialog(false)
@@ -108,7 +114,9 @@ export default function AdminManagement() {
         address: '',
         businessType: '',
         subscriptionPlan: 'TRIAL',
-        password: ''
+        password: '',
+        emiEnabled: false,
+        warrantyEnabled: false
       })
       loadAdmins()
     } catch (err: any) {
@@ -163,7 +171,9 @@ export default function AdminManagement() {
               address: '',
               businessType: '',
               subscriptionPlan: 'TRIAL',
-              password: ''
+              password: '',
+              emiEnabled: false,
+              warrantyEnabled: false
             })
             setOpenDialog(true)
           }}
@@ -357,14 +367,36 @@ export default function AdminManagement() {
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
             />
             {!editingAdmin && (
-              <TextField
-                label="Password"
-                type="password"
-                fullWidth
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                required
-              />
+              <>
+                <TextField
+                  label="Password"
+                  type="password"
+                  fullWidth
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  required
+                />
+                
+                <Box sx={{ display: 'flex', gap: 3, mt: 1, p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                  <Typography variant="subtitle2" sx={{ width: '100%', mb: 1 }}>Bonus Features</Typography>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={formData.emiEnabled}
+                      onChange={(e) => setFormData({ ...formData, emiEnabled: e.target.checked })}
+                    />
+                    Enable EMI System
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={formData.warrantyEnabled}
+                      onChange={(e) => setFormData({ ...formData, warrantyEnabled: e.target.checked })}
+                    />
+                    Enable Warranty Module
+                  </label>
+                </Box>
+              </>
             )}
           </Box>
         </DialogContent>

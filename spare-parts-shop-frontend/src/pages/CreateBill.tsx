@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import type { Customer, Product, BillItemRequest, CustomerBalance, EMIDto, WarrantyItemDto } from '../types'
 import BarcodeScanner from '../components/BarcodeScanner'
+import { useAppSelector } from '../store/hooks'
+import { selectFeatures } from '../store/slices/authSlice'
 import './CreateBill.css'
 
 function formatCurrency(n: number) {
@@ -40,6 +42,7 @@ const STEPS = [
 
 export default function CreateBill() {
   const navigate = useNavigate()
+  const features = useAppSelector(selectFeatures)
   const [currentStep, setCurrentStep] = useState(0)
 
   const [customers, setCustomers] = useState<Customer[]>([])
@@ -684,16 +687,21 @@ export default function CreateBill() {
                   />
                   Full Payment
                 </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                  <input
-                    type="radio"
-                    name="paymentMode"
-                    value="EMI"
-                    checked={paymentMode === 'EMI'}
-                    onChange={(e) => setPaymentMode(e.target.value)}
-                  />
-                  EMI
-                </label>
+                {features?.emiEnabled && (
+                  <label className="radio-label">
+                    <input
+                      type="radio"
+                      name="paymentMode"
+                      value="EMI"
+                      checked={paymentMode === 'EMI'}
+                      onChange={(e) => {
+                        setPaymentMode('EMI')
+                        setEmi(prev => ({ ...prev, downPayment: Math.min(finalAmount * 0.2, finalAmount) }))
+                      }}
+                    />
+                    EMI
+                  </label>
+                )}
               </div>
             </div>
 
@@ -801,8 +809,9 @@ export default function CreateBill() {
           </div>
         )
       case 4: // Warranty
+        if (!features?.warrantyEnabled) return null;
         return (
-          <div className="form-section">
+          <div className="item-warranty-section">
             <h3 style={{ marginBottom: '1rem' }}>Product Warranties</h3>
             {items.length === 0 ? (
               <p className="text-muted">Add products to configure warranties</p>

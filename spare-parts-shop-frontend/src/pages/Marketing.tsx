@@ -39,8 +39,45 @@ export default function Marketing() {
     try {
       setLoading(true);
       if (tab === 0) {
+        // Fetch customers to generate WhatsApp Web links
+        const res = await api.getCustomers();
+        const customers = Array.isArray(res) ? res : (res as any).content || [];
+        
+        let filtered = customers;
+        if (audience === 'active') {
+          // just mock filter for demo
+          filtered = customers.slice(0, Math.ceil(customers.length / 2));
+        } else if (audience === 'vip') {
+          filtered = customers.slice(0, 2);
+        }
+
+        if (filtered.length === 0) {
+           showToast('No customers found in this audience', 'error');
+           setLoading(false);
+           return;
+        }
+
+        // Generate CSV with wa.me links
+        let csvContent = "data:text/csv;charset=utf-8,Customer Name,Phone,WhatsApp Link\n";
+        filtered.forEach((c: any) => {
+           let phone = c.phone.replace(/\D/g, '');
+           if (phone.length === 10) phone = '91' + phone; // default country code assumption
+           const text = encodeURIComponent(message.replace('{Name}', c.name));
+           const link = `https://wa.me/${phone}?text=${text}`;
+           csvContent += `"${c.name}","${c.phone}","${link}"\n`;
+        });
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `whatsapp_campaign_${audience}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+
+        // Also call backend for logging
         await api.sendBulkWhatsApp({ message, audience });
-        showToast('Bulk WhatsApp messages queued successfully', 'success');
+        showToast('Downloaded WhatsApp links CSV for manual sending!', 'success');
       } else {
         await api.sendBulkSMS({ message, audience });
         showToast('Bulk SMS queued successfully', 'success');
