@@ -66,6 +66,12 @@ public class SuperAdminController {
         fp.setBillingEnabled(true);
         fp.setGstEnabled(true);
         fp.setReportsEnabled(true);
+
+        if (request.getPermissions() != null) {
+            fp.setEmiEnabled(request.getPermissions().getOrDefault("emiEnabled", false));
+            fp.setWarrantyEnabled(request.getPermissions().getOrDefault("warrantyEnabled", false));
+        }
+
         featurePermissionsRepository.save(fp);
 
         // 3. Create Admin User associated with the Business
