@@ -71,6 +71,7 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
   String _gstType = 'INCLUDED';
   double _discount = 0;
   double _paidAmount = 0;
+  String _paymentMode = 'FULL';
   bool _isLoading = true;
   bool _billCreated = false;
   String? _invoiceNumber;
@@ -288,6 +289,7 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
         'customerId': _selectedCustomer!.id,
         'items': _items.map((item) => item.toJson()).toList(),
         'discount': _discount,
+        'paymentMode': _paymentMode,
         'gstType': _gstType,
         'paidAmount': _paidAmount,
         'redeemPoints': _useLoyaltyPoints ? (_loyaltyAccount!['points'] ?? 0) : 0,
@@ -496,6 +498,21 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
                           const SizedBox(height: 16),
                           Row(
                             children: [
+                              if (Provider.of<AuthProvider>(context, listen: false).account?.features?['emiEnabled'] == true)
+                                Expanded(
+                                  child: DropdownButtonFormField<String>(
+                                    value: _paymentMode,
+                                    decoration: const InputDecoration(labelText: 'Payment Mode'),
+                                    items: const [
+                                      DropdownMenuItem(value: 'FULL', child: Text('Full Payment')),
+                                      DropdownMenuItem(value: 'EMI', child: Text('EMI / Installments')),
+                                      DropdownMenuItem(value: 'LATER', child: Text('Pay Later')),
+                                    ],
+                                    onChanged: (v) => setState(() => _paymentMode = v!),
+                                  ),
+                                ),
+                              if (Provider.of<AuthProvider>(context, listen: false).account?.features?['emiEnabled'] == true)
+                                const SizedBox(width: 16),
                               Expanded(
                                 child: TextFormField(
                                   decoration: const InputDecoration(

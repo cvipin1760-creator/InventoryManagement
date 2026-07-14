@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../services/api_service.dart';
 
 class MarketingScreen extends StatefulWidget {
@@ -45,25 +46,69 @@ class _MarketingScreenState extends State<MarketingScreen> with SingleTickerProv
     }
     setState(() => _loading = true);
     try {
-      final data = {'message': _messageController.text.trim(), 'audience': _audience};
-      if (_tabController.index == 0) {
-        await _apiService.sendBulkWhatsApp(data);
-      } else {
-        await _apiService.sendBulkSMS(data);
-      }
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${_tabController.index == 0 ? 'WhatsApp' : 'SMS'} campaign queued successfully!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        _messageController.clear();
-      }
+      final customers = await _apiService.getCustomers();
+      if (!mounted) return;
+      
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        builder: (context) {
+          return DraggableScrollableSheet(
+            initialChildSize: 0.6,
+            minChildSize: 0.3,
+            maxChildSize: 0.9,
+            expand: false,
+            builder: (context, scrollController) {
+              return Column(
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Text(
+                      'Select Customer to Message',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView.builder(
+                      controller: scrollController,
+                      itemCount: customers.length,
+                      itemBuilder: (context, index) {
+                        final c = customers[index];
+                        return ListTile(
+                          leading: const CircleAvatar(child: Icon(Icons.person)),
+                          title: Text(c.name),
+                          subtitle: Text(c.phone),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.send, color: Color(0xFF25D366)),
+                            onPressed: () async {
+                              final message = _messageController.text.replaceAll('{Name}', c.name);
+                              final url = Uri.parse('https://wa.me/${c.phone.replaceAll(RegExp(r"[^\d+]"), "")}?text=${Uri.encodeComponent(message)}');
+                              if (await canLaunchUrl(url)) {
+                                await launchUrl(url, mode: LaunchMode.externalApplication);
+                              } else {
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Could not launch WhatsApp')),
+                                  );
+                                }
+                              }
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+      );
+      
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to send: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text('Failed to load customers: $e'), backgroundColor: Colors.red),
         );
       }
     } finally {
@@ -154,7 +199,7 @@ class _MarketingScreenState extends State<MarketingScreen> with SingleTickerProv
                 icon: _loading
                     ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                     : const Icon(Icons.send),
-                label: Text(_loading ? 'Sending...' : 'Send ${isWhatsApp ? 'WhatsApp' : 'SMS'} Campaign'),
+                label: Text(_loading ? 'Loading...' : 'Select Customers for ${isWhatsApp ? 'WhatsApp' : 'SMS'}'),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   backgroundColor: isWhatsApp ? const Color(0xFF25D366) : Colors.blue,
