@@ -43,7 +43,10 @@ export default function CreateBill() {
   const [currentStep, setCurrentStep] = useState(0)
 
   const [customers, setCustomers] = useState<Customer[]>([])
+  const [allProducts, setAllProducts] = useState<Product[]>([])
   const [products, setProducts] = useState<Product[]>([])
+  const [productsLoading, setProductsLoading] = useState(true)
+  const [productsError, setProductsError] = useState('')
   const [search, setSearch] = useState('')
   const [showDropdown, setShowDropdown] = useState(false)
   const [showScanner, setShowScanner] = useState(false)
@@ -85,35 +88,52 @@ export default function CreateBill() {
       .catch((e) => setError(e instanceof Error ? e.message : String(e)))
   }, [])
 
-  // ✅ Load products based on search (LIKE Customers page)
-  const loadProducts = () => {
+  // ✅ Load ALL products once on mount
+  useEffect(() => {
+    setProductsLoading(true)
+    setProductsError('')
+    api.getProducts()
+      .then((res: any) => {
+        const list: Product[] = Array.isArray(res) ? res : (res?.content ?? [])
+        setAllProducts(list)
+        setProducts(list)
+      })
+      .catch((e) => setProductsError(e instanceof Error ? e.message : String(e)))
+      .finally(() => setProductsLoading(false))
+  }, [])
+
+  // ✅ Filter products client-side as user types
+  useEffect(() => {
     if (!search.trim()) {
-      setProducts([])
-      setShowDropdown(false)
+      setProducts(allProducts)
       return
     }
-
-    setProductLoading(true)
-    api.searchProducts(search.trim())
-      .then((res) => {
-        setProducts(res)
-        setShowDropdown(true)
-      })
-      .catch((e) => setError(e instanceof Error ? e.message : String(e)))
-      .finally(() => setProductLoading(false))
-  }
-
-  useEffect(() => {
+    const q = search.toLowerCase()
+    const filtered = allProducts.filter(
+      (p) =>
+        p.name.toLowerCase().includes(q) ||
+        (p.partNumber ?? '').toLowerCase().includes(q)
+    )
+    setProducts(filtered)
+    // Also query API for thoroughness (e.g. barcode fields not in allProducts)
     const timer = setTimeout(() => {
       if (search.trim()) {
-        loadProducts()
-      } else {
-        setProducts([])
-        setShowDropdown(false)
+        setProductLoading(true)
+        api.searchProducts(search.trim())
+          .then((res: any) => {
+            const apiList: Product[] = Array.isArray(res) ? res : (res?.content ?? [])
+            setProducts((prev) => {
+              const existingIds = new Set(prev.map((p) => p.id))
+              const newItems = apiList.filter((p) => !existingIds.has(p.id))
+              return newItems.length > 0 ? [...prev, ...newItems] : prev
+            })
+          })
+          .catch(() => { /* silent — local filter already shows results */ })
+          .finally(() => setProductLoading(false))
       }
     }, 300)
     return () => clearTimeout(timer)
-  }, [search])
+  }, [search, allProducts])
 
   useEffect(() => {
     if (!customerId) {
@@ -132,6 +152,19 @@ export default function CreateBill() {
 
   // ➕ Add item
   const addItem = (p: Product) => {
+    if ((p.quantity ?? 0) <= 0) {
+      setError(`⚠️ ${p.name} is out of stock and cannot be added.`)
+      setTimeout(() => setError(''), 3000)
+      return
+    }
+    // Check for duplicate — merge quantity instead of adding new line
+    const existingIdx = items.findIndex((i) => i.productId === p.id)
+    if (existingIdx !== -1) {
+      const next = [...items]
+      next[existingIdx] = { ...next[existingIdx], quantity: next[existingIdx].quantity + 1 }
+      setItems(next)
+      return
+    }
     const customerPrice = customerPrices[String(p.id)]
     const newItem = {
       productId: p.id,
@@ -156,8 +189,7 @@ export default function CreateBill() {
         warrantyTerms: ''
       }
     }))
-    setSearch('')
-    setShowDropdown(false)
+    // Don't clear search — user may want to add more products
   }
 
   const updateItem = (idx: number, field: string, value: number | string) => {
@@ -345,7 +377,11 @@ export default function CreateBill() {
             <div className="product-search-section">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                 <label style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-                  Add Products
+                  Add Products {!productsLoading && allProducts.length > 0 && (
+                    <span style={{ fontWeight: 400, color: 'var(--text-muted)' }}>
+                      — {products.length} of {allProducts.length} shown
+                    </span>
+                  )}
                 </label>
                 <button 
                   type="button" 
@@ -358,12 +394,9 @@ export default function CreateBill() {
               
               <input
                 type="search"
-                placeholder="Search product by name or part number..."
+                placeholder="Search by name, part number, SKU..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                onFocus={() => {
-                  if (products.length > 0) setShowDropdown(true)
-                }}
                 className="form-control"
                 style={{ width: '100%' }}
               />
@@ -378,31 +411,106 @@ export default function CreateBill() {
                 />
               )}
 
-              {showDropdown && products.length > 0 && (
-                <div className="product-dropdown">
-                  {products.map((p) => (
-                    <div 
-                      key={p.id} 
-                      className="product-option"
-                      onClick={() => addItem(p)}
-                    >
-                      <div>
-                        <div style={{ fontWeight: 600 }}>{p.name}</div>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{p.partNumber}</div>
-                      </div>
-                      <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontWeight: 600, color: 'var(--accent)' }}>
-                          {formatCurrency(customerPrices[String(p.id)] ?? p.price)}
+              {/* Product list area */}
+              {productsLoading ? (
+                <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
+                  <div className="spinner" style={{ margin: '0 auto 0.75rem' }} />
+                  Loading products...
+                </div>
+              ) : productsError ? (
+                <div style={{ 
+                  padding: '1rem', marginTop: '0.75rem', borderRadius: '8px',
+                  background: '#fef2f2', border: '1px solid #fca5a5', color: '#b91c1c'
+                }}>
+                  <div style={{ marginBottom: '0.75rem' }}>⚠️ {productsError}</div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setProductsLoading(true)
+                      setProductsError('')
+                      api.getProducts()
+                        .then((res: any) => {
+                          const list: Product[] = Array.isArray(res) ? res : (res?.content ?? [])
+                          setAllProducts(list)
+                          setProducts(list)
+                        })
+                        .catch((e) => setProductsError(e instanceof Error ? e.message : String(e)))
+                        .finally(() => setProductsLoading(false))
+                    }}
+                    className="btn btn-sm"
+                    style={{ background: '#b91c1c', color: '#fff', border: 'none', padding: '0.35rem 0.75rem', borderRadius: '6px', cursor: 'pointer' }}
+                  >
+                    🔄 Retry
+                  </button>
+                </div>
+              ) : allProducts.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
+                  <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📦</div>
+                  <div style={{ fontWeight: 600, marginBottom: '0.25rem' }}>No products found</div>
+                  <div style={{ fontSize: '0.8rem' }}>Add products in the Products module first.</div>
+                </div>
+              ) : products.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
+                  <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🔍</div>
+                  <div>No products match "{search}"</div>
+                </div>
+              ) : (
+                <div className="product-dropdown" style={{ 
+                  display: 'block', position: 'relative', 
+                  maxHeight: '320px', overflowY: 'auto',
+                  border: '1px solid var(--border)', borderRadius: '8px',
+                  marginTop: '0.5rem'
+                }}>
+                  {products.map((p) => {
+                    const outOfStock = (p.quantity ?? 0) <= 0
+                    const price = customerPrices[String(p.id)] ?? p.price
+                    return (
+                      <div 
+                        key={p.id} 
+                        className="product-option"
+                        onClick={() => !outOfStock && addItem(p)}
+                        style={{ 
+                          opacity: outOfStock ? 0.55 : 1, 
+                          cursor: outOfStock ? 'not-allowed' : 'pointer',
+                          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                          padding: '0.6rem 1rem'
+                        }}
+                      >
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            {p.name}
+                            {outOfStock && (
+                              <span style={{ 
+                                fontSize: '0.65rem', background: '#fee2e2', color: '#b91c1c',
+                                padding: '1px 5px', borderRadius: '4px', fontWeight: 700
+                              }}>OUT OF STOCK</span>
+                            )}
+                          </div>
+                          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'flex', gap: '12px', marginTop: '2px' }}>
+                            {p.partNumber && <span>SKU: {p.partNumber}</span>}
+                            <span style={{ 
+                              color: outOfStock ? '#b91c1c' : (p.quantity ?? 0) < 5 ? '#d97706' : '#16a34a',
+                              fontWeight: 600
+                            }}>
+                              Stock: {p.quantity ?? 0}
+                            </span>
+                            {(p.gstPercent ?? 0) > 0 && <span>GST: {p.gstPercent}%</span>}
+                          </div>
                         </div>
-                        {customerPrices[String(p.id)] !== undefined && (
-                          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Customer price</div>
-                        )}
+                        <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: '0.75rem' }}>
+                          <div style={{ fontWeight: 700, color: 'var(--accent)', fontSize: '0.95rem' }}>
+                            {formatCurrency(price)}
+                          </div>
+                          {customerPrices[String(p.id)] !== undefined && (
+                            <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Special price</div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               )}
-              {productLoading && <p className="text-muted">Searching...</p>}
+              {productLoading && <p className="text-muted" style={{ marginTop: '0.5rem', fontSize: '0.8rem' }}>🔍 Fetching more...</p>}
             </div>
 
             <table className="items-table">

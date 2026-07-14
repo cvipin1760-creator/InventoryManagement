@@ -8,8 +8,8 @@ class Product {
   final int quantity;
   final int lowStockThreshold;
   final String? attachmentPath;
-  final String createdAt;
-  final String updatedAt;
+  final String? createdAt;
+  final String? updatedAt;
 
   Product({
     required this.id,
@@ -21,23 +21,23 @@ class Product {
     required this.quantity,
     required this.lowStockThreshold,
     this.attachmentPath,
-    required this.createdAt,
-    required this.updatedAt,
+    this.createdAt,
+    this.updatedAt,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
-      id: json['id'],
-      name: json['name'],
-      partNumber: json['partNumber'],
-      costPrice: (json['costPrice'] as num).toDouble(),
-      price: (json['price'] as num).toDouble(),
-      gstPercent: (json['gstPercent'] as num).toDouble(),
-      quantity: json['quantity'],
-      lowStockThreshold: json['lowStockThreshold'],
-      attachmentPath: json['attachmentPath'],
-      createdAt: json['createdAt'],
-      updatedAt: json['updatedAt'],
+      id: (json['id'] as num?)?.toInt() ?? 0,
+      name: json['name']?.toString() ?? '',
+      partNumber: json['partNumber']?.toString() ?? '',
+      costPrice: (json['costPrice'] as num?)?.toDouble() ?? 0.0,
+      price: (json['price'] as num?)?.toDouble() ?? 0.0,
+      gstPercent: (json['gstPercent'] as num?)?.toDouble() ?? 0.0,
+      quantity: (json['quantity'] as num?)?.toInt() ?? 0,
+      lowStockThreshold: (json['lowStockThreshold'] as num?)?.toInt() ?? 10,
+      attachmentPath: json['attachmentPath']?.toString(),
+      createdAt: json['createdAt']?.toString(),
+      updatedAt: json['updatedAt']?.toString(),
     );
   }
 

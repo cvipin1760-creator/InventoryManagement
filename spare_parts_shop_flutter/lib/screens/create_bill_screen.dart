@@ -59,8 +59,14 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
   Map<String, dynamic>? _loyaltyAccount;
   bool _useLoyaltyPoints = false;
   Map<String, double> _customerPrices = {};
-  List<Product> _searchResults = [];
-  bool _isSearching = false;
+
+  // Product state
+  List<Product> _allProducts = [];
+  List<Product> _filteredProducts = [];
+  bool _isLoadingProducts = true;
+  String? _productError;
+  final TextEditingController _searchController = TextEditingController();
+
   final List<BillItem> _items = [];
   String _gstType = 'INCLUDED';
   double _discount = 0;
@@ -73,6 +79,13 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
   void initState() {
     super.initState();
     _loadCustomers();
+    _loadProducts();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadCustomers() async {
@@ -127,36 +140,88 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
     }
   }
 
-  Future<void> _searchProducts(String query) async {
+  Future<void> _loadProducts() async {
     setState(() {
-      _isSearching = true;
+      _isLoadingProducts = true;
+      _productError = null;
     });
-    if (query.isEmpty) {
-      setState(() {
-        _searchResults = [];
-        _isSearching = false;
-      });
-      return;
-    }
     try {
-      final results = await _apiService.searchProducts(query);
-      setState(() {
-        _searchResults = results;
-        _isSearching = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isSearching = false;
-      });
+      final products = await _apiService.getProducts();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to search products: $e')),
-        );
+        setState(() {
+          _allProducts = products;
+          _filteredProducts = products;
+          _isLoadingProducts = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingProducts = false;
+          _productError = 'Failed to load products: $e';
+        });
       }
     }
   }
 
+  void _filterProducts(String query) {
+    if (query.trim().isEmpty) {
+      setState(() {
+        _filteredProducts = _allProducts;
+      });
+      return;
+    }
+    final q = query.toLowerCase();
+    setState(() {
+      _filteredProducts = _allProducts.where((p) {
+        return p.name.toLowerCase().contains(q) ||
+            p.partNumber.toLowerCase().contains(q);
+      }).toList();
+    });
+    // Also call API search for thoroughness (backend may have more fields)
+    _apiSearchProducts(query);
+  }
+
+  Future<void> _apiSearchProducts(String query) async {
+    if (query.trim().isEmpty) return;
+    try {
+      final results = await _apiService.searchProducts(query);
+      if (mounted && _searchController.text == query) {
+        // Merge API results with local filter (deduplicate by id)
+        final existingIds = _filteredProducts.map((p) => p.id).toSet();
+        final newItems = results.where((p) => !existingIds.contains(p.id)).toList();
+        if (newItems.isNotEmpty) {
+          setState(() {
+            _filteredProducts = [..._filteredProducts, ...newItems];
+          });
+        }
+      }
+    } catch (_) {
+      // Silent — local filter already shows results
+    }
+  }
+
   void _addItem(Product product) {
+    if (product.quantity <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('⚠️ ${product.name} is out of stock'),
+          backgroundColor: Colors.orange[700],
+        ),
+      );
+      return;
+    }
+    // Check for duplicate and merge quantity
+    final existingIndex = _items.indexWhere((i) => i.productId == product.id);
+    if (existingIndex != -1) {
+      setState(() {
+        _items[existingIndex].quantity += 1;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Quantity updated for ${product.name}')),
+      );
+      return;
+    }
     final customerPrice = _customerPrices[product.id.toString()];
     setState(() {
       _items.add(BillItem(
@@ -165,7 +230,6 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
         price: customerPrice ?? product.price,
         gstPercent: product.gstPercent,
       ));
-      _searchResults = [];
     });
   }
 
@@ -474,75 +538,242 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Add Products', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text('Add Products', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                              if (!_isLoadingProducts)
+                                Text(
+                                  '${_filteredProducts.length} product${_filteredProducts.length == 1 ? '' : 's'}',
+                                  style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                                ),
+                            ],
+                          ),
                           const SizedBox(height: 16),
                           Row(
                             children: [
                               Expanded(
                                 child: TextField(
+                                  controller: _searchController,
                                   decoration: InputDecoration(
-                                    hintText: 'Search product by name or part number...',
+                                    hintText: 'Search by name, part number...',
                                     prefixIcon: const Icon(Icons.search),
-                                    suffixIcon: _isSearching
-                                        ? const Padding(
-                                            padding: EdgeInsets.all(12.0),
-                                            child: CircularProgressIndicator(strokeWidth: 2),
+                                    suffixIcon: _searchController.text.isNotEmpty
+                                        ? IconButton(
+                                            icon: const Icon(Icons.clear),
+                                            onPressed: () {
+                                              _searchController.clear();
+                                              _filterProducts('');
+                                            },
                                           )
                                         : null,
+                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                                   ),
-                                  onChanged: _searchProducts,
+                                  onChanged: _filterProducts,
                                 ),
                               ),
                               const SizedBox(width: 8),
                               IconButton(
                                 icon: const Icon(Icons.qr_code_scanner, size: 28),
                                 color: Colors.blue,
+                                tooltip: 'Scan barcode',
                                 onPressed: () async {
                                   final barcode = await Navigator.push(
                                     context,
                                     MaterialPageRoute(builder: (context) => const BarcodeScannerScreen()),
                                   );
                                   if (barcode != null && mounted) {
-                                    await _searchProducts(barcode);
-                                    if (_searchResults.length == 1) {
-                                      _addItem(_searchResults.first);
-                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Added ${_searchResults.first.name}')));
-                                    } else if (_searchResults.isEmpty) {
-                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('No product found for $barcode')));
+                                    _searchController.text = barcode;
+                                    _filterProducts(barcode);
+                                    if (_filteredProducts.length == 1) {
+                                      _addItem(_filteredProducts.first);
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text('Added ${_filteredProducts.first.name}')),
+                                      );
+                                    } else if (_filteredProducts.isEmpty) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text('No product found for $barcode')),
+                                      );
                                     }
                                   }
                                 },
                               ),
                             ],
                           ),
-                          if (_searchResults.isNotEmpty) ...[
-                            const SizedBox(height: 12),
+                          const SizedBox(height: 12),
+                          // Product list area
+                          if (_isLoadingProducts)
+                            const Center(
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(vertical: 24.0),
+                                child: Column(
+                                  children: [
+                                    CircularProgressIndicator(),
+                                    SizedBox(height: 12),
+                                    Text('Loading products...', style: TextStyle(color: Colors.grey)),
+                                  ],
+                                ),
+                              ),
+                            )
+                          else if (_productError != null)
                             Container(
+                              padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                color: Colors.grey[100],
+                                color: Colors.red[50],
                                 borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: Colors.red[200]!),
+                              ),
+                              child: Column(
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(Icons.error_outline, color: Colors.red[700]),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          _productError!,
+                                          style: TextStyle(color: Colors.red[700], fontSize: 13),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                  ElevatedButton.icon(
+                                    onPressed: _loadProducts,
+                                    icon: const Icon(Icons.refresh, size: 16),
+                                    label: const Text('Retry'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.red[700],
+                                      foregroundColor: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          else if (_allProducts.isEmpty)
+                            Container(
+                              padding: const EdgeInsets.all(24),
+                              alignment: Alignment.center,
+                              child: Column(
+                                children: [
+                                  Icon(Icons.inventory_2_outlined, size: 48, color: Colors.grey[400]),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    'No products found',
+                                    style: TextStyle(color: Colors.grey[600], fontSize: 15),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Add products in the Products module first.',
+                                    style: TextStyle(color: Colors.grey[400], fontSize: 12),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              ),
+                            )
+                          else if (_filteredProducts.isEmpty)
+                            Container(
+                              padding: const EdgeInsets.all(24),
+                              alignment: Alignment.center,
+                              child: Column(
+                                children: [
+                                  Icon(Icons.search_off, size: 48, color: Colors.grey[400]),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    'No products match "${_searchController.text}"',
+                                    style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              ),
+                            )
+                          else
+                            Container(
+                              constraints: const BoxConstraints(maxHeight: 320),
+                              decoration: BoxDecoration(
+                                color: Colors.grey[50],
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: Colors.grey[200]!),
                               ),
                               child: ListView.separated(
                                 shrinkWrap: true,
                                 padding: EdgeInsets.zero,
-                                separatorBuilder: (context, index) => const Divider(height: 1),
-                                itemCount: _searchResults.length,
+                                separatorBuilder: (context, index) => Divider(height: 1, color: Colors.grey[200]),
+                                itemCount: _filteredProducts.length,
                                 itemBuilder: (context, index) {
-                                  final product = _searchResults[index];
+                                  final product = _filteredProducts[index];
                                   final customerPrice = _customerPrices[product.id.toString()];
+                                  final isOutOfStock = product.quantity <= 0;
                                   return ListTile(
-                                    title: Text(product.name),
-                                    subtitle: Text(product.partNumber),
-                                    trailing: Text(
-                                      '₹${(customerPrice ?? product.price).toStringAsFixed(2)}',
-                                      style: const TextStyle(fontWeight: FontWeight.bold),
+                                    onTap: isOutOfStock ? null : () => _addItem(product),
+                                    title: Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            product.name,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                              color: isOutOfStock ? Colors.grey : null,
+                                            ),
+                                          ),
+                                        ),
+                                        if (isOutOfStock)
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                            decoration: BoxDecoration(
+                                              color: Colors.red[100],
+                                              borderRadius: BorderRadius.circular(4),
+                                            ),
+                                            child: Text(
+                                              'Out of stock',
+                                              style: TextStyle(fontSize: 10, color: Colors.red[700], fontWeight: FontWeight.w600),
+                                            ),
+                                          ),
+                                      ],
                                     ),
-                                    onTap: () => _addItem(product),
+                                    subtitle: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        if (product.partNumber.isNotEmpty)
+                                          Text('SKU: ${product.partNumber}', style: const TextStyle(fontSize: 12)),
+                                        Row(
+                                          children: [
+                                            Text(
+                                              'Stock: ${product.quantity}',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: product.quantity <= product.lowStockThreshold
+                                                    ? Colors.orange[700]
+                                                    : Colors.green[700],
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            if (product.gstPercent > 0)
+                                              Text(
+                                                'GST: ${product.gstPercent}%',
+                                                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                                              ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                    trailing: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                          '₹${(customerPrice ?? product.price).toStringAsFixed(2)}',
+                                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                                        ),
+                                        if (!isOutOfStock)
+                                          Text('Tap to add', style: TextStyle(fontSize: 10, color: Colors.blue[400])),
+                                      ],
+                                    ),
                                   );
                                 },
                               ),
                             ),
-                          ],
                           const SizedBox(height: 16),
                           if (_items.isNotEmpty) ...[
                             const Text('Bill Items', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),

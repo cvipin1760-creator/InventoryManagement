@@ -194,6 +194,11 @@ class AuthProvider with ChangeNotifier {
 
   // Backward compatibility
   Future<void> logout() async {
-    await logoutCurrentAccount();
+    await logoutAllAccounts();
+    // Also wipe all remaining secure storage keys to ensure complete sign-out
+    try {
+      await _secureStorage.clearAll();
+    } catch (_) {}
+    notifyListeners();
   }
 }

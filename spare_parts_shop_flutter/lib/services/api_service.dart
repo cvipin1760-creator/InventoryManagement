@@ -1239,11 +1239,8 @@ class ApiService {
   Future<void> _clearStorageAndLogout() async {
     try {
       const storage = FlutterSecureStorage();
-      await storage.delete(key: AppConstants.storageKeyToken);
-      await storage.delete(key: 'role');
-      await storage.delete(key: 'userId');
-      await storage.delete(key: 'businessId');
-      await storage.delete(key: 'active_branch_id');
+      // Clear ALL secure storage keys (legacy and accounts-based)
+      await storage.deleteAll();
       final prefs = await SharedPreferences.getInstance();
       await prefs.clear();
     } catch (_) {}
