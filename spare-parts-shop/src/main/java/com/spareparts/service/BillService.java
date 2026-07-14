@@ -9,6 +9,8 @@ import com.itextpdf.layout.properties.TextAlignment;
 import com.spareparts.dto.BillItemRequest;
 import com.spareparts.dto.BillRequest;
 import com.spareparts.dto.DashboardStats;
+import com.spareparts.dto.EMIDto;
+import com.spareparts.dto.WarrantyItemDto;
 import com.spareparts.model.Bill;
 import com.spareparts.aspect.EnforceUsageLimit;
 import com.spareparts.aspect.UsageLimitType;
@@ -18,13 +20,20 @@ import com.spareparts.model.Payment;
 import com.spareparts.model.Product;
 import com.spareparts.model.Business;
 import com.spareparts.model.Branch;
+import com.spareparts.model.EMI;
+import com.spareparts.model.EMIInstallment;
+import com.spareparts.model.Warranty;
 import com.spareparts.repository.BillRepository;
 import com.spareparts.repository.CustomerRepository;
 import com.spareparts.repository.PaymentRepository;
+import com.spareparts.repository.EMIRepository;
+import com.spareparts.repository.EMIInstallmentRepository;
+import com.spareparts.repository.WarrantyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.io.ByteArrayOutputStream;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -61,6 +70,15 @@ public class BillService {
 
     @Autowired
     private com.spareparts.repository.BranchRepository branchRepository;
+
+    @Autowired
+    private EMIRepository emiRepository;
+
+    @Autowired
+    private EMIInstallmentRepository emiInstallmentRepository;
+
+    @Autowired
+    private WarrantyRepository warrantyRepository;
     
     public List<Bill> getAllBills() {
         Long businessId = com.spareparts.config.TenantContext.getBusinessId();
@@ -156,6 +174,7 @@ public class BillService {
         
         bill.setFinalAmount(finalAmount);
         bill.setBillDate(LocalDateTime.now());
+        bill.setPaymentMode(request.getPaymentMode() != null ? request.getPaymentMode() : "FULL");
  
         // Award Loyalty Points (1 point per 100 spent)
         int pointsEarned = (int) (finalAmount / 100);
@@ -163,6 +182,91 @@ public class BillService {
         customerService.updateCustomer(customer.getId(), customer);
 
         Bill savedBill = billRepository.save(bill);
+
+        // Create EMI if paymentMode is EMI
+        if ("EMI".equals(bill.getPaymentMode()) && request.getEmi() != null) {
+            EMIDto emiDto = request.getEmi();
+            EMI emi = new EMI();
+            emi.setBusiness(business);
+            emi.setBranch(bill.getBranch());
+            emi.setBill(savedBill);
+            emi.setCustomer(customer);
+            emi.setTotalAmount(finalAmount);
+            emi.setDownPayment(emiDto.getDownPayment() != null ? emiDto.getDownPayment() : 0.0);
+            
+            double loanAmount = finalAmount - emi.getDownPayment();
+            emi.setLoanAmount(loanAmount);
+            
+            int totalEmis = emiDto.getTotalEmis() != null ? emiDto.getTotalEmis() : 12;
+            emi.setTotalEmis(totalEmis);
+            emi.setInterestRate(emiDto.getInterestRate() != null ? emiDto.getInterestRate() : 0.0);
+            emi.setProcessingFee(emiDto.getProcessingFee() != null ? emiDto.getProcessingFee() : 0.0);
+            emi.setEmiNotes(emiDto.getEmiNotes());
+            emi.setEmisPaid(0);
+            emi.setEmisRemaining(totalEmis);
+            
+            double monthlyEmi;
+            if (emi.getInterestRate() > 0) {
+                double rate = emi.getInterestRate() / (12 * 100); // monthly rate
+                monthlyEmi = (loanAmount * rate * Math.pow(1 + rate, totalEmis)) / (Math.pow(1 + rate, totalEmis) - 1);
+            } else {
+                monthlyEmi = loanAmount / totalEmis;
+            }
+            emi.setEmiAmount(monthlyEmi);
+            emi.setRemainingAmount(loanAmount);
+            emi.setPaidAmount(0.0);
+            
+            LocalDate firstEmiDate = emiDto.getFirstEmiDate() != null ? emiDto.getFirstEmiDate() : LocalDate.now().plusMonths(1);
+            emi.setFirstEmiDate(firstEmiDate);
+            emi.setNextEmiDate(firstEmiDate);
+            
+            EMI savedEmi = emiRepository.save(emi);
+            
+            // Create EMI installments
+            List<EMIInstallment> installments = new ArrayList<>();
+            for (int i = 0; i < totalEmis; i++) {
+                EMIInstallment installment = new EMIInstallment();
+                installment.setBusiness(business);
+                installment.setBranch(bill.getBranch());
+                installment.setEmi(savedEmi);
+                installment.setInstallmentNumber(i + 1);
+                installment.setDueDate(firstEmiDate.plusMonths(i));
+                installment.setAmount(monthlyEmi);
+                installment.setStatus("PENDING");
+                installments.add(installment);
+            }
+            emiInstallmentRepository.saveAll(installments);
+        }
+
+        // Create warranties
+        if (request.getWarranties() != null && !request.getWarranties().isEmpty()) {
+            for (WarrantyItemDto warrantyDto : request.getWarranties()) {
+                Product product = productService.getProductById(warrantyDto.getProductId());
+                
+                Warranty warranty = new Warranty();
+                warranty.setBusiness(business);
+                warranty.setBranch(bill.getBranch());
+                warranty.setBill(savedBill);
+                warranty.setProduct(product);
+                warranty.setCustomer(customer);
+                warranty.setSerialNumber(warrantyDto.getSerialNumber());
+                warranty.setModelNumber(warrantyDto.getModelNumber());
+                warranty.setWarrantyType(warrantyDto.getWarrantyType() != null ? warrantyDto.getWarrantyType() : "NO_WARRANTY");
+                warranty.setWarrantyPeriodMonths(warrantyDto.getWarrantyPeriodMonths());
+                
+                LocalDate startDate = warrantyDto.getWarrantyStartDate() != null ? warrantyDto.getWarrantyStartDate() : LocalDate.now();
+                warranty.setWarrantyStartDate(startDate);
+                
+                if (warrantyDto.getWarrantyPeriodMonths() != null) {
+                    warranty.setWarrantyEndDate(startDate.plusMonths(warrantyDto.getWarrantyPeriodMonths()));
+                }
+                
+                warranty.setWarrantyNotes(warrantyDto.getWarrantyNotes());
+                warranty.setWarrantyTerms(warrantyDto.getWarrantyTerms());
+                
+                warrantyRepository.save(warranty);
+            }
+        }
         if (request.getPaidAmount() != null && request.getPaidAmount() > 0) {
             Payment payment = new Payment();
             payment.setBusiness(business);

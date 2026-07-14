@@ -54,9 +54,18 @@ public class Bill implements BelongsToBusiness {
     @Column(name = "gst_type")
     private String gstType;
     
+    @Column(name = "payment_mode")
+    private String paymentMode = "FULL"; // FULL, EMI
+    
     @Column(name = "bill_date")
     private LocalDateTime billDate = LocalDateTime.now();
     
     @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BillItem> items = new ArrayList<>();
+    
+    @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<EMI> emis = new ArrayList<>();
+    
+    @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Warranty> warranties = new ArrayList<>();
 }

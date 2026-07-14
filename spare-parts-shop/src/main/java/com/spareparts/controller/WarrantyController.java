@@ -54,4 +54,22 @@ public class WarrantyController {
             return ResponseEntity.ok(warrantyRepository.findByBusinessId(user.getBusiness().getId()));
         }
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Warranty> getWarrantyById(@PathVariable Long id, Authentication auth) {
+        Warranty warranty = warrantyRepository.findById(id).orElseThrow(() -> new RuntimeException("Warranty not found"));
+        User user = getAuthenticatedUser(auth);
+        
+        if ("CUSTOMER".equals(user.getRole())) {
+            Customer customer = getCustomerForUser(user);
+            if (!warranty.getCustomer().getId().equals(customer.getId())) {
+                throw new RuntimeException("Unauthorized");
+            }
+        } else {
+            if (!warranty.getBusiness().getId().equals(user.getBusiness().getId())) {
+                throw new RuntimeException("Unauthorized");
+            }
+        }
+        return ResponseEntity.ok(warranty);
+    }
 }

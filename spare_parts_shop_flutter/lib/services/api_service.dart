@@ -201,6 +201,7 @@ class ApiService {
         gstType: bill.gstType,
         gstAmount: bill.gstAmount,
         finalAmount: bill.finalAmount,
+        paymentMode: 'FULL',
       );
     }
 

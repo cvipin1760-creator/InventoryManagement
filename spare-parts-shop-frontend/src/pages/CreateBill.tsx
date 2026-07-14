@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
-import type { Customer, Product, BillItemRequest, CustomerBalance } from '../types'
+import type { Customer, Product, BillItemRequest, CustomerBalance, EMIDto, WarrantyItemDto } from '../types'
 import BarcodeScanner from '../components/BarcodeScanner'
 import './CreateBill.css'
 
@@ -23,6 +23,16 @@ export default function CreateBill() {
   const [gstType, setGstType] = useState<'INCLUDED' | 'EXCLUDED'>('INCLUDED')
   const [discount, setDiscount] = useState(0)
   const [paidAmount, setPaidAmount] = useState(0)
+  const [paymentMode, setPaymentMode] = useState<string>('FULL')
+  const [emi, setEmi] = useState<EMIDto>({
+    downPayment: 0,
+    totalEmis: 12,
+    interestRate: 0,
+    processingFee: 0,
+    firstEmiDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    emiNotes: ''
+  })
+  const [warranties, setWarranties] = useState<WarrantyItemDto[]>([])
 
   const [items, setItems] = useState<Array<{
     productId: number
@@ -162,6 +172,23 @@ const totalDiscount = lineDiscountTotal + percentDiscountAmount
   const previousRemaining = customerBalance?.remainingAmount ?? 0
   const remainingAfterBill = previousRemaining + finalAmount - paidAmount
 
+  // Calculate EMI values
+  const loanAmount = Math.max(0, finalAmount - emi.downPayment)
+  const monthlyEMI = (() => {
+    if (emi.interestRate && emi.interestRate > 0 && loanAmount > 0) {
+      const monthlyRate = emi.interestRate / (12 * 100)
+      if (monthlyRate > 0) {
+        return (
+          loanAmount *
+          monthlyRate *
+          Math.pow(1 + monthlyRate, emi.totalEmis) /
+          (Math.pow(1 + monthlyRate, emi.totalEmis) - 1)
+        )
+      }
+    }
+    return loanAmount > 0 ? loanAmount / emi.totalEmis : 0
+  })()
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -182,6 +209,18 @@ const totalDiscount = lineDiscountTotal + percentDiscountAmount
        discount: (i.price * i.quantity * i.discount) / 100,
       }))
 
+      // Prepare warranties (one per item, default NO WARRANTY)
+      const billWarranties = items.map(item => ({
+        productId: item.productId,
+        serialNumber: item.serialNumber,
+        modelNumber: item.product.partNumber,
+        warrantyType: 'NO_WARRANTY',
+        warrantyPeriodMonths: item.product.warrantyDays ? Math.floor(item.product.warrantyDays / 30) : undefined,
+        warrantyStartDate: new Date().toISOString().split('T')[0],
+        warrantyNotes: '',
+        warrantyTerms: ''
+      }))
+
       // Optimistic navigation: instantly take user to bills list
       // Backend cache will ensure the subsequent load is instant.
       api.createBill({
@@ -190,6 +229,9 @@ const totalDiscount = lineDiscountTotal + percentDiscountAmount
         discount,
         gstType,
         paidAmount,
+        paymentMode,
+        emi: paymentMode === 'EMI' ? emi : undefined,
+        warranties: billWarranties
       }).catch(err => {
          console.error('Failed to create bill:', err)
          // In a real app with a toast library, show an error here

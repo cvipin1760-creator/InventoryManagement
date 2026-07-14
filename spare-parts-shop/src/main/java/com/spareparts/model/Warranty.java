@@ -47,6 +47,9 @@ public class Warranty implements BelongsToBusiness {
     @Column(name = "model_number")
     private String modelNumber;
 
+    @Column(name = "warranty_type", nullable = false)
+    private String warrantyType = "NO_WARRANTY"; // NO_WARRANTY, MANUFACTURER, SELLER, EXTENDED, CUSTOM
+
     @Column(name = "warranty_start_date", nullable = false)
     private LocalDate warrantyStartDate;
 
@@ -55,6 +58,12 @@ public class Warranty implements BelongsToBusiness {
 
     @Column(name = "warranty_period_months")
     private Integer warrantyPeriodMonths;
+
+    @Column(name = "warranty_notes")
+    private String warrantyNotes;
+
+    @Column(name = "warranty_terms")
+    private String warrantyTerms;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();

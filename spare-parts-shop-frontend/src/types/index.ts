@@ -44,6 +44,58 @@ export interface BillItem {
   serialNumber?: string
 }
 
+export interface Warranty {
+  id: number
+  bill: Bill
+  product: Product
+  customer: Customer
+  serialNumber?: string
+  modelNumber?: string
+  warrantyType: string
+  warrantyStartDate: string
+  warrantyEndDate: string
+  warrantyPeriodMonths?: number
+  warrantyNotes?: string
+  warrantyTerms?: string
+  createdAt: string
+}
+
+export interface EMIInstallment {
+  id: number
+  emiId: number
+  installmentNumber: number
+  dueDate: string
+  amount: number
+  status: string
+  paidDate?: string
+  paymentMethod?: string
+  lateFee: number
+  remarks?: string
+  createdAt: string
+}
+
+export interface EMI {
+  id: number
+  bill: Bill
+  customer: Customer
+  totalAmount: number
+  downPayment: number
+  loanAmount: number
+  totalEmis: number
+  emiAmount: number
+  emisPaid: number
+  emisRemaining: number
+  paidAmount: number
+  remainingAmount: number
+  interestRate: number
+  processingFee: number
+  firstEmiDate: string
+  nextEmiDate: string
+  emiNotes?: string
+  installments?: EMIInstallment[]
+  createdAt: string
+}
+
 export interface Bill {
   id: number
   invoiceNumber: string
@@ -53,8 +105,11 @@ export interface Bill {
   discount: number
   finalAmount: number
   gstType: string
+  paymentMode: string
   billDate: string
   items: BillItem[]
+  emis?: EMI[]
+  warranties?: Warranty[]
 }
 
 export interface PurchaseItem {
@@ -90,12 +145,35 @@ export interface BillItemRequest {
   serialNumber?: string
 }
 
+export interface EMIDto {
+  downPayment: number
+  totalEmis: number
+  interestRate?: number
+  firstEmiDate?: string
+  processingFee?: number
+  emiNotes?: string
+}
+
+export interface WarrantyItemDto {
+  productId: number
+  serialNumber?: string
+  modelNumber?: string
+  warrantyType: string
+  warrantyPeriodMonths?: number
+  warrantyStartDate?: string
+  warrantyNotes?: string
+  warrantyTerms?: string
+}
+
 export interface BillRequest {
   customerId: number
   items: BillItemRequest[]
   discount?: number
   gstType: 'INCLUDED' | 'EXCLUDED'
   paidAmount?: number
+  paymentMode: string
+  emi?: EMIDto
+  warranties?: WarrantyItemDto[]
 }
 
 export type CustomerProductPrices = Record<string, number>

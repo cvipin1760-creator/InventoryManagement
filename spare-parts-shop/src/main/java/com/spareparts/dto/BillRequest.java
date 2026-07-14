@@ -14,4 +14,7 @@ public class BillRequest {
     private Double discount;
     private String gstType;
     private Double paidAmount;
+    private String paymentMode; // FULL, EMI
+    private EMIDto emi;
+    private List<WarrantyItemDto> warranties;
 }

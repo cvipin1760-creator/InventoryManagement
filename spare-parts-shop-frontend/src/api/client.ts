@@ -152,8 +152,11 @@ export const api = {
     request<void>(`/customers/${id}`, { method: 'DELETE' }),
   getCustomerProducts: () => request<import('../types').Product[]>('/customers/me/products'),
   getCustomerBills: () => request<import('../types').Bill[]>('/customers/me/bills'),
-  getWarranties: () => request<any[]>('/warranties'),
-  getEmis: () => request<any[]>('/emis'),
+  getWarranties: () => request<import('../types').Warranty[]>('/warranties'),
+  getWarranty: (id: number) => request<import('../types').Warranty>(`/warranties/${id}`),
+  getEmis: () => request<import('../types').EMI[]>('/emis'),
+  getEmi: (id: number) => request<import('../types').EMI>(`/emis/${id}`),
+  getEmiInstallments: (id: number) => request<import('../types').EMIInstallment[]>(`/emis/${id}/installments`),
   submitSupportTicket: (data: { subject: string; description: string }) => 
     request<any>('/support-tickets', {
       method: 'POST',

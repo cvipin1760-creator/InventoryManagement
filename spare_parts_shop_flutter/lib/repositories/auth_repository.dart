@@ -43,7 +43,7 @@ class AuthRepository {
 
   Future<bool> loginWithBiometrics() async {
     try {
-      final isAuthenticated = await _biometricService.authenticate('Authenticate to access StockPilot');
+      final isAuthenticated = await _biometricService.authenticate(reason: 'Authenticate to access StockPilot');
       return isAuthenticated;
     } catch (e) {
       rethrow;

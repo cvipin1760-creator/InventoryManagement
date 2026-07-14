@@ -8,6 +8,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "emis")
@@ -64,11 +66,23 @@ public class EMI implements BelongsToBusiness {
     @Column(name = "remaining_amount", nullable = false)
     private Double remainingAmount;
 
+    @Column(name = "interest_rate")
+    private Double interestRate = 0.0;
+
+    @Column(name = "processing_fee")
+    private Double processingFee = 0.0;
+
     @Column(name = "first_emi_date")
     private LocalDate firstEmiDate;
 
     @Column(name = "next_emi_date")
     private LocalDate nextEmiDate;
+
+    @Column(name = "emi_notes")
+    private String emiNotes;
+
+    @OneToMany(mappedBy = "emi", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<EMIInstallment> installments = new ArrayList<>();
 
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
