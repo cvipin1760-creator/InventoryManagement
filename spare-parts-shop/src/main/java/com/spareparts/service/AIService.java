@@ -28,7 +28,7 @@ public class AIService {
             return "AI feature is not configured. Please provide a GEMINI_API_KEY environment variable.";
         }
 
-        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + geminiApiKey;
+        String url = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=" + geminiApiKey;
 
         try {
             HttpHeaders headers = new HttpHeaders();
