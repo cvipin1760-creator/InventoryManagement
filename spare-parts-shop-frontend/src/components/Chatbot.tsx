@@ -129,7 +129,7 @@ const Chatbot: React.FC = () => {
                 display: 'flex',
                 flexDirection: 'column',
                 gap: 2,
-                backgroundColor: '#f8fafc'
+                backgroundColor: 'background.default'
               }}>
                 {messages.map((msg) => (
                   <Box
@@ -143,8 +143,8 @@ const Chatbot: React.FC = () => {
                       elevation={0}
                       sx={{
                         p: 1.5,
-                        backgroundColor: msg.sender === 'user' ? 'primary.main' : 'white',
-                        color: msg.sender === 'user' ? 'white' : 'text.primary',
+                        backgroundColor: msg.sender === 'user' ? 'primary.main' : 'background.paper',
+                        color: msg.sender === 'user' ? 'primary.contrastText' : 'text.primary',
                         borderRadius: 3,
                         borderTopRightRadius: msg.sender === 'user' ? 4 : 12,
                         borderTopLeftRadius: msg.sender === 'user' ? 12 : 4,
@@ -164,7 +164,7 @@ const Chatbot: React.FC = () => {
               </Box>
 
               {/* Input Area */}
-              <Box sx={{ p: 2, backgroundColor: 'white', borderTop: '1px solid #eee', display: 'flex', gap: 1 }}>
+              <Box sx={{ p: 2, backgroundColor: 'background.paper', borderTop: '1px solid', borderColor: 'divider', display: 'flex', gap: 1 }}>
                 <TextField
                   fullWidth
                   size="small"
