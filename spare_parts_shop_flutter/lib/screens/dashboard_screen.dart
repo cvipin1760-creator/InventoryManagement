@@ -206,8 +206,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 ),
               PopupMenuItem<dynamic>(
-                onTap: () {
-                  authProvider.logout();
+                onTap: () async {
+                  await authProvider.logout();
+                  if (mounted) {
+                    Navigator.pushAndRemoveUntil(context, '/', (route) => false);
+                  }
                 },
                 child: const ListTile(
                   leading: Icon(Icons.logout_outlined),

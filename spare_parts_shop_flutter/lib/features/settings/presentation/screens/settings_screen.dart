@@ -78,9 +78,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           child: Icon(Icons.add),
                         ),
                         title: const Text('Add Another Account'),
-                        onTap: () {
+                        onTap: () async {
                           Navigator.pop(context);
-                          authProvider.logoutCurrentAccount();
+                          await authProvider.logoutCurrentAccount();
+                          if (!authProvider.isAuthenticated && mounted) {
+                            Navigator.pushAndRemoveUntil(context, '/', (route) => false);
+                          }
                         },
                       );
                     }
@@ -449,10 +452,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 child: const Text('Cancel'),
                               ),
                               TextButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                  authProvider.logoutCurrentAccount();
-                                },
+                                  onPressed: () async {
+                                    Navigator.pop(context);
+                                    await authProvider.logoutCurrentAccount();
+                                    if (!authProvider.isAuthenticated && mounted) {
+                                      Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+                                    }
+                                  },
                                 child: const Text('Logout'),
                               ),
                             ],
@@ -476,10 +482,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 child: const Text('Cancel'),
                               ),
                               TextButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                  authProvider.logoutAllAccounts();
-                                },
+                                  onPressed: () async {
+                                    Navigator.pop(context);
+                                    await authProvider.logoutAllAccounts();
+                                    if (!authProvider.isAuthenticated && mounted) {
+                                      Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+                                    }
+                                  },
                                 child: const Text('Logout All'),
                               ),
                             ],

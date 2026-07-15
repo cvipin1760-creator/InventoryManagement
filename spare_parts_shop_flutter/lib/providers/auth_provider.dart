@@ -17,6 +17,7 @@ class AuthProvider with ChangeNotifier {
 
   List<AccountModel> get accounts => List.unmodifiable(_accounts);
   AccountModel? get activeAccount => _activeAccount;
+  AccountModel? get account => _activeAccount;
   SecuritySettingsModel get securitySettings => _securitySettings;
   bool get isLoading => _isLoading;
   bool get isAuthenticated => _activeAccount != null;

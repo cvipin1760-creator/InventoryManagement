@@ -17,6 +17,7 @@ import '../models/detailed_analytics_response.dart';
 import '../models/login_response.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'sqlite_service.dart';
+import 'secure_storage_service.dart';
 import '../core/exceptions/payment_required_exception.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart' show FlutterSecureStorage;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -40,8 +41,10 @@ class ApiService {
   }
 
   Future<Map<String, String>> _getHeaders() async {
-    final token = await _storage.read(key: AppConstants.storageKeyToken);
-    final branchId = await _storage.read(key: 'active_branch_id');
+    final secureStorageService = SecureStorageService();
+    final account = await secureStorageService.getActiveAccount();
+    final token = account?.token ?? await _storage.read(key: AppConstants.storageKeyToken);
+    final branchId = account?.branchId?.toString() ?? await _storage.read(key: 'active_branch_id');
     final headers = {'Content-Type': 'application/json'};
     if (token != null && token.isNotEmpty) {
       headers['Authorization'] = 'Bearer $token';
@@ -66,6 +69,22 @@ class ApiService {
       Uri.parse('$baseUrl/auth/init-admin'),
       headers: await _getHeaders(),
     );
+  }
+
+  Future<dynamic> get(String path) async {
+    final response = await _get(
+      Uri.parse('$baseUrl$path'),
+      headers: await _getHeaders(),
+    );
+
+    if (response.statusCode == 200) {
+      if (response.body.isEmpty) {
+        return null;
+      }
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to load data from $path');
+    }
   }
 
   Future<List<Customer>> getCustomers() async {
