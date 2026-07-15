@@ -9,6 +9,7 @@ public class CreateUserRequest {
     private String password;
     private String role;
     private Boolean enabled;
+    private java.util.Map<String, Boolean> permissions;
 
     // Optional fields for SaaS admin/business onboarding
     private String businessName;
