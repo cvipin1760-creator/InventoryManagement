@@ -31,7 +31,7 @@ const WARRANTY_DURATIONS = [
   { days: null, label: 'Custom' },
 ]
 
-const STEPS = [
+const ALL_STEPS = [
   { id: 'customer', label: 'Customer' },
   { id: 'products', label: 'Products' },
   { id: 'discounts', label: 'Discounts' },
@@ -47,6 +47,12 @@ export default function CreateBill() {
     if (!config || !config.modules) return false;
     return config.modules.some((m: any) => m.key === key && m.enabled);
   };
+
+  const availableSteps = ALL_STEPS.filter(step => {
+    if (step.id === 'warranty' && !hasModule('warranty')) return false;
+    return true;
+  });
+
   const [currentStep, setCurrentStep] = useState(0)
 
   const [customers, setCustomers] = useState<Customer[]>([])
@@ -279,7 +285,7 @@ export default function CreateBill() {
   const totalAmountPayable = monthlyEMI * emi.totalEmis + (emi.processingFee || 0)
 
   // Step navigation
-  const nextStep = () => setCurrentStep(Math.min(currentStep + 1, STEPS.length - 1))
+  const nextStep = () => setCurrentStep(Math.min(currentStep + 1, availableSteps.length - 1))
   const prevStep = () => setCurrentStep(Math.max(currentStep - 1, 0))
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -341,8 +347,9 @@ export default function CreateBill() {
 
   // Render step content
   const renderStepContent = () => {
-    switch (currentStep) {
-      case 0: // Customer
+    const stepId = availableSteps[currentStep]?.id;
+    switch (stepId) {
+      case 'customer':
         return (
           <div className="form-section">
             <div className="form-group">
@@ -379,7 +386,7 @@ export default function CreateBill() {
             )}
           </div>
         )
-      case 1: // Products
+      case 'products':
         return (
           <>
             <div className="product-search-section">
@@ -622,7 +629,7 @@ export default function CreateBill() {
             </table>
           </>
         )
-      case 2: // Discounts
+      case 'discounts':
         return (
           <div className="form-section">
             <div className="form-group">
@@ -675,7 +682,7 @@ export default function CreateBill() {
             </div>
           </div>
         )
-      case 3: // Payment Mode
+      case 'payment':
         return (
           <div className="form-section">
             <div className="form-group">
@@ -812,8 +819,7 @@ export default function CreateBill() {
             )}
           </div>
         )
-      case 4: // Warranty
-        if (!hasModule('warranty')) return null;
+      case 'warranty':
         return (
           <div className="item-warranty-section">
             <h3 style={{ marginBottom: '1rem' }}>Product Warranties</h3>
@@ -946,7 +952,7 @@ export default function CreateBill() {
             )}
           </div>
         )
-      case 5: // Review
+      case 'review':
         return (
           <div className="form-section">
             <h3 style={{ marginBottom: '1rem' }}>Review Bill</h3>
@@ -1057,7 +1063,7 @@ export default function CreateBill() {
 
       {/* Step Indicator */}
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem', padding: '0 1rem' }}>
-        {STEPS.map((step, idx) => (
+        {availableSteps.map((step, idx) => (
           <div key={step.id} style={{ flex: 1, textAlign: 'center' }}>
             <div 
               style={{ 
@@ -1094,7 +1100,7 @@ export default function CreateBill() {
                 Previous
               </button>
             )}
-            {currentStep < STEPS.length - 1 ? (
+            {currentStep < availableSteps.length - 1 ? (
               <button type="button" className="btn btn-primary" onClick={nextStep}>
                 Next
               </button>

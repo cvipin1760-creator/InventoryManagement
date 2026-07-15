@@ -88,26 +88,19 @@ const Sidebar = ({
       items.push({ label: 'Reports', path: '/reports', icon: <FileSpreadsheet size={20} /> });
       items.push({ label: 'Accounting Export', path: '/accounting-export', icon: <FileText size={20} /> });
       items.push({ label: 'Analytics', path: '/analytics', icon: <Activity size={20} /> });
-      items.push({ label: 'EMI', path: '/emis', icon: <IndianRupee size={20} /> });
-      items.push({ label: 'Warranty', path: '/warranties', icon: <Shield size={20} /> });
       items.push({ label: 'Support', path: '/support', icon: <Shield size={20} /> });
       items.push({ label: 'Audit Logs', path: '/audit-logs', icon: <History size={20} /> });
       items.push({ label: 'Settings', path: '/settings', icon: <Settings size={20} /> });
     } else if (userRole === 'ADMIN') {
       items.push({ label: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> });
-      if (hasModule('multiBranch')) {
-        items.push({ label: 'Branches', path: '/branches', icon: <Database size={20} /> });
+      if (hasModule('billing')) {
+        items.push({ label: 'Sales', path: '/bills', icon: <Receipt size={20} /> });
       }
+      items.push({ label: 'Customers', path: '/customers', icon: <Users size={20} /> });
       items.push({ label: 'Products', path: '/products', icon: <PackageOpen size={20} /> });
       items.push({ label: 'Stock Transfers', path: '/stock-transfers', icon: <Truck size={20} /> });
       if (hasModule('inventory')) {
         items.push({ label: 'Inventory Audit', path: '/audit', icon: <ClipboardList size={20} /> });
-      }
-      items.push({ label: 'Customers', path: '/customers', icon: <Users size={20} /> });
-      
-      // Dynamic Sales / Billing naming based on BillingType could be done later, default to Sales
-      if (hasModule('billing')) {
-        items.push({ label: 'Sales', path: '/bills', icon: <Receipt size={20} /> });
       }
       if (hasModule('emi')) {
         items.push({ label: 'EMI', path: '/emis', icon: <IndianRupee size={20} /> });
@@ -115,9 +108,11 @@ const Sidebar = ({
       if (hasModule('warranty')) {
         items.push({ label: 'Warranty', path: '/warranties', icon: <Shield size={20} /> });
       }
-      items.push({ label: 'Support Tickets', path: '/support-tickets', icon: <MessageSquare size={20} /> });
       items.push({ label: 'Purchases', path: '/purchases', icon: <ShoppingCart size={20} /> });
       items.push({ label: 'Purchase Orders', path: '/purchase-orders', icon: <Brain size={20} /> });
+      if (hasModule('multiBranch')) {
+        items.push({ label: 'Branches', path: '/branches', icon: <Database size={20} /> });
+      }
       if (hasModule('aiReports')) {
         items.push({ label: 'AI Forecast', path: '/predictive-analytics', icon: <TrendingUp size={20} /> });
       }
@@ -128,8 +123,7 @@ const Sidebar = ({
       if (hasModule('accounting')) {
         items.push({ label: 'Accounting Export', path: '/accounting-export', icon: <FileText size={20} /> });
       }
-      items.push({ label: 'Employees', path: '/users', icon: <Users size={20} /> });
-      items.push({ label: 'Settings', path: '/settings', icon: <Settings size={20} /> });
+      items.push({ label: 'Support Tickets', path: '/support-tickets', icon: <MessageSquare size={20} /> });
       items.push({ label: 'Employees', path: '/users', icon: <Users size={20} /> });
       items.push({ label: 'Settings', path: '/settings', icon: <Settings size={20} /> });
     } else if (userRole === 'EMPLOYEE') {
