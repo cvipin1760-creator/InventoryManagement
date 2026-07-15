@@ -28,7 +28,10 @@ public class SuperAdminController {
     private com.spareparts.repository.UserRepository userRepository;
 
     @Autowired
-    private com.spareparts.repository.FeaturePermissionsRepository featurePermissionsRepository;
+    private com.spareparts.repository.BusinessConfigurationRepository businessConfigurationRepository;
+
+    @Autowired
+    private com.spareparts.repository.BusinessTemplateRepository businessTemplateRepository;
 
     // ==================== Admin Management ====================
     @GetMapping("/admins")
@@ -59,20 +62,22 @@ public class SuperAdminController {
         business.setSubscriptionPlan(request.getSubscriptionPlan() != null ? request.getSubscriptionPlan() : "TRIAL");
         business = businessService.createBusiness(business);
 
-        // 2. Create and save FeaturePermissions
-        com.spareparts.model.FeaturePermissions fp = new com.spareparts.model.FeaturePermissions();
-        fp.setBusiness(business);
-        fp.setInventoryEnabled(true);
-        fp.setBillingEnabled(true);
-        fp.setGstEnabled(true);
-        fp.setReportsEnabled(true);
-
-        if (request.getPermissions() != null) {
-            fp.setEmiEnabled(request.getPermissions().getOrDefault("emiEnabled", false));
-            fp.setWarrantyEnabled(request.getPermissions().getOrDefault("warrantyEnabled", false));
-        }
-
-        featurePermissionsRepository.save(fp);
+        // 2. Create and save BusinessConfiguration
+        com.spareparts.model.BusinessConfiguration config = new com.spareparts.model.BusinessConfiguration();
+        config.setBusiness(business);
+        config.setBusinessType(request.getBusinessType() != null ? request.getBusinessType() : "Retail Store");
+        config.setBillingType(request.getBillingType() != null ? request.getBillingType() : "Standard Billing");
+        config.setCurrency(request.getCurrency() != null ? request.getCurrency() : "INR");
+        config.setTimezone(request.getTimezone() != null ? request.getTimezone() : "Asia/Kolkata");
+        config.setFinancialYear(request.getFinancialYear() != null ? request.getFinancialYear() : "April-March");
+        config.setModulesJson(request.getModulesJson() != null ? request.getModulesJson() : "[{\"key\":\"inventory\", \"enabled\":true}, {\"key\":\"billing\", \"enabled\":true}]");
+        config.setPermissionsJson(request.getPermissionsJson() != null ? request.getPermissionsJson() : "[]");
+        config.setInvoiceSettingsJson(request.getInvoiceSettingsJson() != null ? request.getInvoiceSettingsJson() : "{}");
+        config.setDashboardSettingsJson(request.getDashboardSettingsJson() != null ? request.getDashboardSettingsJson() : "{}");
+        config.setNotificationSettingsJson(request.getNotificationSettingsJson() != null ? request.getNotificationSettingsJson() : "{}");
+        config.setThemeJson(request.getThemeJson() != null ? request.getThemeJson() : "{}");
+        
+        businessConfigurationRepository.save(config);
 
         // 3. Create Admin User associated with the Business
         User admin = new User();
@@ -149,35 +154,36 @@ public class SuperAdminController {
         return businessService.toggleSubscriptionStatus(id, body.get("isActive"));
     }
 
-    // ==================== Feature Permissions ====================
-    @GetMapping("/businesses/{id}/features")
-    public com.spareparts.model.FeaturePermissions getFeaturePermissions(@PathVariable Long id) {
-        return featurePermissionsRepository.findByBusinessId(id)
-                .orElseThrow(() -> new RuntimeException("Feature permissions not found for business"));
+    // ==================== Configuration Management ====================
+    @GetMapping("/businesses/{id}/configuration")
+    public com.spareparts.model.BusinessConfiguration getBusinessConfiguration(@PathVariable Long id) {
+        return businessConfigurationRepository.findByBusinessId(id)
+                .orElseThrow(() -> new RuntimeException("Business configuration not found"));
     }
 
-    @PutMapping("/businesses/{id}/features")
-    public com.spareparts.model.FeaturePermissions updateFeaturePermissions(@PathVariable Long id, @RequestBody com.spareparts.model.FeaturePermissions features) {
-        com.spareparts.model.FeaturePermissions existing = featurePermissionsRepository.findByBusinessId(id)
-                .orElseThrow(() -> new RuntimeException("Feature permissions not found for business"));
+    @PutMapping("/businesses/{id}/configuration")
+    public com.spareparts.model.BusinessConfiguration updateBusinessConfiguration(@PathVariable Long id, @RequestBody com.spareparts.model.BusinessConfiguration configUpdate) {
+        com.spareparts.model.BusinessConfiguration existing = businessConfigurationRepository.findByBusinessId(id)
+                .orElseThrow(() -> new RuntimeException("Business configuration not found"));
         
-        existing.setInventoryEnabled(features.getInventoryEnabled());
-        existing.setBillingEnabled(features.getBillingEnabled());
-        existing.setWarrantyEnabled(features.getWarrantyEnabled());
-        existing.setEmiEnabled(features.getEmiEnabled());
-        existing.setGstEnabled(features.getGstEnabled());
-        existing.setCustomerPortalEnabled(features.getCustomerPortalEnabled());
-        existing.setReportsEnabled(features.getReportsEnabled());
-        existing.setWhatsappNotificationsEnabled(features.getWhatsappNotificationsEnabled());
-        existing.setSmsNotificationsEnabled(features.getSmsNotificationsEnabled());
-        existing.setMultiUserSupportEnabled(features.getMultiUserSupportEnabled());
-        existing.setEmployeeManagementEnabled(features.getEmployeeManagementEnabled());
-        existing.setMultiBranchEnabled(features.getMultiBranchEnabled());
-        existing.setWebSocketsEnabled(features.getWebSocketsEnabled());
-        existing.setAiAnalyticsEnabled(features.getAiAnalyticsEnabled());
-        existing.setAccountingExportEnabled(features.getAccountingExportEnabled());
-        existing.setMarketingEnabled(features.getMarketingEnabled());
+        existing.setBusinessType(configUpdate.getBusinessType());
+        existing.setBillingType(configUpdate.getBillingType());
+        existing.setCurrency(configUpdate.getCurrency());
+        existing.setTimezone(configUpdate.getTimezone());
+        existing.setFinancialYear(configUpdate.getFinancialYear());
+        existing.setModulesJson(configUpdate.getModulesJson());
+        existing.setPermissionsJson(configUpdate.getPermissionsJson());
+        existing.setInvoiceSettingsJson(configUpdate.getInvoiceSettingsJson());
+        existing.setDashboardSettingsJson(configUpdate.getDashboardSettingsJson());
+        existing.setNotificationSettingsJson(configUpdate.getNotificationSettingsJson());
+        existing.setThemeJson(configUpdate.getThemeJson());
         
-        return featurePermissionsRepository.save(existing);
+        return businessConfigurationRepository.save(existing);
+    }
+    
+    // ==================== Templates ====================
+    @GetMapping("/templates")
+    public List<com.spareparts.model.BusinessTemplate> getBusinessTemplates() {
+        return businessTemplateRepository.findAll();
     }
 }

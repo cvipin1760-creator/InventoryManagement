@@ -74,7 +74,7 @@ const LoginPage = () => {
             role: data.role as any,
             businessId: data.businessId,
           },
-          features: data.features,
+          configuration: data.configuration,
           token: data.token,
         }));
         navigate(from, { replace: true });
@@ -100,7 +100,7 @@ const LoginPage = () => {
             role: tempLoginData.role as any,
             businessId: tempLoginData.businessId,
           },
-          features: tempLoginData.features,
+          configuration: tempLoginData.configuration,
           token: tempLoginData.token,
         }));
         navigate(from, { replace: true });

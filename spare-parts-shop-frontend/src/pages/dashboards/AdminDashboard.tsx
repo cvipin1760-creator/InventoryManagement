@@ -111,10 +111,18 @@ const KPICard = ({
 
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../api/client';
+import { useAppSelector } from '../../store/hooks';
+import { selectConfiguration } from '../../store/slices/authSlice';
 
 const COLORS = ['#2563EB', '#10B981', '#F59E0B', '#EF4444'];
 
 const AdminDashboard = () => {
+  const config = useAppSelector(selectConfiguration);
+  const hasModule = (key: string) => {
+    if (!config || !config.modules) return false;
+    return config.modules.some((m: any) => m.key === key && m.enabled);
+  };
+
   const { data: stats, isLoading: loading } = useQuery({
     queryKey: ['admin-dashboard'],
     queryFn: api.getAdminDashboard
@@ -178,10 +186,13 @@ const AdminDashboard = () => {
       </Box>
 
       {/* EMI & Warranty KPIs */}
+      {(hasModule('emi') || hasModule('warranty')) && (
       <Box>
         <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>EMI & Warranty Overview</Typography>
         <Grid container spacing={3}>
-          <Grid item xs={12} sm={6} md={3}>
+          {hasModule('emi') && (
+            <>
+              <Grid item xs={12} sm={6} md={3}>
             <KPICard 
               title="Today's EMI Due" 
               value={stats?.todayEMIDue?.toString() || "0"} 
@@ -225,6 +236,9 @@ const AdminDashboard = () => {
               color="primary" 
             />
           </Grid>
+          </>)}
+          {hasModule('warranty') && (
+            <>
           <Grid item xs={12} sm={6} md={3}>
             <KPICard 
               title="Upcoming Warranty Expiry" 
@@ -269,8 +283,10 @@ const AdminDashboard = () => {
               color="warning" 
             />
           </Grid>
+          </>)}
         </Grid>
       </Box>
+      )}
 
       <Grid container spacing={3}>
         {/* 3. Financial & Customer Charts */}

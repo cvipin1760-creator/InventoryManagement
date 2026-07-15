@@ -8,27 +8,13 @@ export interface User {
   role: 'SUPER_ADMIN' | 'SUPER_MANAGER' | 'ADMIN' | 'EMPLOYEE' | 'CUSTOMER';
   businessId?: number;
   permissions?: string[];
-  features?: any;
-}
-
-export interface FeaturePermissions {
-  inventoryEnabled: boolean;
-  billingEnabled: boolean;
-  warrantyEnabled: boolean;
-  emiEnabled: boolean;
-  gstEnabled: boolean;
-  customerPortalEnabled: boolean;
-  reportsEnabled: boolean;
-  whatsappNotificationsEnabled: boolean;
-  smsNotificationsEnabled: boolean;
-  multiUserSupportEnabled: boolean;
-  employeeManagementEnabled: boolean;
+  configuration?: any;
 }
 
 interface AuthState {
   isAuthenticated: boolean;
   user: User | null;
-  features: FeaturePermissions | null;
+  configuration: any | null;
   token?: string | null;
 }
 
@@ -40,7 +26,7 @@ const initialState: AuthState = (() => {
   return {
     isAuthenticated: !!token && !!user,
     user,
-    features: null,
+    configuration: user?.configuration || null,
     token,
   };
 })();
@@ -53,23 +39,23 @@ const authSlice = createSlice({
       state: AuthState,
       action: PayloadAction<{
         user: User;
-        features?: FeaturePermissions;
+        configuration?: any;
         token?: string;
       }>
     ) => {
       state.isAuthenticated = true;
       state.user = action.payload.user;
-      state.features = action.payload.features || null;
+      state.configuration = action.payload.configuration || null;
       state.token = action.payload.token;
       if (action.payload.token) {
         localStorage.setItem('token', action.payload.token);
       }
-      localStorage.setItem('user', JSON.stringify(action.payload.user));
+      localStorage.setItem('user', JSON.stringify({ ...action.payload.user, configuration: action.payload.configuration }));
     },
     logout: (state: AuthState) => {
       state.isAuthenticated = false;
       state.user = null;
-      state.features = null;
+      state.configuration = null;
       state.token = null;
       localStorage.removeItem('token');
       localStorage.removeItem('user');
@@ -80,5 +66,5 @@ const authSlice = createSlice({
 export const { setCredentials, logout } = authSlice.actions;
 export const selectCurrentUser = (state: RootState) => state.auth.user;
 export const selectIsAuthenticated = (state: RootState) => state.auth.isAuthenticated;
-export const selectFeatures = (state: RootState) => state.auth.features;
+export const selectConfiguration = (state: RootState) => state.auth.configuration;
 export default authSlice.reducer;

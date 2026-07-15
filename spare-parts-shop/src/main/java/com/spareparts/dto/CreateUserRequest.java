@@ -17,5 +17,16 @@ public class CreateUserRequest {
     private String contactNumber;
     private String businessType;
     private String subscriptionPlan;
-    private java.util.Map<String, Boolean> permissions;
+    
+    // Configuration fields
+    private String billingType;
+    private String currency;
+    private String timezone;
+    private String financialYear;
+    private String modulesJson;
+    private String permissionsJson;
+    private String invoiceSettingsJson;
+    private String dashboardSettingsJson;
+    private String notificationSettingsJson;
+    private String themeJson;
 }

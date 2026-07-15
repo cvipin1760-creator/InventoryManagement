@@ -4,7 +4,7 @@ import { api } from '../api/client'
 import type { Customer, Product, BillItemRequest, CustomerBalance, EMIDto, WarrantyItemDto } from '../types'
 import BarcodeScanner from '../components/BarcodeScanner'
 import { useAppSelector } from '../store/hooks'
-import { selectFeatures } from '../store/slices/authSlice'
+import { selectConfiguration } from '../store/slices/authSlice'
 import './CreateBill.css'
 
 function formatCurrency(n: number) {
@@ -42,7 +42,11 @@ const STEPS = [
 
 export default function CreateBill() {
   const navigate = useNavigate()
-  const features = useAppSelector(selectFeatures)
+  const config = useAppSelector(selectConfiguration)
+  const hasModule = (key: string) => {
+    if (!config || !config.modules) return false;
+    return config.modules.some((m: any) => m.key === key && m.enabled);
+  };
   const [currentStep, setCurrentStep] = useState(0)
 
   const [customers, setCustomers] = useState<Customer[]>([])
@@ -687,7 +691,7 @@ export default function CreateBill() {
                   />
                   Full Payment
                 </label>
-                {features?.emiEnabled && (
+                {hasModule('emi') && (
                   <label className="radio-label">
                     <input
                       type="radio"
@@ -809,7 +813,7 @@ export default function CreateBill() {
           </div>
         )
       case 4: // Warranty
-        if (!features?.warrantyEnabled) return null;
+        if (!hasModule('warranty')) return null;
         return (
           <div className="item-warranty-section">
             <h3 style={{ marginBottom: '1rem' }}>Product Warranties</h3>

@@ -16,11 +16,7 @@ _$LoginResponseModelImpl _$$LoginResponseModelImplFromJson(
   businessId: (json['businessId'] as num?)?.toInt(),
   branchId: (json['branchId'] as num?)?.toInt(),
   mustChangePassword: json['mustChangePassword'] as bool?,
-  features: json['features'] == null
-      ? null
-      : FeaturePermissionsModel.fromJson(
-          json['features'] as Map<String, dynamic>,
-        ),
+  configuration: json['configuration'],
   message: json['message'] as String?,
 );
 
@@ -34,6 +30,6 @@ Map<String, dynamic> _$$LoginResponseModelImplToJson(
   'businessId': instance.businessId,
   'branchId': instance.branchId,
   'mustChangePassword': instance.mustChangePassword,
-  'features': instance.features,
+  'configuration': instance.configuration,
   'message': instance.message,
 };

@@ -14,7 +14,7 @@ class LoginResponseModel with _$LoginResponseModel {
     int? businessId,
     int? branchId,
     bool? mustChangePassword,
-    FeaturePermissionsModel? features,
+    dynamic configuration,
     String? message,
   }) = _LoginResponseModel;
 

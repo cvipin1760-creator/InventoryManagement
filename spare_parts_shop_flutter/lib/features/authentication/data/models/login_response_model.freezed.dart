@@ -28,7 +28,7 @@ mixin _$LoginResponseModel {
   int? get businessId => throw _privateConstructorUsedError;
   int? get branchId => throw _privateConstructorUsedError;
   bool? get mustChangePassword => throw _privateConstructorUsedError;
-  FeaturePermissionsModel? get features => throw _privateConstructorUsedError;
+  dynamic get configuration => throw _privateConstructorUsedError;
   String? get message => throw _privateConstructorUsedError;
 
   /// Serializes this LoginResponseModel to a JSON map.
@@ -56,11 +56,9 @@ abstract class $LoginResponseModelCopyWith<$Res> {
     int? businessId,
     int? branchId,
     bool? mustChangePassword,
-    FeaturePermissionsModel? features,
+    dynamic configuration,
     String? message,
   });
-
-  $FeaturePermissionsModelCopyWith<$Res>? get features;
 }
 
 /// @nodoc
@@ -85,7 +83,7 @@ class _$LoginResponseModelCopyWithImpl<$Res, $Val extends LoginResponseModel>
     Object? businessId = freezed,
     Object? branchId = freezed,
     Object? mustChangePassword = freezed,
-    Object? features = freezed,
+    Object? configuration = freezed,
     Object? message = freezed,
   }) {
     return _then(
@@ -118,10 +116,10 @@ class _$LoginResponseModelCopyWithImpl<$Res, $Val extends LoginResponseModel>
                 ? _value.mustChangePassword
                 : mustChangePassword // ignore: cast_nullable_to_non_nullable
                       as bool?,
-            features: freezed == features
-                ? _value.features
-                : features // ignore: cast_nullable_to_non_nullable
-                      as FeaturePermissionsModel?,
+            configuration: freezed == configuration
+                ? _value.configuration
+                : configuration // ignore: cast_nullable_to_non_nullable
+                      as dynamic,
             message: freezed == message
                 ? _value.message
                 : message // ignore: cast_nullable_to_non_nullable
@@ -129,20 +127,6 @@ class _$LoginResponseModelCopyWithImpl<$Res, $Val extends LoginResponseModel>
           )
           as $Val,
     );
-  }
-
-  /// Create a copy of LoginResponseModel
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $FeaturePermissionsModelCopyWith<$Res>? get features {
-    if (_value.features == null) {
-      return null;
-    }
-
-    return $FeaturePermissionsModelCopyWith<$Res>(_value.features!, (value) {
-      return _then(_value.copyWith(features: value) as $Val);
-    });
   }
 }
 
@@ -163,12 +147,9 @@ abstract class _$$LoginResponseModelImplCopyWith<$Res>
     int? businessId,
     int? branchId,
     bool? mustChangePassword,
-    FeaturePermissionsModel? features,
+    dynamic configuration,
     String? message,
   });
-
-  @override
-  $FeaturePermissionsModelCopyWith<$Res>? get features;
 }
 
 /// @nodoc
@@ -192,7 +173,7 @@ class __$$LoginResponseModelImplCopyWithImpl<$Res>
     Object? businessId = freezed,
     Object? branchId = freezed,
     Object? mustChangePassword = freezed,
-    Object? features = freezed,
+    Object? configuration = freezed,
     Object? message = freezed,
   }) {
     return _then(
@@ -225,10 +206,10 @@ class __$$LoginResponseModelImplCopyWithImpl<$Res>
             ? _value.mustChangePassword
             : mustChangePassword // ignore: cast_nullable_to_non_nullable
                   as bool?,
-        features: freezed == features
-            ? _value.features
-            : features // ignore: cast_nullable_to_non_nullable
-                  as FeaturePermissionsModel?,
+        configuration: freezed == configuration
+            ? _value.configuration
+            : configuration // ignore: cast_nullable_to_non_nullable
+                  as dynamic,
         message: freezed == message
             ? _value.message
             : message // ignore: cast_nullable_to_non_nullable
@@ -249,7 +230,7 @@ class _$LoginResponseModelImpl implements _LoginResponseModel {
     this.businessId,
     this.branchId,
     this.mustChangePassword,
-    this.features,
+    this.configuration,
     this.message,
   });
 
@@ -271,13 +252,13 @@ class _$LoginResponseModelImpl implements _LoginResponseModel {
   @override
   final bool? mustChangePassword;
   @override
-  final FeaturePermissionsModel? features;
+  final dynamic configuration;
   @override
   final String? message;
 
   @override
   String toString() {
-    return 'LoginResponseModel(userId: $userId, token: $token, username: $username, role: $role, businessId: $businessId, branchId: $branchId, mustChangePassword: $mustChangePassword, features: $features, message: $message)';
+    return 'LoginResponseModel(userId: $userId, token: $token, username: $username, role: $role, businessId: $businessId, branchId: $branchId, mustChangePassword: $mustChangePassword, configuration: $configuration, message: $message)';
   }
 
   @override
@@ -296,8 +277,10 @@ class _$LoginResponseModelImpl implements _LoginResponseModel {
                 other.branchId == branchId) &&
             (identical(other.mustChangePassword, mustChangePassword) ||
                 other.mustChangePassword == mustChangePassword) &&
-            (identical(other.features, features) ||
-                other.features == features) &&
+            const DeepCollectionEquality().equals(
+              other.configuration,
+              configuration,
+            ) &&
             (identical(other.message, message) || other.message == message));
   }
 
@@ -312,7 +295,7 @@ class _$LoginResponseModelImpl implements _LoginResponseModel {
     businessId,
     branchId,
     mustChangePassword,
-    features,
+    const DeepCollectionEquality().hash(configuration),
     message,
   );
 
@@ -342,7 +325,7 @@ abstract class _LoginResponseModel implements LoginResponseModel {
     final int? businessId,
     final int? branchId,
     final bool? mustChangePassword,
-    final FeaturePermissionsModel? features,
+    final dynamic configuration,
     final String? message,
   }) = _$LoginResponseModelImpl;
 
@@ -364,7 +347,7 @@ abstract class _LoginResponseModel implements LoginResponseModel {
   @override
   bool? get mustChangePassword;
   @override
-  FeaturePermissionsModel? get features;
+  dynamic get configuration;
   @override
   String? get message;
 

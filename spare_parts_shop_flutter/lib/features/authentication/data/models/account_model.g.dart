@@ -20,7 +20,7 @@ _$AccountModelImpl _$$AccountModelImplFromJson(Map<String, dynamic> json) =>
       userId: (json['userId'] as num?)?.toInt(),
       businessId: (json['businessId'] as num?)?.toInt(),
       branchId: (json['branchId'] as num?)?.toInt(),
-      features: json['features'],
+      configuration: json['configuration'],
       profilePhotoUrl: json['profilePhotoUrl'] as String?,
       isActive: json['isActive'] as bool? ?? false,
     );
@@ -39,7 +39,7 @@ Map<String, dynamic> _$$AccountModelImplToJson(_$AccountModelImpl instance) =>
       'userId': instance.userId,
       'businessId': instance.businessId,
       'branchId': instance.branchId,
-      'features': instance.features,
+      'configuration': instance.configuration,
       'profilePhotoUrl': instance.profilePhotoUrl,
       'isActive': instance.isActive,
     };

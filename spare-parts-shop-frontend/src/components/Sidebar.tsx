@@ -45,7 +45,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppSelector } from '../store/hooks';
-import { selectCurrentUser } from '../store/slices/authSlice';
+import { selectCurrentUser, selectConfiguration } from '../store/slices/authSlice';
 
 const drawerWidth = 280;
 const drawerWidthCollapsed = 80;
@@ -71,6 +71,12 @@ const Sidebar = ({
     const items: MenuItem[] = [];
 
     const userRole = user?.role as string | undefined;
+    const config = useAppSelector(selectConfiguration);
+    const hasModule = (key: string) => {
+      if (!config || !config.modules) return false;
+      return config.modules.some((m: any) => m.key === key && m.enabled);
+    };
+
     if (userRole === 'SUPER_ADMIN' || userRole === 'SUPER_MANAGER') {
       items.push({ label: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> });
       items.push({ label: 'Admins', path: '/admins', icon: <UserPlus size={20} /> });
@@ -89,38 +95,48 @@ const Sidebar = ({
       items.push({ label: 'Settings', path: '/settings', icon: <Settings size={20} /> });
     } else if (userRole === 'ADMIN') {
       items.push({ label: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> });
-      if (user?.features?.multiBranchEnabled) {
+      if (hasModule('multiBranch')) {
         items.push({ label: 'Branches', path: '/branches', icon: <Database size={20} /> });
       }
       items.push({ label: 'Products', path: '/products', icon: <PackageOpen size={20} /> });
       items.push({ label: 'Stock Transfers', path: '/stock-transfers', icon: <Truck size={20} /> });
-      if (user?.features?.inventoryEnabled) {
+      if (hasModule('inventory')) {
         items.push({ label: 'Inventory Audit', path: '/audit', icon: <ClipboardList size={20} /> });
       }
       items.push({ label: 'Customers', path: '/customers', icon: <Users size={20} /> });
-      items.push({ label: 'Sales', path: '/bills', icon: <Receipt size={20} /> });
-      if (user?.features?.emiEnabled) {
+      
+      // Dynamic Sales / Billing naming based on BillingType could be done later, default to Sales
+      if (hasModule('billing')) {
+        items.push({ label: 'Sales', path: '/bills', icon: <Receipt size={20} /> });
+      }
+      if (hasModule('emi')) {
         items.push({ label: 'EMI', path: '/emis', icon: <IndianRupee size={20} /> });
       }
-      if (user?.features?.warrantyEnabled) {
+      if (hasModule('warranty')) {
         items.push({ label: 'Warranty', path: '/warranties', icon: <Shield size={20} /> });
       }
       items.push({ label: 'Support Tickets', path: '/support-tickets', icon: <MessageSquare size={20} /> });
       items.push({ label: 'Purchases', path: '/purchases', icon: <ShoppingCart size={20} /> });
       items.push({ label: 'Purchase Orders', path: '/purchase-orders', icon: <Brain size={20} /> });
-      items.push({ label: 'AI Forecast', path: '/predictive-analytics', icon: <TrendingUp size={20} /> });
+      if (hasModule('aiReports')) {
+        items.push({ label: 'AI Forecast', path: '/predictive-analytics', icon: <TrendingUp size={20} /> });
+      }
       items.push({ label: 'Reports', path: '/reports', icon: <FileSpreadsheet size={20} /> });
-      items.push({ label: 'Marketing', path: '/marketing', icon: <MessageSquare size={20} /> });
-      if (user?.features?.accountingExportEnabled) {
+      if (hasModule('marketing')) {
+        items.push({ label: 'Marketing', path: '/marketing', icon: <MessageSquare size={20} /> });
+      }
+      if (hasModule('accounting')) {
         items.push({ label: 'Accounting Export', path: '/accounting-export', icon: <FileText size={20} /> });
       }
+      items.push({ label: 'Employees', path: '/users', icon: <Users size={20} /> });
+      items.push({ label: 'Settings', path: '/settings', icon: <Settings size={20} /> });
       items.push({ label: 'Employees', path: '/users', icon: <Users size={20} /> });
       items.push({ label: 'Settings', path: '/settings', icon: <Settings size={20} /> });
     } else if (userRole === 'EMPLOYEE') {
       const perms = user?.permissions || [];
       items.push({ label: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> });
       if (perms.includes('products')) items.push({ label: 'Products', path: '/products', icon: <PackageOpen size={20} /> });
-      if (user?.features?.inventoryEnabled) {
+      if (hasModule('inventory')) {
         items.push({ label: 'Inventory Audit', path: '/audit', icon: <ClipboardList size={20} /> });
       }
       if (perms.includes('customers')) items.push({ label: 'Customers', path: '/customers', icon: <Users size={20} /> });

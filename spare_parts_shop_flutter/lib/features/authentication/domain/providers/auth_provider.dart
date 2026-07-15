@@ -104,16 +104,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
       if (loginResponse.branchId != null) {
         await _storage.write(key: 'branchId', value: loginResponse.branchId.toString());
       }
-      if (loginResponse.features != null) {
+      if (loginResponse.configuration != null) {
         await _storage.write(
-          key: 'features',
-          value: jsonEncode(loginResponse.features!.toJson()),
+          key: 'configuration',
+          value: jsonEncode(loginResponse.configuration),
         );
       }
       
       state = AuthAuthenticated(
         user: user,
-        features: loginResponse.features,
+        configuration: loginResponse.configuration,
       );
     } on DioException catch (e) {
       String errorMessage = 'An error occurred. Please try again.';
@@ -145,7 +145,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     await _storage.delete(key: 'role');
     await _storage.delete(key: 'businessId');
     await _storage.delete(key: 'branchId');
-    await _storage.delete(key: 'features');
+    await _storage.delete(key: 'configuration');
     state = AuthUnauthenticated();
   }
 }
@@ -158,11 +158,11 @@ class AuthLoading extends AuthState {}
 
 class AuthAuthenticated extends AuthState {
   final UserModel user;
-  final FeaturePermissionsModel? features;
+  final dynamic configuration;
 
   AuthAuthenticated({
     required this.user,
-    this.features,
+    this.configuration,
   });
 }
 

@@ -33,7 +33,7 @@ mixin _$AccountModel {
   int? get userId => throw _privateConstructorUsedError;
   int? get businessId => throw _privateConstructorUsedError;
   int? get branchId => throw _privateConstructorUsedError;
-  dynamic get features => throw _privateConstructorUsedError;
+  dynamic get configuration => throw _privateConstructorUsedError;
   String? get profilePhotoUrl => throw _privateConstructorUsedError;
   bool get isActive => throw _privateConstructorUsedError;
 
@@ -67,7 +67,7 @@ abstract class $AccountModelCopyWith<$Res> {
     int? userId,
     int? businessId,
     int? branchId,
-    dynamic features,
+    dynamic configuration,
     String? profilePhotoUrl,
     bool isActive,
   });
@@ -100,7 +100,7 @@ class _$AccountModelCopyWithImpl<$Res, $Val extends AccountModel>
     Object? userId = freezed,
     Object? businessId = freezed,
     Object? branchId = freezed,
-    Object? features = freezed,
+    Object? configuration = freezed,
     Object? profilePhotoUrl = freezed,
     Object? isActive = null,
   }) {
@@ -154,9 +154,9 @@ class _$AccountModelCopyWithImpl<$Res, $Val extends AccountModel>
                 ? _value.branchId
                 : branchId // ignore: cast_nullable_to_non_nullable
                       as int?,
-            features: freezed == features
-                ? _value.features
-                : features // ignore: cast_nullable_to_non_nullable
+            configuration: freezed == configuration
+                ? _value.configuration
+                : configuration // ignore: cast_nullable_to_non_nullable
                       as dynamic,
             profilePhotoUrl: freezed == profilePhotoUrl
                 ? _value.profilePhotoUrl
@@ -194,7 +194,7 @@ abstract class _$$AccountModelImplCopyWith<$Res>
     int? userId,
     int? businessId,
     int? branchId,
-    dynamic features,
+    dynamic configuration,
     String? profilePhotoUrl,
     bool isActive,
   });
@@ -226,7 +226,7 @@ class __$$AccountModelImplCopyWithImpl<$Res>
     Object? userId = freezed,
     Object? businessId = freezed,
     Object? branchId = freezed,
-    Object? features = freezed,
+    Object? configuration = freezed,
     Object? profilePhotoUrl = freezed,
     Object? isActive = null,
   }) {
@@ -280,9 +280,9 @@ class __$$AccountModelImplCopyWithImpl<$Res>
             ? _value.branchId
             : branchId // ignore: cast_nullable_to_non_nullable
                   as int?,
-        features: freezed == features
-            ? _value.features
-            : features // ignore: cast_nullable_to_non_nullable
+        configuration: freezed == configuration
+            ? _value.configuration
+            : configuration // ignore: cast_nullable_to_non_nullable
                   as dynamic,
         profilePhotoUrl: freezed == profilePhotoUrl
             ? _value.profilePhotoUrl
@@ -313,7 +313,7 @@ class _$AccountModelImpl implements _AccountModel {
     this.userId,
     this.businessId,
     this.branchId,
-    this.features,
+    this.configuration,
     this.profilePhotoUrl,
     this.isActive = false,
   });
@@ -346,7 +346,7 @@ class _$AccountModelImpl implements _AccountModel {
   @override
   final int? branchId;
   @override
-  final dynamic features;
+  final dynamic configuration;
   @override
   final String? profilePhotoUrl;
   @override
@@ -355,7 +355,7 @@ class _$AccountModelImpl implements _AccountModel {
 
   @override
   String toString() {
-    return 'AccountModel(id: $id, token: $token, refreshToken: $refreshToken, username: $username, email: $email, phone: $phone, name: $name, businessName: $businessName, role: $role, userId: $userId, businessId: $businessId, branchId: $branchId, features: $features, profilePhotoUrl: $profilePhotoUrl, isActive: $isActive)';
+    return 'AccountModel(id: $id, token: $token, refreshToken: $refreshToken, username: $username, email: $email, phone: $phone, name: $name, businessName: $businessName, role: $role, userId: $userId, businessId: $businessId, branchId: $branchId, configuration: $configuration, profilePhotoUrl: $profilePhotoUrl, isActive: $isActive)';
   }
 
   @override
@@ -380,7 +380,10 @@ class _$AccountModelImpl implements _AccountModel {
                 other.businessId == businessId) &&
             (identical(other.branchId, branchId) ||
                 other.branchId == branchId) &&
-            const DeepCollectionEquality().equals(other.features, features) &&
+            const DeepCollectionEquality().equals(
+              other.configuration,
+              configuration,
+            ) &&
             (identical(other.profilePhotoUrl, profilePhotoUrl) ||
                 other.profilePhotoUrl == profilePhotoUrl) &&
             (identical(other.isActive, isActive) ||
@@ -403,7 +406,7 @@ class _$AccountModelImpl implements _AccountModel {
     userId,
     businessId,
     branchId,
-    const DeepCollectionEquality().hash(features),
+    const DeepCollectionEquality().hash(configuration),
     profilePhotoUrl,
     isActive,
   );
@@ -436,7 +439,7 @@ abstract class _AccountModel implements AccountModel {
     final int? userId,
     final int? businessId,
     final int? branchId,
-    final dynamic features,
+    final dynamic configuration,
     final String? profilePhotoUrl,
     final bool isActive,
   }) = _$AccountModelImpl;
@@ -469,7 +472,7 @@ abstract class _AccountModel implements AccountModel {
   @override
   int? get branchId;
   @override
-  dynamic get features;
+  dynamic get configuration;
   @override
   String? get profilePhotoUrl;
   @override

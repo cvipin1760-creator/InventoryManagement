@@ -233,8 +233,9 @@ class _ProductsScreenState extends State<ProductsScreen> {
     final warrantyDaysController = TextEditingController(text: product?.warrantyDays?.toString() ?? '');
 
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final bool warrantyEnabled = authProvider.account?.features?['warrantyEnabled'] ?? false;
-
+    final config = authProvider.account?.configuration;
+    final modules = config != null && config['modules'] != null ? config['modules'] as List<dynamic> : [];
+    final bool warrantyEnabled = modules.any((m) => m['key'] == 'warranty' && m['enabled'] == true);
     await showDialog(
       context: context,
       builder: (context) => AlertDialog(

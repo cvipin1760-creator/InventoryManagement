@@ -76,6 +76,13 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
   bool _billCreated = false;
   String? _invoiceNumber;
 
+  bool _hasModule(String key) {
+    final config = Provider.of<AuthProvider>(context, listen: false).account?.configuration;
+    if (config == null || config['modules'] == null) return false;
+    final modules = config['modules'] as List<dynamic>;
+    return modules.any((m) => m['key'] == key && m['enabled'] == true);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -498,7 +505,7 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
                           const SizedBox(height: 16),
                           Row(
                             children: [
-                              if (Provider.of<AuthProvider>(context, listen: false).account?.features?['emiEnabled'] == true)
+                              if (_hasModule('emi'))
                                 Expanded(
                                   child: DropdownButtonFormField<String>(
                                     value: _paymentMode,
@@ -511,7 +518,7 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
                                     onChanged: (v) => setState(() => _paymentMode = v!),
                                   ),
                                 ),
-                              if (Provider.of<AuthProvider>(context, listen: false).account?.features?['emiEnabled'] == true)
+                              if (_hasModule('emi'))
                                 const SizedBox(width: 16),
                               Expanded(
                                 child: TextFormField(

@@ -30,7 +30,7 @@ class AuthProvider with ChangeNotifier {
   int? get userId => _activeAccount?.userId;
   int? get businessId => _activeAccount?.businessId;
   int? get branchId => _activeAccount?.branchId;
-  dynamic get features => _activeAccount?.features;
+  dynamic get configuration => _activeAccount?.configuration;
   bool get isSuperAdmin => role == 'SUPER_ADMIN' || role == 'SUPER_MANAGER';
   bool get isAdmin => role == 'ADMIN' || username == 'admin' || isSuperAdmin;
 
@@ -75,7 +75,7 @@ class AuthProvider with ChangeNotifier {
         userId: response.userId,
         businessId: response.businessId,
         branchId: response.branchId,
-        features: response.features,
+        configuration: response.configuration,
         isActive: true,
       );
 

@@ -6,10 +6,10 @@ import com.spareparts.dto.LoginResponse;
 import com.spareparts.dto.RegisterRequest;
 import com.spareparts.dto.VerifyOtpRequest;
 import com.spareparts.model.Business;
-import com.spareparts.model.FeaturePermissions;
+import com.spareparts.model.BusinessConfiguration;
 import com.spareparts.model.User;
 import com.spareparts.repository.BusinessRepository;
-import com.spareparts.repository.FeaturePermissionsRepository;
+import com.spareparts.repository.BusinessConfigurationRepository;
 import com.spareparts.repository.UserRepository;
 import com.spareparts.aspect.EnforceUsageLimit;
 import com.spareparts.aspect.UsageLimitType;
@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class AuthService {
@@ -29,7 +30,7 @@ public class AuthService {
     private BusinessRepository businessRepository;
     
     @Autowired
-    private FeaturePermissionsRepository featurePermissionsRepository;
+    private BusinessConfigurationRepository businessConfigurationRepository;
 
     @Autowired
     private EmailService emailService;
@@ -55,28 +56,28 @@ public class AuthService {
             throw new RuntimeException("Invalid credentials");
         }
         
-        LoginResponse.FeaturePermissionsDto featuresDto = null;
+        LoginResponse.BusinessConfigurationDto configDto = null;
         if (user.getBusiness() != null) {
-            FeaturePermissions fp = featurePermissionsRepository.findByBusinessId(user.getBusiness().getId()).orElse(null);
-            if (fp != null) {
-                featuresDto = new LoginResponse.FeaturePermissionsDto(
-                        fp.getInventoryEnabled(),
-                        fp.getBillingEnabled(),
-                        fp.getWarrantyEnabled(),
-                        fp.getEmiEnabled(),
-                        fp.getGstEnabled(),
-                        fp.getCustomerPortalEnabled(),
-                        fp.getReportsEnabled(),
-                        fp.getWhatsappNotificationsEnabled(),
-                        fp.getSmsNotificationsEnabled(),
-                        fp.getMultiUserSupportEnabled(),
-                        fp.getEmployeeManagementEnabled(),
-                        fp.getMultiBranchEnabled(),
-                        fp.getWebSocketsEnabled(),
-                        fp.getAiAnalyticsEnabled(),
-                        fp.getAccountingExportEnabled(),
-                        fp.getMarketingEnabled()
-                );
+            BusinessConfiguration config = businessConfigurationRepository.findByBusinessId(user.getBusiness().getId()).orElse(null);
+            if (config != null) {
+                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                try {
+                    configDto = new LoginResponse.BusinessConfigurationDto(
+                            config.getBusinessType(),
+                            config.getBillingType(),
+                            config.getCurrency(),
+                            config.getTimezone(),
+                            config.getFinancialYear(),
+                            config.getModulesJson() != null ? mapper.readValue(config.getModulesJson(), new com.fasterxml.jackson.core.type.TypeReference<List<Map<String, Object>>>(){}) : null,
+                            config.getPermissionsJson() != null ? mapper.readValue(config.getPermissionsJson(), new com.fasterxml.jackson.core.type.TypeReference<List<Map<String, Object>>>(){}) : null,
+                            config.getInvoiceSettingsJson() != null ? mapper.readValue(config.getInvoiceSettingsJson(), new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>(){}) : null,
+                            config.getDashboardSettingsJson() != null ? mapper.readValue(config.getDashboardSettingsJson(), new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>(){}) : null,
+                            config.getNotificationSettingsJson() != null ? mapper.readValue(config.getNotificationSettingsJson(), new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>(){}) : null,
+                            config.getThemeJson() != null ? mapper.readValue(config.getThemeJson(), new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>(){}) : null
+                    );
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
 
@@ -91,7 +92,7 @@ public class AuthService {
                 user.getBusiness() != null ? user.getBusiness().getId() : null, 
                 user.getBranch() != null ? user.getBranch().getId() : null,
                 Boolean.FALSE.equals(user.getPasswordChanged()),
-                featuresDto, "Login successful");
+                configDto, "Login successful");
         response.setToken(token);
         response.setPermissions(user.getPermissions());
         return response;
@@ -273,28 +274,28 @@ public class AuthService {
             }
         }
         
-        LoginResponse.FeaturePermissionsDto featuresDto = null;
+        LoginResponse.BusinessConfigurationDto configDto = null;
         if (existing.getBusiness() != null) {
-            FeaturePermissions fp = featurePermissionsRepository.findByBusinessId(existing.getBusiness().getId()).orElse(null);
-            if (fp != null) {
-                featuresDto = new LoginResponse.FeaturePermissionsDto(
-                        fp.getInventoryEnabled(),
-                        fp.getBillingEnabled(),
-                        fp.getWarrantyEnabled(),
-                        fp.getEmiEnabled(),
-                        fp.getGstEnabled(),
-                        fp.getCustomerPortalEnabled(),
-                        fp.getReportsEnabled(),
-                        fp.getWhatsappNotificationsEnabled(),
-                        fp.getSmsNotificationsEnabled(),
-                        fp.getMultiUserSupportEnabled(),
-                        fp.getEmployeeManagementEnabled(),
-                        fp.getMultiBranchEnabled(),
-                        fp.getWebSocketsEnabled(),
-                        fp.getAiAnalyticsEnabled(),
-                        fp.getAccountingExportEnabled(),
-                        fp.getMarketingEnabled()
-                );
+            BusinessConfiguration config = businessConfigurationRepository.findByBusinessId(existing.getBusiness().getId()).orElse(null);
+            if (config != null) {
+                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                try {
+                    configDto = new LoginResponse.BusinessConfigurationDto(
+                            config.getBusinessType(),
+                            config.getBillingType(),
+                            config.getCurrency(),
+                            config.getTimezone(),
+                            config.getFinancialYear(),
+                            config.getModulesJson() != null ? mapper.readValue(config.getModulesJson(), new com.fasterxml.jackson.core.type.TypeReference<List<Map<String, Object>>>(){}) : null,
+                            config.getPermissionsJson() != null ? mapper.readValue(config.getPermissionsJson(), new com.fasterxml.jackson.core.type.TypeReference<List<Map<String, Object>>>(){}) : null,
+                            config.getInvoiceSettingsJson() != null ? mapper.readValue(config.getInvoiceSettingsJson(), new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>(){}) : null,
+                            config.getDashboardSettingsJson() != null ? mapper.readValue(config.getDashboardSettingsJson(), new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>(){}) : null,
+                            config.getNotificationSettingsJson() != null ? mapper.readValue(config.getNotificationSettingsJson(), new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>(){}) : null,
+                            config.getThemeJson() != null ? mapper.readValue(config.getThemeJson(), new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>(){}) : null
+                    );
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
         
@@ -309,7 +310,7 @@ public class AuthService {
                 existing.getBusiness() != null ? existing.getBusiness().getId() : null, 
                 existing.getBranch() != null ? existing.getBranch().getId() : null,
                 Boolean.FALSE.equals(existing.getPasswordChanged()),
-                featuresDto, "Login successful");
+                configDto, "Login successful");
         response.setToken(token);
         response.setPermissions(existing.getPermissions());
         return response;
@@ -369,14 +370,14 @@ public class AuthService {
             business.setContactNumber("1234567890");
             business = businessRepository.save(business);
             
-            // Create default feature permissions
-            FeaturePermissions fp = new FeaturePermissions();
-            fp.setBusiness(business);
-            fp.setInventoryEnabled(true);
-            fp.setBillingEnabled(true);
-            fp.setGstEnabled(true);
-            fp.setReportsEnabled(true);
-            featurePermissionsRepository.save(fp);
+            // Create default BusinessConfiguration
+            BusinessConfiguration config = new BusinessConfiguration();
+            config.setBusiness(business);
+            config.setBusinessType("Retail Store");
+            config.setBillingType("Standard Billing");
+            String defaultModules = "[{\"key\":\"inventory\", \"enabled\":true}, {\"key\":\"billing\", \"enabled\":true}]";
+            config.setModulesJson(defaultModules);
+            businessConfigurationRepository.save(config);
             
             admin.setBusiness(business);
         } else if (admin.getEnabled() == null) {

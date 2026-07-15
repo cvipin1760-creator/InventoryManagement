@@ -18,7 +18,7 @@ class AccountModel with _$AccountModel {
     int? userId,
     int? businessId,
     int? branchId,
-    dynamic features,
+    dynamic configuration,
     String? profilePhotoUrl,
     @Default(false) bool isActive,
   }) = _AccountModel;
