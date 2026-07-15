@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Box, Fab, Paper, Typography, IconButton, TextField, Button, CircularProgress } from '@mui/material';
 import { MessageCircle, X, Send, Bot } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { api } from '../api/client';
 
 interface ChatMessage {
   id: string;
@@ -48,17 +49,28 @@ const Chatbot: React.FC = () => {
     setInput('');
     setIsLoading(true);
 
-    // Mock AI response for now
-    setTimeout(() => {
-      const botMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        sender: 'bot',
-        text: 'This is a mock AI response. The backend integration for the AI module is currently under development in Phase 6.',
-        timestamp: new Date()
-      };
-      setMessages(prev => [...prev, botMessage]);
-      setIsLoading(false);
-    }, 1000);
+    api.sendChatMessage(input)
+      .then(res => {
+        const botMessage: ChatMessage = {
+          id: (Date.now() + 1).toString(),
+          sender: 'bot',
+          text: res.response || 'I am sorry, I do not have a response right now.',
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, botMessage]);
+      })
+      .catch(err => {
+        const botMessage: ChatMessage = {
+          id: (Date.now() + 1).toString(),
+          sender: 'bot',
+          text: 'Error communicating with AI service.',
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, botMessage]);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   };
 
   return (

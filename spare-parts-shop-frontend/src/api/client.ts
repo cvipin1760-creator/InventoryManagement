@@ -443,4 +443,11 @@ export const api = {
   markAsRead: (id: number) => request<any>(`/notifications/${id}/read`, { method: 'PUT' }),
   sendNotification: (payload: { title: string; message: string; sendToAll?: boolean; userIds?: number[] }) =>
     request<string>('/notifications/send', { method: 'POST', body: JSON.stringify(payload) }),
+
+  // AI Assistant
+  sendChatMessage: (message: string) =>
+    request<{response: string}>('/ai/chat', {
+      method: 'POST',
+      body: JSON.stringify({ message }),
+    }),
 }
