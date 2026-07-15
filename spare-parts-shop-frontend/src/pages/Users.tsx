@@ -78,13 +78,11 @@ export default function Users() {
     setLoading(true);
     Promise.all([
       api.getUsers(),
-      axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/roles`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      }).catch(() => ({ data: [] }))
+      api.getRoles().catch(() => [])
     ])
-      .then(([usersData, rolesRes]) => {
+      .then(([usersData, rolesData]) => {
         setUsers(usersData);
-        setCustomRoles(rolesRes.data);
+        setCustomRoles(rolesData);
       })
       .catch((e) => showToast(e instanceof Error ? e.message : String(e), 'error'))
       .finally(() => setLoading(false));

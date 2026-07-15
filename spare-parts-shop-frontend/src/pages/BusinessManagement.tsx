@@ -136,14 +136,14 @@ const BusinessManagement: React.FC = () => {
 
   // Fetch Features Query
   const fetchFeatures = async (businessId: number) => {
-    const res = await apiClient.get(`/super-manager/businesses/${businessId}/features`);
+    const res = await apiClient.get(`/super-manager/businesses/${businessId}/configuration`);
     return res.data;
   };
 
   // Update Features mutation
   const updateFeaturesMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: typeof featureData }) => {
-      const res = await apiClient.put(`/super-manager/businesses/${id}/features`, data);
+      const res = await apiClient.put(`/super-manager/businesses/${id}/configuration`, data);
       return res.data;
     },
     onSuccess: () => {

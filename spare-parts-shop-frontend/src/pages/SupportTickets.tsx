@@ -19,11 +19,7 @@ const SupportTickets = () => {
   const { data: tickets = [], isLoading, error } = useQuery({
     queryKey: ['supportTickets'],
     queryFn: async () => {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/support-tickets`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-      });
-      if (!response.ok) throw new Error('Failed to fetch support tickets');
-      return response.json();
+      return await api.getSupportTickets();
     },
   });
 

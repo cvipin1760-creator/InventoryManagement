@@ -26,9 +26,7 @@ import {
   IconButton
 } from '@mui/material';
 import { Plus, Edit, Trash2, Copy } from 'lucide-react';
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+import { api } from '../api/client';
 
 interface CustomRole {
   id: number;
@@ -63,10 +61,8 @@ export default function RoleManagement() {
 
   const fetchRoles = async () => {
     try {
-      const response = await axios.get(`${API_URL}/roles`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
-      setRoles(response.data);
+      const response = await api.getRoles();
+      setRoles(response);
     } catch (error) {
       console.error('Error fetching roles:', error);
     }
@@ -114,13 +110,9 @@ export default function RoleManagement() {
 
     try {
       if (editingRole) {
-        await axios.put(`${API_URL}/roles/${editingRole.id}`, payload, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        });
+        await api.updateRole(editingRole.id, payload);
       } else {
-        await axios.post(`${API_URL}/roles`, payload, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        });
+        await api.createRole(payload);
       }
       handleClose();
       fetchRoles();
@@ -133,9 +125,7 @@ export default function RoleManagement() {
   const handleDelete = async (id: number) => {
     if (!window.confirm('Are you sure you want to delete this role?')) return;
     try {
-      await axios.delete(`${API_URL}/roles/${id}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
+      await api.deleteRole(id);
       fetchRoles();
     } catch (error) {
       console.error('Error deleting role:', error);
@@ -151,9 +141,7 @@ export default function RoleManagement() {
         icon: role.icon,
         permissionsJson: role.permissionsJson
       };
-      await axios.post(`${API_URL}/roles`, payload, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
+      await api.createRole(payload);
       fetchRoles();
     } catch (error) {
       console.error('Error cloning role:', error);

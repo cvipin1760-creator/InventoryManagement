@@ -118,6 +118,10 @@ export const api = {
     request<string>(`/auth/users/${id}/status?enabled=${enabled}`, { method: 'PUT' }),
   initAdmin: () =>
     request<string>('/auth/init-admin', { method: 'POST' }),
+  getRoles: () => request<any[]>('/roles'),
+  createRole: (data: any) => request<any>('/roles', { method: 'POST', body: JSON.stringify(data) }),
+  updateRole: (id: number, data: any) => request<any>(`/roles/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteRole: (id: number) => request<void>(`/roles/${id}`, { method: 'DELETE' }),
   ssoGoogle: (idToken: string) =>
     request<import('../types').LoginResponse>('/auth/sso/google', {
       method: 'POST',
@@ -157,8 +161,9 @@ export const api = {
   getEmis: () => request<import('../types').EMI[]>('/emis'),
   getEmi: (id: number) => request<import('../types').EMI>(`/emis/${id}`),
   getEmiInstallments: (id: number) => request<import('../types').EMIInstallment[]>(`/emis/${id}/installments`),
+  getSupportTickets: () => request<import('../types').SupportTicket[]>('/support-tickets'),
   submitSupportTicket: (data: { subject: string; description: string }) => 
-    request<any>('/support-tickets', {
+    request<import('../types').SupportTicket>('/support-tickets', {
       method: 'POST',
       body: JSON.stringify(data),
     }),
@@ -434,6 +439,13 @@ export const api = {
     request<any>(`/super-admin/businesses/${id}/subscription/status`, {
       method: 'PUT',
       body: JSON.stringify({ isActive }),
+    }),
+  getBusinessConfiguration: (id: number) =>
+    request<any>(`/super-manager/businesses/${id}/configuration`),
+  updateBusinessConfiguration: (id: number, data: any) =>
+    request<any>(`/super-manager/businesses/${id}/configuration`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
     }),
 
   // Notifications
