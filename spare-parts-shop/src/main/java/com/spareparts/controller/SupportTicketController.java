@@ -51,8 +51,10 @@ public class SupportTicketController {
         if ("CUSTOMER".equals(user.getRole())) {
             Customer customer = getCustomerForUser(user);
             return ResponseEntity.ok(supportTicketRepository.findByCustomerId(customer.getId()));
-        } else {
+        } else if (user.getBusiness() != null) {
             return ResponseEntity.ok(supportTicketRepository.findByBusinessId(user.getBusiness().getId()));
+        } else {
+            return ResponseEntity.ok(supportTicketRepository.findAll());
         }
     }
 

@@ -55,8 +55,10 @@ public class EMIController {
         if ("CUSTOMER".equals(user.getRole())) {
             Customer customer = getCustomerForUser(user);
             return ResponseEntity.ok(emiRepository.findByCustomerId(customer.getId()));
-        } else {
+        } else if (user.getBusiness() != null) {
             return ResponseEntity.ok(emiRepository.findByBusinessId(user.getBusiness().getId()));
+        } else {
+            return ResponseEntity.ok(emiRepository.findAll());
         }
     }
 
@@ -70,7 +72,7 @@ public class EMIController {
             if (!emi.getCustomer().getId().equals(customer.getId())) {
                 throw new RuntimeException("Unauthorized");
             }
-        } else {
+        } else if (user.getBusiness() != null) {
             if (!emi.getBusiness().getId().equals(user.getBusiness().getId())) {
                 throw new RuntimeException("Unauthorized");
             }
@@ -88,7 +90,7 @@ public class EMIController {
             if (!emi.getCustomer().getId().equals(customer.getId())) {
                 throw new RuntimeException("Unauthorized");
             }
-        } else {
+        } else if (user.getBusiness() != null) {
             if (!emi.getBusiness().getId().equals(user.getBusiness().getId())) {
                 throw new RuntimeException("Unauthorized");
             }

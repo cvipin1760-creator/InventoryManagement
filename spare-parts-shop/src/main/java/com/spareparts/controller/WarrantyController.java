@@ -50,8 +50,10 @@ public class WarrantyController {
         if ("CUSTOMER".equals(user.getRole())) {
             Customer customer = getCustomerForUser(user);
             return ResponseEntity.ok(warrantyRepository.findByCustomerId(customer.getId()));
-        } else {
+        } else if (user.getBusiness() != null) {
             return ResponseEntity.ok(warrantyRepository.findByBusinessId(user.getBusiness().getId()));
+        } else {
+            return ResponseEntity.ok(warrantyRepository.findAll());
         }
     }
 
@@ -65,7 +67,7 @@ public class WarrantyController {
             if (!warranty.getCustomer().getId().equals(customer.getId())) {
                 throw new RuntimeException("Unauthorized");
             }
-        } else {
+        } else if (user.getBusiness() != null) {
             if (!warranty.getBusiness().getId().equals(user.getBusiness().getId())) {
                 throw new RuntimeException("Unauthorized");
             }
