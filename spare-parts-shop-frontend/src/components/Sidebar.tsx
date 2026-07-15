@@ -66,12 +66,12 @@ const Sidebar = ({
 }) => {
   const location = useLocation();
   const user = useAppSelector(selectCurrentUser);
+  const config = useAppSelector(selectConfiguration);
 
   const menuItems = useMemo(() => {
     const items: MenuItem[] = [];
 
     const userRole = user?.role as string | undefined;
-    const config = useAppSelector(selectConfiguration);
     const hasModule = (key: string) => {
       if (!config || !config.modules) return false;
       return config.modules.some((m: any) => m.key === key && m.enabled);
