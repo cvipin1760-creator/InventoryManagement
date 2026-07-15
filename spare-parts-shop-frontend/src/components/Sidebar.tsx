@@ -73,15 +73,13 @@ const Sidebar = ({
 
     const userRole = user?.role as string | undefined;
     const hasModule = (moduleKey: string) => {
-      if (!config?.modulesJson) return false;
-      try {
-        const modules = typeof config.modulesJson === 'string' 
-          ? JSON.parse(config.modulesJson) 
-          : config.modulesJson;
-        return modules.some((m: any) => m.key === moduleKey && m.enabled);
-      } catch (e) {
-        return false;
+      if (!config?.modules) return false;
+      
+      const modules = config.modules;
+      if (Array.isArray(modules)) {
+        return modules.some((m: any) => m.key === moduleKey && m.enabled === true);
       }
+      return false;
     };
 
     if (userRole === 'SUPER_ADMIN' || userRole === 'SUPER_MANAGER') {
