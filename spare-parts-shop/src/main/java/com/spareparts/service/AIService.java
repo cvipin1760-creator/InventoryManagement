@@ -19,6 +19,9 @@ public class AIService {
 
     @Value("${gemini.api.key:}")
     private String geminiApiKey;
+    
+    @Value("${gemini.api.url:https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent}")
+    private String geminiApiUrl;
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -28,7 +31,7 @@ public class AIService {
             return "AI feature is not configured. Please provide a GEMINI_API_KEY environment variable.";
         }
 
-        String url = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=" + geminiApiKey;
+        String url = geminiApiUrl + "?key=" + geminiApiKey;
 
         try {
             HttpHeaders headers = new HttpHeaders();

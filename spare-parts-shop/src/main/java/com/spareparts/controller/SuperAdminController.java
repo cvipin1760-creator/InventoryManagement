@@ -32,6 +32,9 @@ public class SuperAdminController {
 
     @Autowired
     private com.spareparts.repository.BusinessTemplateRepository businessTemplateRepository;
+    
+    @Autowired
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
     // ==================== Admin Management ====================
     @GetMapping("/admins")
@@ -45,10 +48,10 @@ public class SuperAdminController {
     public User createAdmin(@RequestBody CreateUserRequest request) {
         // Check if username or email already exists first
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
-            throw new RuntimeException("Username already exists");
+            throw new IllegalArgumentException("Username already exists");
         }
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already exists");
+            throw new IllegalArgumentException("Email already exists");
         }
 
         // 1. Create and save Business
@@ -83,7 +86,7 @@ public class SuperAdminController {
         User admin = new User();
         admin.setUsername(request.getUsername());
         admin.setEmail(request.getEmail());
-        admin.setPassword(request.getPassword());
+        admin.setPassword(passwordEncoder.encode(request.getPassword()));
         admin.setRole("ADMIN");
         admin.setEnabled(request.getEnabled() != null ? request.getEnabled() : true);
         admin.setBusiness(business);
