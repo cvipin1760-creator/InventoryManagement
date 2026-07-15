@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import client from '../api/client';
+import { api as client } from '../api/client';
 import { 
   PackageOpen, ChevronLeft, Search, FileText, Download, Share2, 
   IndianRupee, Calendar
@@ -15,7 +15,7 @@ const CustomerPurchases = () => {
   useEffect(() => {
     const fetchPurchases = async () => {
       try {
-        const response = await client.get('/customer-portal/purchases');
+        const response = await client.get<any>('/customer-portal/purchases');
         setPurchases(response.data);
       } catch (err) {
         console.error('Failed to load purchases', err);

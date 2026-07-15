@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../store/hooks';
-import { loginUser } from '../store/slices/authSlice';
+import { setCredentials } from '../store/slices/authSlice';
+import { authApi } from '../api/authApi';
 import { PackageOpen, Lock, User, Key, ArrowRight } from 'lucide-react';
 
 const CustomerLogin = () => {
@@ -18,20 +19,22 @@ const CustomerLogin = () => {
     setLoading(true);
 
     try {
-      const resultAction = await dispatch(loginUser({ username: identifier, password }));
-      if (loginUser.fulfilled.match(resultAction)) {
-        if (resultAction.payload.role === 'CUSTOMER') {
-          navigate('/customer-dashboard');
-        } else {
-          // If a non-customer logs in here, redirect them to admin
-          navigate('/dashboard');
-        }
+      const response = await authApi.login({ username: identifier, password });
+      dispatch(setCredentials({
+        user: {
+          id: response.userId ?? 0,
+          username: response.username,
+          role: response.role as any,
+          businessId: response.businessId,
+          configuration: response.configuration,
+        },
+        token: response.token,
+      }));
+      
+      if (response.role === 'CUSTOMER') {
+        navigate('/customer-dashboard');
       } else {
-        if (resultAction.payload) {
-          setError(resultAction.payload as string);
-        } else {
-          setError('Invalid credentials');
-        }
+        navigate('/dashboard');
       }
     } catch (err: any) {
       setError(err.message || 'Login failed');

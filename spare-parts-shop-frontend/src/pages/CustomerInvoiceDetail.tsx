@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
-import client from '../api/client';
+import { api as client } from '../api/client';
 import { ChevronLeft, Download, Printer, ShieldCheck } from 'lucide-react';
 
 const CustomerInvoiceDetail = () => {
@@ -13,7 +13,7 @@ const CustomerInvoiceDetail = () => {
   useEffect(() => {
     const fetchBill = async () => {
       try {
-        const response = await client.get(`/customer-portal/purchases/${id}`);
+        const response = await client.get<any>(`/customer-portal/purchases/${id}`);
         setBill(response.data);
       } catch (err) {
         console.error('Failed to load invoice', err);

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../store/hooks';
 import { logout } from '../store/slices/authSlice';
-import client from '../api/client';
+import { api as client } from '../api/client';
 import { 
   LogOut, PackageOpen, Shield, IndianRupee, Wallet, 
   Gift, Bell, ChevronRight, FileText, Wrench, HeadphonesIcon 
@@ -17,7 +17,7 @@ const CustomerDashboard = () => {
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const response = await client.get('/customer-portal/dashboard');
+        const response = await client.get<any>('/customer-portal/dashboard');
         setData(response.data);
       } catch (err) {
         console.error('Failed to load customer dashboard', err);
