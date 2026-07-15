@@ -73,21 +73,34 @@ public class AuthService {
         LoginResponse.BusinessConfigurationDto configDto = null;
         if (user.getBusiness() != null) {
             BusinessConfiguration config = businessConfigurationRepository.findByBusinessId(user.getBusiness().getId()).orElse(null);
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            String defaultModules = "[{\"key\":\"inventory\",\"enabled\":true},{\"key\":\"emi\",\"enabled\":true},{\"key\":\"warranty\",\"enabled\":true},{\"key\":\"accounting\",\"enabled\":true}]";
+            
             if (config != null) {
-                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
                 try {
+                    String modulesStr = config.getModulesJson() != null ? config.getModulesJson() : defaultModules;
                     configDto = new LoginResponse.BusinessConfigurationDto(
                             config.getBusinessType(),
                             config.getBillingType(),
                             config.getCurrency(),
                             config.getTimezone(),
                             config.getFinancialYear(),
-                            config.getModulesJson() != null ? mapper.readValue(config.getModulesJson(), new com.fasterxml.jackson.core.type.TypeReference<List<Map<String, Object>>>(){}) : null,
+                            mapper.readValue(modulesStr, new com.fasterxml.jackson.core.type.TypeReference<List<Map<String, Object>>>(){}),
                             config.getPermissionsJson() != null ? mapper.readValue(config.getPermissionsJson(), new com.fasterxml.jackson.core.type.TypeReference<List<Map<String, Object>>>(){}) : null,
                             config.getInvoiceSettingsJson() != null ? mapper.readValue(config.getInvoiceSettingsJson(), new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>(){}) : null,
                             config.getDashboardSettingsJson() != null ? mapper.readValue(config.getDashboardSettingsJson(), new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>(){}) : null,
                             config.getNotificationSettingsJson() != null ? mapper.readValue(config.getNotificationSettingsJson(), new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>(){}) : null,
                             config.getThemeJson() != null ? mapper.readValue(config.getThemeJson(), new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>(){}) : null
+                    );
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else {
+                try {
+                    configDto = new LoginResponse.BusinessConfigurationDto(
+                            "RETAIL", "REGULAR", "INR", "Asia/Kolkata", "April-March",
+                            mapper.readValue(defaultModules, new com.fasterxml.jackson.core.type.TypeReference<List<Map<String, Object>>>(){}),
+                            null, null, null, null, null
                     );
                 } catch (Exception e) {
                     e.printStackTrace();
