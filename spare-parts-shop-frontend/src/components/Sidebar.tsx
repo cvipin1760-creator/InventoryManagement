@@ -142,7 +142,6 @@ const Sidebar = ({
         items.push({ label: 'Inventory Audit', path: '/audit', icon: <ClipboardList size={20} /> });
       }
       if (perms.includes('customers')) items.push({ label: 'Customers', path: '/customers', icon: <Users size={20} /> });
-      if (perms.includes('customers')) items.push({ label: 'Customers', path: '/customers', icon: <Users size={20} /> });
       if (perms.includes('bills')) items.push({ label: 'Sales', path: '/bills', icon: <Receipt size={20} /> });
       if (hasModule('emi') && (perms.includes('EMI_VIEW') || perms.includes('emi'))) {
         items.push({ label: 'EMI', path: '/emis', icon: <IndianRupee size={20} /> });
@@ -158,7 +157,7 @@ const Sidebar = ({
     }
 
     return items;
-  }, [user?.role]);
+  }, [user?.role, config]);
 
   const visibleMenuItems = menuItems.filter((item) => 
     !item.roles || (user && item.roles.includes(user.role))
