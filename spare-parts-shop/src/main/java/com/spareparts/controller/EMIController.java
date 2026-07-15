@@ -15,9 +15,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
 @RestController
 @RequestMapping("/api/emis")
 @CrossOrigin(origins = "*")
+@PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN') or hasAuthority('EMI_VIEW') or hasRole('CUSTOMER')")
 public class EMIController {
 
     @Autowired

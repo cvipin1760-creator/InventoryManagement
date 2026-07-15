@@ -37,15 +37,24 @@ public class JwtUtil {
     }
 
     public Long extractUserId(String token) {
-        return extractClaim(token, claims -> claims.get("userId", Long.class));
+        return extractClaim(token, claims -> {
+            Number num = claims.get("userId", Number.class);
+            return num != null ? num.longValue() : null;
+        });
     }
 
     public Long extractBusinessId(String token) {
-        return extractClaim(token, claims -> claims.get("businessId", Long.class));
+        return extractClaim(token, claims -> {
+            Number num = claims.get("businessId", Number.class);
+            return num != null ? num.longValue() : null;
+        });
     }
 
     public Long extractBranchId(String token) {
-        return extractClaim(token, claims -> claims.get("branchId", Long.class));
+        return extractClaim(token, claims -> {
+            Number num = claims.get("branchId", Number.class);
+            return num != null ? num.longValue() : null;
+        });
     }
 
     public String extractRole(String token) {

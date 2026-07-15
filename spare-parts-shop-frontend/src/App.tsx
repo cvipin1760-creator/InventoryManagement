@@ -43,6 +43,7 @@ import B2bShop from './pages/B2bShop';
 import Audit from './pages/Audit'
 import Emis from './pages/Emis';
 import SupportTickets from './pages/SupportTickets';
+import RoleManagement from './pages/RoleManagement';
 
 
 // Protected Route component
@@ -112,6 +113,11 @@ const App = () => {
         <Route path="admins" element={
           <RoleGuard allowedRoles={['SUPER_ADMIN']}>
             <AdminManagement />
+          </RoleGuard>
+        } />
+        <Route path="roles" element={
+          <RoleGuard allowedRoles={['ADMIN', 'SUPER_ADMIN']}>
+            <RoleManagement />
           </RoleGuard>
         } />
         <Route path="payment-settings" element={

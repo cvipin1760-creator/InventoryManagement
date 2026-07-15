@@ -21,6 +21,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired
+    private com.spareparts.repository.UserRepository userRepository;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
@@ -63,11 +66,33 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     BranchContext.setBranchId(branchId);
                 }
 
+                java.util.List<org.springframework.security.core.authority.SimpleGrantedAuthority> authorities = new java.util.ArrayList<>();
+                authorities.add(new SimpleGrantedAuthority("ROLE_" + role));
+                
+                Long userId = jwtUtil.extractUserId(jwt);
+                if (userId != null) {
+                    com.spareparts.model.User user = userRepository.findById(userId).orElse(null);
+                    if (user != null) {
+                        if (user.getPermissions() != null) {
+                            user.getPermissions().forEach(p -> authorities.add(new SimpleGrantedAuthority(p)));
+                        }
+                        if (user.getCustomRole() != null && user.getCustomRole().getPermissionsJson() != null) {
+                            try {
+                                java.util.List<String> rolePerms = new com.fasterxml.jackson.databind.ObjectMapper()
+                                    .readValue(user.getCustomRole().getPermissionsJson(), new com.fasterxml.jackson.core.type.TypeReference<java.util.List<String>>(){});
+                                rolePerms.forEach(p -> authorities.add(new SimpleGrantedAuthority(p)));
+                            } catch (Exception e) {
+                                // ignore
+                            }
+                        }
+                    }
+                }
+
                 UsernamePasswordAuthenticationToken authenticationToken =
                         new UsernamePasswordAuthenticationToken(
                                 username,
                                 null,
-                                Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role))
+                                authorities
                         );
                 authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);

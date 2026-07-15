@@ -13,9 +13,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
 @RestController
 @RequestMapping("/api/warranties")
 @CrossOrigin(origins = "*")
+@PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN') or hasAuthority('WARRANTY_VIEW') or hasRole('CUSTOMER')")
 public class WarrantyController {
 
     @Autowired

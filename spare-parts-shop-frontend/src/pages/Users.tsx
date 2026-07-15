@@ -27,6 +27,7 @@ import {
   Alert
 } from '@mui/material';
 import { Add, Edit, Delete, Search, MoreVert, Block, CheckCircle } from '@mui/icons-material';
+import axios from 'axios';
 import { api } from '../api/client';
 import { useAppSelector } from '../store/hooks';
 import { selectCurrentUser } from '../store/slices/authSlice';
@@ -44,6 +45,7 @@ const defaultPermissions = [
 export default function Users() {
   const currentUser = useAppSelector(selectCurrentUser);
   const [users, setUsers] = useState<any[]>([]);
+  const [customRoles, setCustomRoles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   
   // Filters
@@ -68,13 +70,22 @@ export default function Users() {
     password: '',
     role: 'STAFF',
     enabled: true,
+    customRoleId: '' as number | '',
     permissions: {} as Record<string, boolean>,
   });
 
   const load = () => {
     setLoading(true);
-    api.getUsers()
-      .then(setUsers)
+    Promise.all([
+      api.getUsers(),
+      axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/roles`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      }).catch(() => ({ data: [] }))
+    ])
+      .then(([usersData, rolesRes]) => {
+        setUsers(usersData);
+        setCustomRoles(rolesRes.data);
+      })
       .catch((e) => showToast(e instanceof Error ? e.message : String(e), 'error'))
       .finally(() => setLoading(false));
   };
@@ -96,6 +107,7 @@ export default function Users() {
         password: '',
         role: user.role === 'EMPLOYEE' ? 'STAFF' : user.role,
         enabled: user.enabled,
+        customRoleId: user.customRole?.id || '',
         permissions: Array.isArray(user.permissions) 
           ? user.permissions.reduce((acc: any, p: string) => ({ ...acc, [p]: true }), {}) 
           : (user.permissions || {}),
@@ -108,6 +120,7 @@ export default function Users() {
         password: '',
         role: 'STAFF',
         enabled: true,
+        customRoleId: '',
         permissions: {},
       });
     }
@@ -366,29 +379,47 @@ export default function Users() {
                 <MenuItem value="ADMIN">Admin</MenuItem>
               </Select>
             </FormControl>
-            <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary' }}>
-              Permissions
-            </Typography>
-            <FormGroup row>
-              {defaultPermissions.map((p) => (
-                <FormControlLabel
-                  key={p.key}
-                  control={
-                    <Checkbox
-                      checked={!!form.permissions[p.key]}
-                      onChange={(e) =>
-                        setForm({
-                          ...form,
-                          permissions: { ...form.permissions, [p.key]: e.target.checked },
-                        })
+            <FormControl fullWidth>
+              <InputLabel>Custom Role (Optional)</InputLabel>
+              <Select
+                value={form.customRoleId}
+                label="Custom Role (Optional)"
+                onChange={(e) => setForm({ ...form, customRoleId: e.target.value as number | '' })}
+              >
+                <MenuItem value=""><em>None (Manual Permissions)</em></MenuItem>
+                {customRoles.map(role => (
+                  <MenuItem key={role.id} value={role.id}>{role.name}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            {form.customRoleId === '' && (
+              <>
+                <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary' }}>
+                  Manual Permissions
+                </Typography>
+                <FormGroup row>
+                  {defaultPermissions.map((p) => (
+                    <FormControlLabel
+                      key={p.key}
+                      control={
+                        <Checkbox
+                          checked={!!form.permissions[p.key]}
+                          onChange={(e) =>
+                            setForm({
+                              ...form,
+                              permissions: { ...form.permissions, [p.key]: e.target.checked },
+                            })
+                          }
+                        />
                       }
+                      label={p.label}
+                      sx={{ flex: '0 0 50%' }}
                     />
-                  }
-                  label={p.label}
-                  sx={{ flex: '0 0 50%' }}
-                />
-              ))}
-            </FormGroup>
+                  ))}
+                </FormGroup>
+              </>
+            )}
           </Box>
         </DialogContent>
         <DialogActions sx={{ p: 2, px: 3 }}>

@@ -159,10 +159,12 @@ class AuthLoading extends AuthState {}
 class AuthAuthenticated extends AuthState {
   final UserModel user;
   final dynamic configuration;
+  final FeaturePermissionsModel? features;
 
   AuthAuthenticated({
     required this.user,
     this.configuration,
+    this.features,
   });
 }
 

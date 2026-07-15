@@ -132,6 +132,7 @@ const Sidebar = ({
       }
       items.push({ label: 'Support Tickets', path: '/support-tickets', icon: <MessageSquare size={20} /> });
       items.push({ label: 'Employees', path: '/users', icon: <Users size={20} /> });
+      items.push({ label: 'Roles', path: '/roles', icon: <Shield size={20} /> });
       items.push({ label: 'Settings', path: '/settings', icon: <Settings size={20} /> });
     } else if (userRole === 'EMPLOYEE') {
       const perms = user?.permissions || [];
@@ -143,6 +144,12 @@ const Sidebar = ({
       if (perms.includes('customers')) items.push({ label: 'Customers', path: '/customers', icon: <Users size={20} /> });
       if (perms.includes('customers')) items.push({ label: 'Customers', path: '/customers', icon: <Users size={20} /> });
       if (perms.includes('bills')) items.push({ label: 'Sales', path: '/bills', icon: <Receipt size={20} /> });
+      if (hasModule('emi') && (perms.includes('EMI_VIEW') || perms.includes('emi'))) {
+        items.push({ label: 'EMI', path: '/emis', icon: <IndianRupee size={20} /> });
+      }
+      if (hasModule('warranty') && (perms.includes('WARRANTY_VIEW') || perms.includes('warranty'))) {
+        items.push({ label: 'Warranty', path: '/warranties', icon: <Shield size={20} /> });
+      }
       if (perms.includes('purchases')) items.push({ label: 'Purchases', path: '/purchases', icon: <ShoppingCart size={20} /> });
       if (perms.includes('suppliers')) items.push({ label: 'Suppliers', path: '/suppliers', icon: <Truck size={20} /> });
       if (perms.includes('reports')) items.push({ label: 'Reports', path: '/reports', icon: <FileSpreadsheet size={20} /> });

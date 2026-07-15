@@ -74,4 +74,8 @@ public class User implements BelongsToBusiness {
     @CollectionTable(name = "user_permissions", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "permission")
     private Set<String> permissions = new HashSet<>();
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "custom_role_id")
+    private CustomRole customRole;
 }

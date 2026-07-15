@@ -33,10 +33,16 @@ public class AuthService {
     private BusinessConfigurationRepository businessConfigurationRepository;
 
     @Autowired
+    private com.spareparts.repository.CustomRoleRepository customRoleRepository;
+
+    @Autowired
     private EmailService emailService;
     
     @Autowired
     private JwtUtil jwtUtil;
+    
+    @Autowired
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
     public LoginResponse login(LoginRequest request) {
         String username = request.getUsername() != null ? request.getUsername().trim() : "";
@@ -50,9 +56,15 @@ public class AuthService {
             throw new RuntimeException("Please verify your email first");
         }
 
-        // Simple password check (no hashing). For safety in a real app,
-        // you should hash and salt passwords.
-        if (!password.equals(user.getPassword())) {
+        // Password check (hashing support with plaintext fallback)
+        boolean isPasswordMatch = false;
+        if (user.getPassword() != null && user.getPassword().startsWith("$2a$")) {
+            isPasswordMatch = passwordEncoder.matches(password, user.getPassword());
+        } else {
+            isPasswordMatch = password.equals(user.getPassword());
+        }
+        
+        if (!isPasswordMatch) {
             throw new RuntimeException("Invalid credentials");
         }
         
@@ -94,7 +106,22 @@ public class AuthService {
                 Boolean.FALSE.equals(user.getPasswordChanged()),
                 configDto, "Login successful");
         response.setToken(token);
-        response.setPermissions(user.getPermissions());
+        
+        java.util.Set<String> allPerms = new java.util.HashSet<>(user.getPermissions());
+        if (user.getCustomRole() != null && user.getCustomRole().getPermissionsJson() != null) {
+            try {
+                java.util.List<String> rolePerms = new com.fasterxml.jackson.databind.ObjectMapper()
+                    .readValue(user.getCustomRole().getPermissionsJson(), new com.fasterxml.jackson.core.type.TypeReference<java.util.List<String>>(){});
+                allPerms.addAll(rolePerms);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        response.setPermissions(allPerms);
+        
+        if (user.getCustomRole() != null) {
+            // we can pass custom role name to frontend if needed
+        }
         return response;
     }
 
@@ -481,7 +508,7 @@ public class AuthService {
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         if (request.getPassword() != null && !request.getPassword().isEmpty()) {
-            user.setPassword(request.getPassword());
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
         }
         user.setRole(request.getRole());
         user.setEnabled(request.getEnabled() != null ? request.getEnabled() : true);
@@ -492,6 +519,13 @@ public class AuthService {
                 if (Boolean.TRUE.equals(v)) perms.add(k);
             });
             user.setPermissions(perms);
+        }
+
+        if (request.getCustomRoleId() != null) {
+            com.spareparts.model.CustomRole role = customRoleRepository.findById(request.getCustomRoleId()).orElse(null);
+            user.setCustomRole(role);
+        } else {
+            user.setCustomRole(null);
         }
 
         userRepository.save(user);
@@ -516,7 +550,7 @@ public class AuthService {
         User user = new User();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
-        user.setPassword(request.getPassword());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(request.getRole()); // SUPER_ADMIN, ADMIN, EMPLOYEE
         user.setEnabled(request.getEnabled() != null ? request.getEnabled() : true);
         user.setPasswordChanged(false);
@@ -532,6 +566,11 @@ public class AuthService {
                 if (Boolean.TRUE.equals(v)) perms.add(k);
             });
             user.setPermissions(perms);
+        }
+
+        if (request.getCustomRoleId() != null) {
+            com.spareparts.model.CustomRole customRole = customRoleRepository.findById(request.getCustomRoleId()).orElse(null);
+            user.setCustomRole(customRole);
         }
 
         return userRepository.save(user);
