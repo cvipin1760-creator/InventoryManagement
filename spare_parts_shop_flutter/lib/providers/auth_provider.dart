@@ -34,6 +34,12 @@ class AuthProvider with ChangeNotifier {
   bool get isSuperAdmin => role == 'SUPER_ADMIN' || role == 'SUPER_MANAGER';
   bool get isAdmin => role == 'ADMIN' || username == 'admin' || isSuperAdmin;
 
+  bool hasModule(String key) {
+    if (configuration == null || configuration['modules'] == null) return false;
+    final modules = configuration['modules'] as List<dynamic>;
+    return modules.any((m) => m['key'] == key && m['enabled'] == true);
+  }
+
   AuthProvider() {
     _loadFromStorage();
   }

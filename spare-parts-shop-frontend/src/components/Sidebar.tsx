@@ -72,9 +72,16 @@ const Sidebar = ({
     const items: MenuItem[] = [];
 
     const userRole = user?.role as string | undefined;
-    const hasModule = (key: string) => {
-      if (!config || !config.modules) return false;
-      return config.modules.some((m: any) => m.key === key && m.enabled);
+    const hasModule = (moduleKey: string) => {
+      if (!config?.modulesJson) return false;
+      try {
+        const modules = typeof config.modulesJson === 'string' 
+          ? JSON.parse(config.modulesJson) 
+          : config.modulesJson;
+        return modules.some((m: any) => m.key === moduleKey && m.enabled);
+      } catch (e) {
+        return false;
+      }
     };
 
     if (userRole === 'SUPER_ADMIN' || userRole === 'SUPER_MANAGER') {

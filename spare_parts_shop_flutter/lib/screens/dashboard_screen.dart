@@ -131,6 +131,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
     final isAdmin = authProvider.isAdmin;
+    final isSuperAdmin = authProvider.isSuperAdmin;
 
     return Scaffold(
       appBar: AppBar(
@@ -247,19 +248,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
               onTap: () => Navigator.pop(context),
             ),
             ListTile(
-              leading: const Icon(FontAwesomeIcons.chartLine),
-              title: const Text('Predictive Analytics'),
+              leading: const Icon(Icons.receipt),
+              title: const Text('Sales (Bills)'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.pushNamed(context, '/predictive-analytics');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.inventory),
-              title: const Text('Products'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/products');
+                Navigator.pushNamed(context, '/bills');
               },
             ),
             ListTile(
@@ -271,29 +264,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.local_shipping),
-              title: const Text('Suppliers'),
+              leading: const Icon(Icons.inventory),
+              title: const Text('Products'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.pushNamed(context, '/suppliers');
+                Navigator.pushNamed(context, '/products');
               },
             ),
-            ListTile(
-              leading: const Icon(Icons.receipt),
-              title: const Text('Bills'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/bills');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.document_scanner),
-              title: const Text('Bill Templates'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/bill-templates');
-              },
-            ),
+            if (!isSuperAdmin && authProvider.hasModule('emi'))
+              ListTile(
+                leading: const Icon(Icons.account_balance_wallet_outlined),
+                title: const Text('EMI Options'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/customer-emi');
+                },
+              ),
+            if (!isSuperAdmin && authProvider.hasModule('warranty'))
+              ListTile(
+                leading: const Icon(Icons.verified_user_outlined),
+                title: const Text('Warranties'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/warranties');
+                },
+              ),
             ListTile(
               leading: const Icon(Icons.shopping_cart),
               title: const Text('Purchases'),
@@ -311,11 +306,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.account_balance),
-              title: const Text('Accounting Exports'),
+              leading: const Icon(Icons.local_shipping),
+              title: const Text('Suppliers'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.pushNamed(context, '/accounting');
+                Navigator.pushNamed(context, '/suppliers');
+              },
+            ),
+            ListTile(
+              leading: const Icon(FontAwesomeIcons.chartLine),
+              title: const Text('Predictive Analytics'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/predictive-analytics');
               },
             ),
             ListTile(
@@ -327,19 +330,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.verified_user_outlined),
-              title: const Text('Warranties'),
+              leading: const Icon(Icons.account_balance),
+              title: const Text('Accounting Exports'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.pushNamed(context, '/warranties');
+                Navigator.pushNamed(context, '/accounting');
               },
             ),
             ListTile(
-              leading: const Icon(Icons.account_balance_wallet_outlined),
-              title: const Text('EMI Options'),
+              leading: const Icon(Icons.document_scanner),
+              title: const Text('Bill Templates'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.pushNamed(context, '/customer-emi');
+                Navigator.pushNamed(context, '/bill-templates');
               },
             ),
             const Divider(),
