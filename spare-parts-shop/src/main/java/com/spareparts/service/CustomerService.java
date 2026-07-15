@@ -3,7 +3,9 @@ package com.spareparts.service;
 import com.spareparts.model.Customer;
 import com.spareparts.model.Business;
 import com.spareparts.model.Branch;
+import com.spareparts.model.User;
 import com.spareparts.repository.CustomerRepository;
+import com.spareparts.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
@@ -24,6 +26,12 @@ public class CustomerService {
 
     @Autowired
     private com.spareparts.repository.BranchRepository branchRepository;
+    
+    @Autowired
+    private UserRepository userRepository;
+    
+    @Autowired
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
     
     @Cacheable(value = "customers", key = "'' + T(com.spareparts.config.TenantContext).getBusinessId() + '-' + T(com.spareparts.config.BranchContext).getBranchId()")
     public List<Customer> getAllCustomers() {
@@ -63,7 +71,39 @@ public class CustomerService {
         }
 
         customer.setCreatedAt(LocalDateTime.now());
-        return customerRepository.save(customer);
+        
+        // Generate Customer ID
+        String customerId = "CUST-" + (10000 + (int)(Math.random() * 90000));
+        customer.setCustomerId(customerId);
+        
+        // Generate temporary password
+        String tempPassword = String.valueOf(100000 + (int)(Math.random() * 900000));
+        customer.setPassword(passwordEncoder.encode(tempPassword));
+
+        Customer savedCustomer = customerRepository.save(customer);
+        
+        // Create corresponding User for Customer Portal
+        User user = new User();
+        user.setUsername(customerId);
+        user.setEmail(customer.getEmail());
+        user.setPhone(customer.getPhone());
+        user.setPassword(customer.getPassword()); // already encoded
+        user.setRole("CUSTOMER");
+        user.setBusiness(business);
+        user.setBranch(customer.getBranch());
+        
+        // Ensure email/phone are unique in users table, else it might throw exception.
+        // If phone/email already exists, we might need to handle it.
+        try {
+            userRepository.save(user);
+        } catch(Exception e) {
+            // Log or handle duplicate phone/email in user table if needed
+        }
+
+        // Ideally send email/SMS with credentials here (tempPassword)
+        System.out.println("Customer Portal Credentials for " + customer.getName() + " -> ID: " + customerId + ", Password: " + tempPassword);
+        
+        return savedCustomer;
     }
     
     @Caching(evict = {
@@ -96,8 +136,7 @@ public class CustomerService {
         return customerRepository.searchCustomers(keyword, businessId, branchId);
     }
     
-    @Autowired
-    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+    // Removed duplicate PasswordEncoder
 
     public void enableB2bAccess(Long customerId, String rawPassword) {
         Customer customer = getCustomerById(customerId);

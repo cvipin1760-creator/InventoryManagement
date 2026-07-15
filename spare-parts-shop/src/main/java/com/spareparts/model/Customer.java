@@ -21,6 +21,9 @@ public class Customer implements BelongsToBusiness {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
+    @Column(name = "customer_id", unique = true)
+    private String customerId;
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "business_id", nullable = false)
     @JsonIgnore
@@ -35,6 +38,9 @@ public class Customer implements BelongsToBusiness {
     
     @Column(nullable = false)
     private String phone;
+    
+    @Column
+    private String email;
     
     @Column(columnDefinition = "TEXT")
     private String address;

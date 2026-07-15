@@ -7,8 +7,11 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 
+import java.util.Optional;
+
 @Repository
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
+    Optional<Customer> findByCustomerId(String customerId);
     @Query("SELECT c FROM Customer c WHERE c.business.id = :businessId AND (:branchId IS NULL OR c.branch.id = :branchId)")
     List<Customer> findByBusinessId(@Param("businessId") Long businessId, @Param("branchId") Long branchId);
     

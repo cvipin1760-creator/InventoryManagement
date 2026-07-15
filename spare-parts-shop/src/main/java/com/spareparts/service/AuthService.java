@@ -49,7 +49,9 @@ public class AuthService {
         String password = request.getPassword() != null ? request.getPassword().trim() : "";
 
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
+                .orElseGet(() -> userRepository.findByEmail(username)
+                .orElseGet(() -> userRepository.findByPhone(username)
+                .orElseThrow(() -> new RuntimeException("Invalid credentials"))));
 
         // Treat null as enabled for legacy users
         if (user.getEnabled() != null && !user.getEnabled()) {

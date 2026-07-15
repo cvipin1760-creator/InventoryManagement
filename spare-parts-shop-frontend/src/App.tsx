@@ -44,6 +44,10 @@ import Audit from './pages/Audit'
 import Emis from './pages/Emis';
 import SupportTickets from './pages/SupportTickets';
 import RoleManagement from './pages/RoleManagement';
+import CustomerLogin from './pages/CustomerLogin';
+import CustomerDashboard from './pages/CustomerDashboard';
+import CustomerPurchases from './pages/CustomerPurchases';
+import CustomerInvoiceDetail from './pages/CustomerInvoiceDetail';
 
 
 // Protected Route component
@@ -91,6 +95,33 @@ const App = () => {
       {/* Public B2B Portal Routes */}
       <Route path="/b2b/:businessId/login" element={<B2bLogin />} />
       <Route path="/b2b/:businessId/shop" element={<B2bShop />} />
+
+      {/* Customer Portal Routes */}
+      <Route path="/customer/login" element={<CustomerLogin />} />
+      <Route 
+        path="/customer-dashboard" 
+        element={
+          <ProtectedRoute>
+            <CustomerDashboard />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/customer/purchases" 
+        element={
+          <ProtectedRoute>
+            <CustomerPurchases />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/customer/purchases/:id" 
+        element={
+          <ProtectedRoute>
+            <CustomerInvoiceDetail />
+          </ProtectedRoute>
+        } 
+      />
 
       {/* Protected Routes */}
       <Route

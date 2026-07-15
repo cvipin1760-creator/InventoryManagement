@@ -12,6 +12,8 @@ import 'package:stock_pilot/screens/dashboard_screen.dart';
 import 'package:stock_pilot/screens/login_screen.dart';
 import 'package:stock_pilot/screens/payments_screen.dart';
 import 'package:stock_pilot/screens/products_screen.dart';
+import 'package:stock_pilot/screens/customer_dashboard_screen.dart';
+import 'package:stock_pilot/screens/customer_purchases_screen.dart';
 import 'package:stock_pilot/screens/purchases_screen.dart';
 import 'package:stock_pilot/screens/register_screen.dart';
 import 'package:stock_pilot/screens/suppliers_screen.dart';
@@ -101,6 +103,8 @@ class MyApp extends StatelessWidget {
               '/warranties': (context) => const WarrantiesScreen(),
               '/customer-emi': (context) => const CustomerEmiScreen(),
               '/send-notifications': (context) => const SendNotificationsScreen(),
+              '/customer-dashboard': (context) => const CustomerDashboardScreen(),
+              '/customer-purchases': (context) => const CustomerPurchasesScreen(),
             },
           );
         },
@@ -221,6 +225,10 @@ class _AuthWrapperState extends State<AuthWrapper> with WidgetsBindingObserver {
               auth.securitySettings.enableFingerprint ||
               auth.securitySettings.enableFaceUnlock) {
             Future.microtask(() => _authenticate(auth));
+          }
+          
+          if (auth.account?.role == 'CUSTOMER') {
+            return const CustomerDashboardScreen();
           }
           
           return const DashboardScreen();
