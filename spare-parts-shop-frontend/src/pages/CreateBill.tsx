@@ -5,6 +5,7 @@ import type { Customer, Product, BillItemRequest, CustomerBalance, EMIDto, Warra
 import BarcodeScanner from '../components/BarcodeScanner'
 import { useAppSelector } from '../store/hooks'
 import { selectConfiguration } from '../store/slices/authSlice'
+import QuickPOS from './QuickPOS'
 import './CreateBill.css'
 
 function formatCurrency(n: number) {
@@ -43,6 +44,11 @@ const ALL_STEPS = [
 export default function CreateBill() {
   const navigate = useNavigate()
   const config = useAppSelector(selectConfiguration)
+  
+  if (config?.billingType === 'Quick POS') {
+    return <QuickPOS />
+  }
+
   const hasModule = (key: string) => {
     if (!config || !config.modules) return false;
     return config.modules.some((m: any) => m.key === key && m.enabled);
