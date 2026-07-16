@@ -1,5 +1,7 @@
 export interface Customer {
   id: number
+  customerId?: string
+  tempPlainPassword?: string
   name: string
   phone: string
   address?: string

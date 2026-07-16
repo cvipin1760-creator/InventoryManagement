@@ -43,7 +43,10 @@ export default function Customers() {
       if (editing) {
         await api.updateCustomer(editing.id, form)
       } else {
-        await api.createCustomer(form)
+        const res = await api.createCustomer(form)
+        if (res.tempPlainPassword && res.customerId) {
+          alert(`Customer Created Successfully!\n\nPlease share these login credentials with the customer:\nCustomer ID: ${res.customerId}\nPassword: ${res.tempPlainPassword}\n\nThey can log in at the Customer Portal.`)
+        }
       }
       setModal(null)
       load()
