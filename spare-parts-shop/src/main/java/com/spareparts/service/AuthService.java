@@ -19,6 +19,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 @Service
 public class AuthService {
@@ -85,7 +87,7 @@ public class AuthService {
                             config.getCurrency(),
                             config.getTimezone(),
                             config.getFinancialYear(),
-                            mapper.readValue(modulesStr, new com.fasterxml.jackson.core.type.TypeReference<List<Map<String, Object>>>(){}),
+                            parseModulesSafely(mapper, modulesStr, defaultModules),
                             config.getPermissionsJson() != null ? mapper.readValue(config.getPermissionsJson(), new com.fasterxml.jackson.core.type.TypeReference<List<Map<String, Object>>>(){}) : null,
                             config.getInvoiceSettingsJson() != null ? mapper.readValue(config.getInvoiceSettingsJson(), new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>(){}) : null,
                             config.getDashboardSettingsJson() != null ? mapper.readValue(config.getDashboardSettingsJson(), new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>(){}) : null,
