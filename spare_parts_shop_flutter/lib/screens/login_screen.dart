@@ -88,7 +88,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           // But since AuthProvider loads token from storage on boot, it might just work.
           // In a real app we might call a special 'biometricLogin' on AuthProvider that just reads storage.
           if (mounted) {
-            Navigator.pushAndRemoveUntil(context, '/', (route) => false);
+            Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
           }
         }
       }
@@ -126,7 +126,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           _usernameController.text,
           _passwordController.text,
         );
-        if (mounted) Navigator.pushAndRemoveUntil(context, '/', (route) => false);
+        if (mounted) Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(

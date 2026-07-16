@@ -61,6 +61,20 @@ const Settings = () => {
     phone: (user as any)?.contactNumber || '',
   });
 
+  const [businessForm, setBusinessForm] = useState({
+    businessName: '',
+    gstNumber: '',
+    address: '',
+    city: '',
+    state: '',
+    pincode: '',
+    website: '',
+    upiId: '',
+    bankAccountInfo: '',
+    termsAndConditions: '',
+    signatureText: '',
+  });
+
   useEffect(() => {
     if (user) {
       setProfileForm({
@@ -74,7 +88,22 @@ const Settings = () => {
   useEffect(() => {
     if (user && user.role !== 'SUPER_ADMIN' && user.role !== 'SUPER_MANAGER') {
       api.getBusiness()
-        .then(setBusiness)
+        .then(b => {
+          setBusiness(b);
+          setBusinessForm({
+            businessName: b.businessName || '',
+            gstNumber: b.gstNumber || '',
+            address: b.address || '',
+            city: b.city || '',
+            state: b.state || '',
+            pincode: b.pincode || '',
+            website: b.website || '',
+            upiId: b.upiId || '',
+            bankAccountInfo: b.bankAccountInfo || '',
+            termsAndConditions: b.termsAndConditions || '',
+            signatureText: b.signatureText || '',
+          });
+        })
         .catch(err => console.error("Error fetching business:", err));
     }
   }, [user]);
@@ -139,6 +168,29 @@ const Settings = () => {
       setSnackbar({
         open: true,
         message: 'Failed to update subscription',
+        severity: 'error',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveBusinessProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const updatedBusiness = await api.updateCurrentBusiness(businessForm);
+      setBusiness(updatedBusiness);
+      setSnackbar({
+        open: true,
+        message: 'Business Profile updated successfully!',
+        severity: 'success',
+      });
+    } catch (err: any) {
+      console.error(err);
+      setSnackbar({
+        open: true,
+        message: err.message || 'Failed to update business profile',
         severity: 'error',
       });
     } finally {
@@ -277,6 +329,35 @@ const Settings = () => {
               </Box>
             </CardContent>
           </Card>
+
+          {user?.role !== 'SUPER_ADMIN' && user?.role !== 'SUPER_MANAGER' && business && (
+          <Card sx={{ borderRadius: 3, mb: 3 }}>
+            <CardContent sx={{ p: 3 }}>
+              <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>
+                <Palette sx={{ mr: 1, verticalAlign: 'middle' }} />
+                Business Invoice Profile
+              </Typography>
+              <Box component="form" onSubmit={handleSaveBusinessProfile} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <TextField label="Business Name" value={businessForm.businessName} onChange={(e) => setBusinessForm({ ...businessForm, businessName: e.target.value })} fullWidth required />
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  <TextField label="GST Number" value={businessForm.gstNumber} onChange={(e) => setBusinessForm({ ...businessForm, gstNumber: e.target.value })} fullWidth />
+                  <TextField label="UPI ID (for payments)" value={businessForm.upiId} onChange={(e) => setBusinessForm({ ...businessForm, upiId: e.target.value })} fullWidth />
+                </Box>
+                <TextField label="Address" value={businessForm.address} onChange={(e) => setBusinessForm({ ...businessForm, address: e.target.value })} fullWidth />
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  <TextField label="City" value={businessForm.city} onChange={(e) => setBusinessForm({ ...businessForm, city: e.target.value })} fullWidth />
+                  <TextField label="State" value={businessForm.state} onChange={(e) => setBusinessForm({ ...businessForm, state: e.target.value })} fullWidth />
+                  <TextField label="Pincode" value={businessForm.pincode} onChange={(e) => setBusinessForm({ ...businessForm, pincode: e.target.value })} fullWidth />
+                </Box>
+                <TextField label="Website" value={businessForm.website} onChange={(e) => setBusinessForm({ ...businessForm, website: e.target.value })} fullWidth />
+                <TextField label="Bank Account Info" value={businessForm.bankAccountInfo} onChange={(e) => setBusinessForm({ ...businessForm, bankAccountInfo: e.target.value })} fullWidth multiline rows={2} placeholder="Account Name: StockPilot&#10;Account No: 123456789&#10;IFSC: HDFC000123" />
+                <TextField label="Invoice Terms & Conditions" value={businessForm.termsAndConditions} onChange={(e) => setBusinessForm({ ...businessForm, termsAndConditions: e.target.value })} fullWidth multiline rows={2} />
+                <TextField label="Authorized Signature Text" value={businessForm.signatureText} onChange={(e) => setBusinessForm({ ...businessForm, signatureText: e.target.value })} fullWidth />
+                <Button type="submit" variant="contained" disabled={loading} startIcon={<Save />} sx={{ alignSelf: 'flex-start' }}>Save Business Details</Button>
+              </Box>
+            </CardContent>
+          </Card>
+          )}
 
           <Card sx={{ borderRadius: 3 }}>
             <List>

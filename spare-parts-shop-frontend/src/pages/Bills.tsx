@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api/client'
-import type { Bill } from '../types'
+import type { Bill, Business } from '../types'
+import { QRCodeSVG } from 'qrcode.react'
 import { exportToPDF, exportToExcel } from '../utils/exportUtils'
 import ReceiptPrinter from '../components/ReceiptPrinter'
 import './Bills.css'
@@ -33,6 +34,7 @@ export default function Bills() {
   const [pdfLoading, setPdfLoading] = useState<number | null>(null)
   const [backupLoading, setBackupLoading] = useState(false)
   const [previewBill, setPreviewBill] = useState<Bill | null>(null)
+  const [business, setBusiness] = useState<Business | null>(null)
   const [whatsAppLoading, setWhatsAppLoading] = useState<number | null>(null)
   
   const [printBill, setPrintBill] = useState<Bill | null>(null)
@@ -98,6 +100,7 @@ export default function Bills() {
 
   useEffect(() => {
     load()
+    api.getBusiness().then(setBusiness).catch(console.error)
   }, [search, searchType, dateFilter, startDate, endDate, paymentModeFilter])
 
   const handleDownloadPdf = async (id: number) => {
@@ -332,30 +335,45 @@ export default function Bills() {
             <div className="invoice-content">
               <div className="invoice-branding">
                 <div className="shop-info">
-                  <h3>StockPilot</h3>
-                  <p>Shop Address: Kalamboli</p>
-                  <p>Phone: +91-9987654321</p>
+                  <h3>{business?.businessName || 'Business Name'}</h3>
+                  <p>{[business?.address, business?.city, business?.state, business?.pincode].filter(Boolean).join(', ')}</p>
+                  <p>Phone: {business?.contactNumber || 'N/A'} {business?.email ? ` | Email: ${business.email}` : ''}</p>
+                  {business?.website && <p>Web: {business.website}</p>}
+                  {business?.gstNumber && <p><strong>GSTIN: {business.gstNumber}</strong></p>}
                 </div>
                 <div className="invoice-meta">
                   <h4>INVOICE</h4>
                   <p><strong>No:</strong> {previewBill.invoiceNumber}</p>
                   <p><strong>Date:</strong> {formatDate(previewBill.billDate)}</p>
+                  {previewBill.paymentMode && <p><strong>Mode:</strong> {previewBill.paymentMode}</p>}
+                  <div style={{ marginTop: '0.5rem' }}>
+                    <QRCodeSVG value={`${window.location.origin}/customer/invoice/${previewBill.id}`} size={64} />
+                  </div>
                 </div>
               </div>
 
               <div className="customer-info-section">
-                <p><strong>Bill To:</strong></p>
+                <p><strong>Billed To:</strong></p>
                 <p style={{ fontSize: '1.1rem', color: 'var(--text-primary)', fontWeight: '600' }}>{previewBill.customer.name}</p>
-                <p>{previewBill.customer.phone}</p>
+                <p>Phone: {previewBill.customer.phone}</p>
                 {previewBill.customer.address && <p>{previewBill.customer.address}</p>}
+                {previewBill.customer.email && <p>Email: {previewBill.customer.email}</p>}
               </div>
 
               <table className="invoice-items-table">
                 <thead>
                   <tr>
-                    <th>Item Description</th>
+                    <th>Product</th>
+                    <th>SKU/Serial</th>
                     <th style={{ textAlign: 'center' }}>Qty</th>
                     <th style={{ textAlign: 'right' }}>Rate</th>
+                    <th style={{ textAlign: 'right' }}>Disc.</th>
+                    {['GST', 'INCLUDED', 'EXCLUDED'].includes(previewBill.gstType?.toUpperCase() || '') && (
+                      <>
+                        <th style={{ textAlign: 'right' }}>GST %</th>
+                        <th style={{ textAlign: 'right' }}>GST Amt</th>
+                      </>
+                    )}
                     <th style={{ textAlign: 'right' }}>Total</th>
                   </tr>
                 </thead>
@@ -364,12 +382,22 @@ export default function Bills() {
                     <tr key={it.id}>
                       <td>
                         <div style={{ fontWeight: '600' }}>{it.product.name}</div>
+                      </td>
+                      <td>
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                          Part No: {it.product.partNumber} | GST: {it.gstPercent}%
+                          {it.product.partNumber}
+                          {it.serialNumber && <div>SN: {it.serialNumber}</div>}
                         </div>
                       </td>
                       <td style={{ textAlign: 'center' }}>{it.quantity}</td>
                       <td style={{ textAlign: 'right' }}>{formatCurrency(it.price)}</td>
+                      <td style={{ textAlign: 'right' }}>{formatCurrency(it.discount || 0)}</td>
+                      {['GST', 'INCLUDED', 'EXCLUDED'].includes(previewBill.gstType?.toUpperCase() || '') && (
+                        <>
+                          <td style={{ textAlign: 'right' }}>{it.gstPercent}%</td>
+                          <td style={{ textAlign: 'right' }}>{formatCurrency(it.itemTotal - ((it.price * it.quantity) - (it.discount || 0)))}</td>
+                        </>
+                      )}
                       <td style={{ textAlign: 'right' }}>{formatCurrency(it.itemTotal)}</td>
                     </tr>
                   ))}
@@ -378,18 +406,18 @@ export default function Bills() {
 
               <div className="invoice-totals">
                 <div className="total-row">
-                  <span>Subtotal:</span>
-                  <span>{formatCurrency(previewBill.subtotal)}</span>
+                  <span>Gross Total:</span>
+                  <span>{formatCurrency(previewBill.subtotal + (previewBill.items || []).reduce((sum, it) => sum + (it.discount || 0), 0))}</span>
                 </div>
                 <div className="total-row">
-                  <span>GST Amount:</span>
+                  <span>Total Discount:</span>
+                  <span>-{formatCurrency(previewBill.discount + (previewBill.items || []).reduce((sum, it) => sum + (it.discount || 0), 0))}</span>
+                </div>
+                {['GST', 'INCLUDED', 'EXCLUDED'].includes(previewBill.gstType?.toUpperCase() || '') && (
+                <div className="total-row">
+                  <span>Total GST:</span>
                   <span>{formatCurrency(previewBill.gstAmount)}</span>
                 </div>
-                {previewBill.discount > 0 && (
-                  <div className="total-row">
-                    <span>Discount:</span>
-                    <span>-{formatCurrency(previewBill.discount)}</span>
-                  </div>
                 )}
                 <div className="total-row grand-total">
                   <span>Grand Total:</span>
@@ -471,6 +499,35 @@ export default function Bills() {
                   ))}
                 </div>
               )}
+
+              {/* Invoice Footer Details */}
+              <div style={{ marginTop: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {business?.bankAccountInfo && (
+                  <div>
+                    <h5 style={{ marginBottom: '0.25rem', color: 'var(--text-secondary)' }}>Bank Details</h5>
+                    <pre style={{ margin: 0, whiteSpace: 'pre-wrap', fontFamily: 'inherit', fontSize: '0.85rem' }}>{business.bankAccountInfo}</pre>
+                  </div>
+                )}
+                
+                {business?.termsAndConditions && (
+                  <div>
+                    <h5 style={{ marginBottom: '0.25rem', color: 'var(--text-secondary)' }}>Terms & Conditions</h5>
+                    <pre style={{ margin: 0, whiteSpace: 'pre-wrap', fontFamily: 'inherit', fontSize: '0.75rem', color: 'var(--text-muted)' }}>{business.termsAndConditions}</pre>
+                  </div>
+                )}
+                
+                <div style={{ marginTop: '1rem', textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                  <h5 style={{ marginBottom: '0.5rem' }}>Authorized Signatory</h5>
+                  <div style={{ fontSize: '1.2rem', fontFamily: 'cursive', color: 'var(--primary-main)', fontWeight: 600 }}>
+                    {business?.signatureText || business?.businessName || 'Authorized Signatory'}
+                  </div>
+                </div>
+                
+                <div style={{ textAlign: 'center', marginTop: '1.5rem', color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '0.9rem' }}>
+                  Thank you for your business!
+                </div>
+              </div>
+
             </div>
 
             <div className="invoice-modal-footer">

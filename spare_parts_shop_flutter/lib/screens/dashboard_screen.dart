@@ -209,7 +209,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 onTap: () async {
                   await authProvider.logout();
                   if (mounted) {
-                    Navigator.pushAndRemoveUntil(context, '/', (route) => false);
+                    Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
                   }
                 },
                 child: const ListTile(

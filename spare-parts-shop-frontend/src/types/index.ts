@@ -4,9 +4,30 @@ export interface Customer {
   tempPlainPassword?: string
   name: string
   phone: string
+  email?: string
   address?: string
   loyaltyPoints?: number
   createdAt: string
+}
+
+export interface Business {
+  id: number
+  businessName: string
+  gstNumber?: string
+  address?: string
+  contactNumber?: string
+  email?: string
+  businessType?: string
+  logoPath?: string
+  city?: string
+  state?: string
+  pincode?: string
+  website?: string
+  upiId?: string
+  bankAccountInfo?: string
+  termsAndConditions?: string
+  signatureText?: string
+  subscriptionStatus?: string
 }
 
 export interface Supplier {
@@ -114,6 +135,7 @@ export interface Bill {
   items: BillItem[]
   emis?: EMI[]
   warranties?: Warranty[]
+  business?: Business
 }
 
 export interface PurchaseItem {

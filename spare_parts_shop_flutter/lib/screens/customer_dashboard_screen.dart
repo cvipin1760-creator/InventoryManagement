@@ -45,7 +45,7 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     await authProvider.logout();
     if (mounted) {
-      Navigator.pushAndRemoveUntil(context, '/', (route) => false);
+      Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
     }
   }
 

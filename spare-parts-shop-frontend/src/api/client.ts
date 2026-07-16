@@ -426,6 +426,11 @@ export const api = {
 
   // Business & Subscription
   getBusiness: () => request<any>('/business'),
+  updateCurrentBusiness: (data: any) =>
+    request<any>('/business', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
   getCurrentSubscription: () => request<any>('/subscriptions/current'),
   getAvailablePlans: () => request<any[]>('/subscriptions/plans'),
   upgradeCurrentSubscription: (planName: string) => request<any>(`/subscriptions/upgrade?planName=${encodeURIComponent(planName)}`, { method: 'POST' }),

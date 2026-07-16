@@ -82,7 +82,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           Navigator.pop(context);
                           await authProvider.logoutCurrentAccount();
                           if (!authProvider.isAuthenticated && mounted) {
-                            Navigator.pushAndRemoveUntil(context, '/', (route) => false);
+                            Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
                           }
                         },
                       );
