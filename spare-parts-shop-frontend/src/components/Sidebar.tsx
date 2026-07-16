@@ -100,6 +100,9 @@ const Sidebar = ({
       items.push({ label: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> });
       if (hasModule('billing')) {
         items.push({ label: 'Sales', path: '/bills', icon: <Receipt size={20} /> });
+        items.push({ label: 'Shift Management', path: '/shifts', icon: <Wallet size={20} /> });
+        items.push({ label: 'Queue Dashboard', path: '/queue-dashboard', icon: <Users size={20} /> });
+        items.push({ label: 'Manager Approvals', path: '/approvals', icon: <Shield size={20} /> });
       }
       items.push({ label: 'Customers', path: '/customers', icon: <Users size={20} /> });
       items.push({ label: 'Products', path: '/products', icon: <PackageOpen size={20} /> });
@@ -140,7 +143,11 @@ const Sidebar = ({
         items.push({ label: 'Inventory Audit', path: '/audit', icon: <ClipboardList size={20} /> });
       }
       if (perms.includes('customers')) items.push({ label: 'Customers', path: '/customers', icon: <Users size={20} /> });
-      if (perms.includes('bills')) items.push({ label: 'Sales', path: '/bills', icon: <Receipt size={20} /> });
+      if (perms.includes('bills')) {
+         items.push({ label: 'Sales', path: '/bills', icon: <Receipt size={20} /> });
+         items.push({ label: 'Shift Management', path: '/shifts', icon: <Wallet size={20} /> });
+         items.push({ label: 'Queue Dashboard', path: '/queue-dashboard', icon: <Users size={20} /> });
+      }
       if (hasModule('emi') && (perms.includes('EMI_VIEW') || perms.includes('emi'))) {
         items.push({ label: 'EMI', path: '/emis', icon: <IndianRupee size={20} /> });
       }
@@ -299,7 +306,11 @@ const Sidebar = ({
                 </Link>
               </ListItem>
             ))}
-          </List>
+                  <ListItem button component={Link} to="/app-store" selected={location.pathname === '/app-store'}>
+          <ListItemIcon sx={{ color: 'white' }}><AppsIcon /></ListItemIcon>
+          <ListItemText primary="App Store" />
+        </ListItem>
+      </List>
         </Box>
 
         {/* Bottom Section - User Profile */}
@@ -364,3 +375,5 @@ const Sidebar = ({
 };
 
 export default Sidebar;
+
+

@@ -22,6 +22,11 @@ class BillItem {
   double price;
   double gstPercent;
   double discount;
+  String warrantyType;
+  int? warrantyPeriodMonths;
+  String? warrantyStartDate;
+  String? warrantyNotes;
+  String? warrantyTerms;
 
   BillItem({
     required this.productId,
@@ -30,6 +35,11 @@ class BillItem {
     required this.price,
     required this.gstPercent,
     this.discount = 0,
+    this.warrantyType = 'NO_WARRANTY',
+    this.warrantyPeriodMonths,
+    this.warrantyStartDate,
+    this.warrantyNotes,
+    this.warrantyTerms,
   });
 
   double get lineTotal {
@@ -45,8 +55,13 @@ class BillItem {
       'productId': productId,
       'quantity': quantity,
       'price': price,
+      'discount': discount,
       'gstPercent': gstPercent,
-      'discount': discountAmount,
+      'warrantyType': warrantyType,
+      'warrantyPeriodMonths': warrantyPeriodMonths,
+      'warrantyStartDate': warrantyStartDate,
+      'warrantyNotes': warrantyNotes,
+      'warrantyTerms': warrantyTerms,
     };
   }
 }
@@ -72,6 +87,8 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
   double _discount = 0;
   double _paidAmount = 0;
   String _paymentMode = 'FULL';
+  double _emiDownPayment = 0;
+  int _emiMonths = 1;
   bool _isLoading = true;
   bool _billCreated = false;
   String? _invoiceNumber;
@@ -301,6 +318,14 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
         'paidAmount': _paidAmount,
         'redeemPoints': _useLoyaltyPoints ? (_loyaltyAccount!['points'] ?? 0) : 0,
       };
+
+      if (_paymentMode == 'EMI') {
+        billData['emi'] = {
+          'downPayment': _emiDownPayment,
+          'totalEmis': _emiMonths,
+        };
+      }
+
       final bill = await _apiService.createBillFromMap(billData);
       setState(() {
         _billCreated = true;
@@ -316,6 +341,59 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
         );
       }
     }
+  }
+
+  Future<void> _showWarrantyDialog(BillItem item) async {
+    final TextEditingController periodController = TextEditingController(text: item.warrantyPeriodMonths?.toString() ?? '');
+    final TextEditingController notesController = TextEditingController(text: item.warrantyNotes ?? '');
+    String selectedType = item.warrantyType;
+
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Warranty Details'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              DropdownButtonFormField<String>(
+                value: selectedType,
+                items: const [
+                  DropdownMenuItem(value: 'NO_WARRANTY', child: Text('No Warranty')),
+                  DropdownMenuItem(value: 'MANUFACTURER', child: Text('Manufacturer')),
+                  DropdownMenuItem(value: 'STORE', child: Text('Store Warranty')),
+                ],
+                onChanged: (v) => selectedType = v!,
+                decoration: const InputDecoration(labelText: 'Warranty Type'),
+              ),
+              TextFormField(
+                controller: periodController,
+                decoration: const InputDecoration(labelText: 'Months'),
+                keyboardType: TextInputType.number,
+              ),
+              TextFormField(
+                controller: notesController,
+                decoration: const InputDecoration(labelText: 'Notes'),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                item.warrantyType = selectedType;
+                item.warrantyPeriodMonths = int.tryParse(periodController.text);
+                item.warrantyNotes = notesController.text;
+              });
+              Navigator.pop(context);
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _sendBillToWhatsApp() async {
@@ -505,54 +583,127 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
                             },
                           ),
                           const SizedBox(height: 16),
-                          Row(
-                            children: [
-                              if (_hasModule('emi'))
-                                Expanded(
-                                  child: DropdownButtonFormField<String>(
-                                    isExpanded: true,
-                                    value: _paymentMode,
-                                    decoration: const InputDecoration(labelText: 'Payment Mode'),
-                                    items: const [
-                                      DropdownMenuItem(value: 'FULL', child: Text('Full Payment')),
-                                      DropdownMenuItem(value: 'EMI', child: Text('EMI / Installments')),
-                                      DropdownMenuItem(value: 'LATER', child: Text('Pay Later')),
+                          LayoutBuilder(
+                            builder: (context, constraints) {
+                              if (constraints.maxWidth < 600) {
+                                return Column(
+                                  children: [
+                                    if (_hasModule('emi')) ...[
+                                      DropdownButtonFormField<String>(
+                                        isExpanded: true,
+                                        value: _paymentMode,
+                                        decoration: const InputDecoration(labelText: 'Payment Mode'),
+                                        items: const [
+                                          DropdownMenuItem(value: 'FULL', child: Text('Full Payment')),
+                                          DropdownMenuItem(value: 'EMI', child: Text('EMI / Installments')),
+                                          DropdownMenuItem(value: 'LATER', child: Text('Pay Later')),
+                                        ],
+                                        onChanged: (v) => setState(() => _paymentMode = v!),
+                                      ),
+                                      const SizedBox(height: 16),
                                     ],
-                                    onChanged: (v) => setState(() => _paymentMode = v!),
+                                    if (_paymentMode == 'EMI') ...[
+                                      TextFormField(
+                                        decoration: const InputDecoration(labelText: 'Down Payment'),
+                                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                        initialValue: _emiDownPayment.toString(),
+                                        onChanged: (value) => setState(() => _emiDownPayment = double.tryParse(value) ?? 0),
+                                      ),
+                                      const SizedBox(height: 16),
+                                      TextFormField(
+                                        decoration: const InputDecoration(labelText: 'Tenure (Months)'),
+                                        keyboardType: TextInputType.number,
+                                        initialValue: _emiMonths.toString(),
+                                        onChanged: (value) => setState(() => _emiMonths = int.tryParse(value) ?? 1),
+                                      ),
+                                      const SizedBox(height: 16),
+                                    ],
+                                    TextFormField(
+                                      decoration: const InputDecoration(labelText: 'Discount (%)'),
+                                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                      initialValue: _discount.toString(),
+                                      onChanged: (value) => setState(() => _discount = double.tryParse(value) ?? 0),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    TextFormField(
+                                      decoration: const InputDecoration(labelText: 'Paid Amount'),
+                                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                      initialValue: _paidAmount.toString(),
+                                      onChanged: (value) => setState(() => _paidAmount = double.tryParse(value) ?? 0),
+                                    ),
+                                  ],
+                                );
+                              }
+                              return Row(
+                                children: [
+                                  if (_hasModule('emi'))
+                                    Expanded(
+                                      child: DropdownButtonFormField<String>(
+                                        isExpanded: true,
+                                        value: _paymentMode,
+                                        decoration: const InputDecoration(labelText: 'Payment Mode'),
+                                        items: const [
+                                          DropdownMenuItem(value: 'FULL', child: Text('Full Payment')),
+                                          DropdownMenuItem(value: 'EMI', child: Text('EMI / Installments')),
+                                          DropdownMenuItem(value: 'LATER', child: Text('Pay Later')),
+                                        ],
+                                        onChanged: (v) => setState(() => _paymentMode = v!),
+                                      ),
+                                    ),
+                                  if (_hasModule('emi'))
+                                    const SizedBox(width: 16),
+                                  if (_paymentMode == 'EMI') ...[
+                                    Expanded(
+                                      child: TextFormField(
+                                        decoration: const InputDecoration(labelText: 'Down Payment'),
+                                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                        initialValue: _emiDownPayment.toString(),
+                                        onChanged: (value) => setState(() => _emiDownPayment = double.tryParse(value) ?? 0),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: TextFormField(
+                                        decoration: const InputDecoration(labelText: 'Tenure (Months)'),
+                                        keyboardType: TextInputType.number,
+                                        initialValue: _emiMonths.toString(),
+                                        onChanged: (value) => setState(() => _emiMonths = int.tryParse(value) ?? 1),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                  ],
+                                  Expanded(
+                                    child: TextFormField(
+                                      decoration: const InputDecoration(
+                                        labelText: 'Discount (%)',
+                                      ),
+                                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                      initialValue: _discount.toString(),
+                                      onChanged: (value) {
+                                        setState(() {
+                                          _discount = double.tryParse(value) ?? 0;
+                                        });
+                                      },
+                                    ),
                                   ),
-                                ),
-                              if (_hasModule('emi'))
-                                const SizedBox(width: 16),
-                              Expanded(
-                                child: TextFormField(
-                                  decoration: const InputDecoration(
-                                    labelText: 'Discount (%)',
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: TextFormField(
+                                      decoration: const InputDecoration(
+                                        labelText: 'Paid Amount',
+                                      ),
+                                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                      initialValue: _paidAmount.toString(),
+                                      onChanged: (value) {
+                                        setState(() {
+                                          _paidAmount = double.tryParse(value) ?? 0;
+                                        });
+                                      },
+                                    ),
                                   ),
-                                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                                  initialValue: _discount.toString(),
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _discount = double.tryParse(value) ?? 0;
-                                    });
-                                  },
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: TextFormField(
-                                  decoration: const InputDecoration(
-                                    labelText: 'Paid Amount',
-                                  ),
-                                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                                  initialValue: _paidAmount.toString(),
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _paidAmount = double.tryParse(value) ?? 0;
-                                    });
-                                  },
-                                ),
-                              ),
-                            ],
+                                ],
+                              );
+                            },
                           ),
                         ],
                       ),
@@ -820,8 +971,14 @@ class _CreateBillScreenState extends State<CreateBillScreen> {
                                             Expanded(
                                               child: Text(item.product.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                                             ),
+                                            Text('₹${item.lineTotal.toStringAsFixed(2)}'),
                                             IconButton(
-                                              icon: const Icon(Icons.delete_outline, color: Colors.red),
+                                              icon: const Icon(Icons.security, color: Colors.blue),
+                                              tooltip: 'Warranty Options',
+                                              onPressed: () => _showWarrantyDialog(item),
+                                            ),
+                                            IconButton(
+                                              icon: const Icon(Icons.delete, color: Colors.red),
                                               onPressed: () => _removeItem(index),
                                             ),
                                           ],

@@ -11,10 +11,14 @@ public class WebSocketConfig implements WebSocketConfigurer {
 
     private final KeepAliveWebSocketHandler keepAliveWebSocketHandler;
     private final InventoryWebSocketHandler inventoryWebSocketHandler;
+    private final QueueWebSocketHandler queueWebSocketHandler;
 
-    public WebSocketConfig(KeepAliveWebSocketHandler keepAliveWebSocketHandler, InventoryWebSocketHandler inventoryWebSocketHandler) {
+    public WebSocketConfig(KeepAliveWebSocketHandler keepAliveWebSocketHandler, 
+                           InventoryWebSocketHandler inventoryWebSocketHandler,
+                           QueueWebSocketHandler queueWebSocketHandler) {
         this.keepAliveWebSocketHandler = keepAliveWebSocketHandler;
         this.inventoryWebSocketHandler = inventoryWebSocketHandler;
+        this.queueWebSocketHandler = queueWebSocketHandler;
     }
 
     @Override
@@ -22,6 +26,8 @@ public class WebSocketConfig implements WebSocketConfigurer {
         registry.addHandler(keepAliveWebSocketHandler, "/ws/keep-alive")
                 .setAllowedOrigins("*");
         registry.addHandler(inventoryWebSocketHandler, "/ws/inventory")
+                .setAllowedOrigins("*");
+        registry.addHandler(queueWebSocketHandler, "/ws/queue")
                 .setAllowedOrigins("*");
     }
 }

@@ -251,6 +251,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
               onTap: () => Navigator.pop(context),
             ),
             ListTile(
+              leading: const Icon(Icons.point_of_sale),
+              title: const Text('Quick POS'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/quick-pos');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.credit_card),
+              title: const Text('Manage EMIs'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/emis');
+              },
+            ),
+            ListTile(
               leading: const Icon(Icons.receipt),
               title: const Text('Sales (Bills)'),
               onTap: () {
@@ -387,6 +403,78 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 },
               ),
               ListTile(
+                leading: const Icon(Icons.lock_clock),
+                title: const Text('Shift Management'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/shift-management');
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.people_alt_outlined),
+                title: const Text('Queue Dashboard'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/queue-dashboard');
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.security),
+                title: const Text('Manager Approvals'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/manager-approvals');
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.touch_app),
+                title: const Text('Enter Self-Checkout Kiosk'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/self-checkout');
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.print),
+                title: const Text('Printer Settings'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/printer-settings');
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.support_agent),
+                title: const Text('Support Tickets'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/support-tickets');
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.payment),
+                title: const Text('Payment Settings'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/payment-settings');
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.toggle_on),
+                title: const Text('Feature Permissions'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/feature-permissions');
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.admin_panel_settings),
+                title: const Text('Role Management'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/role-management');
+                },
+              ),
+              ListTile(
                 leading: const Icon(Icons.campaign_outlined),
                 title: const Text('Marketing'),
                 onTap: () {
@@ -402,6 +490,36 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   Navigator.pushNamed(context, '/send-notifications');
                 },
               ),
+              if (isSuperAdmin) ...[
+                const Padding(
+                  padding: EdgeInsets.only(left: 16.0, top: 16.0, bottom: 8.0),
+                  child: Text('Super Admin', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.language),
+                  title: const Text('Global Subscriptions'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, '/superadmin/subscriptions');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.analytics),
+                  title: const Text('Global Reports'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, '/superadmin/reports');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.admin_panel_settings),
+                  title: const Text('Admin Management'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, '/superadmin/admins');
+                  },
+                ),
+              ],
             ],
           ],
         ),
@@ -461,6 +579,45 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildQuickActions(bool isAdmin) {
     return Column(
       children: [
+        // BIG QUICK POS CARD
+        Card(
+          elevation: 4,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          color: AppTheme.primaryColor,
+          child: InkWell(
+            onTap: () {
+              Navigator.pushNamed(context, '/quick-pos');
+            },
+            borderRadius: BorderRadius.circular(16),
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Row(
+                children: [
+                  const Icon(Icons.point_of_sale, size: 48, color: Colors.white),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        Text(
+                          'Quick POS',
+                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          'Start billing instantly',
+                          style: TextStyle(color: Colors.white70),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(Icons.arrow_forward_ios, color: Colors.white),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
         Row(
           children: [
             Expanded(

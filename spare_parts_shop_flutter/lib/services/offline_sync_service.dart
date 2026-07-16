@@ -1,6 +1,8 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:http/http.dart' as http;
 import 'sqlite_service.dart';
+import '../core/database_helper.dart';
+import 'api_service.dart';
 import 'dart:convert';
 
 class OfflineSyncService {
@@ -51,6 +53,22 @@ class OfflineSyncService {
           print('Sync failed for request ${req['id']}: $e');
         }
       }
+
+      // Sync specific Offline Bills
+      final offlineBills = await DatabaseHelper.instance.getOfflineBills();
+      if (offlineBills.isNotEmpty) {
+        final apiService = ApiService();
+        for (var bill in offlineBills) {
+          try {
+            await apiService.createBillFromMap(bill['billData']);
+            await DatabaseHelper.instance.deleteOfflineBill(bill['id']);
+            print('Successfully synced offline bill ${bill['id']}');
+          } catch (e) {
+            print('Sync failed for offline bill ${bill['id']}: $e');
+          }
+        }
+      }
+
     } finally {
       _isSyncing = false;
     }

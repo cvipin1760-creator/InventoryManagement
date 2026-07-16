@@ -109,4 +109,17 @@ public class CustomerController {
         customerService.enableB2bAccess(id, password);
         return ResponseEntity.ok().build();
     }
+    
+    @PostMapping("/{id}/redeem-points")
+    public ResponseEntity<java.util.Map<String, String>> redeemPoints(
+            @PathVariable Long id,
+            @RequestBody java.util.Map<String, Integer> payload) {
+        int points = payload.get("points");
+        boolean success = customerService.redeemPoints(id, points);
+        if (success) {
+            return ResponseEntity.ok(java.util.Map.of("message", "Points redeemed successfully"));
+        } else {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", "Insufficient points"));
+        }
+    }
 }

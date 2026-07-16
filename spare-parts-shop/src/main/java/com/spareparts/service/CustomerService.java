@@ -155,4 +155,15 @@ public class CustomerService {
         customer.setPassword(passwordEncoder.encode(rawPassword));
         customerRepository.save(customer);
     }
+    
+    @Transactional
+    public boolean redeemPoints(Long customerId, int pointsToRedeem) {
+        Customer customer = getCustomerById(customerId);
+        if (customer.getLoyaltyPoints() != null && customer.getLoyaltyPoints() >= pointsToRedeem) {
+            customer.setLoyaltyPoints(customer.getLoyaltyPoints() - pointsToRedeem);
+            customerRepository.save(customer);
+            return true;
+        }
+        return false;
+    }
 }

@@ -59,6 +59,17 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
       localStorage.removeItem('activeBranchId')
       window.location.href = '/login'
     }
+    
+    if (res.status === 403 && errMsg.includes('Feature Locked')) {
+      const match = errMsg.match(/'(.*?)'/);
+      const moduleCode = match ? match[1] : 'UNKNOWN';
+      const event = new CustomEvent('feature-locked', { detail: { moduleCode, message: errMsg } });
+      window.dispatchEvent(event);
+      // Don't throw if we want the UI to gracefully show the modal and not break the screen
+      // Or throw to abort the current view rendering. It's better to throw so the UI stops loading.
+      throw new Error(errMsg);
+    }
+    
     throw new Error(errMsg)
   }
     const contentType = res.headers.get('content-type')
@@ -141,7 +152,7 @@ export const api = {
   getCustomer: (id: number) => request<import('../types').Customer>(`/customers/${id}`),
   searchCustomers: (keyword: string) =>
     request<import('../types').Customer[]>(`/customers/search?keyword=${encodeURIComponent(keyword)}`),
-  createCustomer: (data: Omit<import('../types').Customer, 'id' | 'createdAt'>) =>
+  createCustomer: (data: Partial<import('../types').Customer>) =>
     request<import('../types').Customer>('/customers', {
       method: 'POST',
       body: JSON.stringify(data),
@@ -150,6 +161,10 @@ export const api = {
     request<import('../types').Customer>(`/customers/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
+    }),
+  redeemPoints: (id: number, points: number) =>
+    request<import('../types').Customer>(`/customers/${id}/redeem-points?points=${points}`, {
+      method: 'POST'
     }),
   deleteCustomer: (id: number) =>
     request<void>(`/customers/${id}`, { method: 'DELETE' }),

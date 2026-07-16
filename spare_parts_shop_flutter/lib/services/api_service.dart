@@ -83,7 +83,51 @@ class ApiService {
       }
       return jsonDecode(response.body);
     } else {
-      throw Exception('Failed to load data from $path');
+      throw Exception('GET request failed: ${response.statusCode}');
+    }
+  }
+
+  Future<dynamic> post(String path, {dynamic body}) async {
+    final response = await _post(
+      Uri.parse('$baseUrl$path'),
+      headers: await _getHeaders(),
+      body: body != null ? jsonEncode(body) : null,
+    );
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      if (response.body.isEmpty) return null;
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('POST request failed: ${response.statusCode} - ${response.body}');
+    }
+  }
+
+  Future<dynamic> put(String path, {dynamic body}) async {
+    final response = await _put(
+      Uri.parse('$baseUrl$path'),
+      headers: await _getHeaders(),
+      body: body != null ? jsonEncode(body) : null,
+    );
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      if (response.body.isEmpty) return null;
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('PUT request failed: ${response.statusCode} - ${response.body}');
+    }
+  }
+
+  Future<dynamic> delete(String path) async {
+    final response = await _delete(
+      Uri.parse('$baseUrl$path'),
+      headers: await _getHeaders(),
+    );
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      if (response.body.isEmpty) return null;
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('DELETE request failed: ${response.statusCode} - ${response.body}');
     }
   }
 
@@ -1240,7 +1284,7 @@ class ApiService {
       
       switch (response.statusCode) {
         case 401:
-        case 403:
+        
           // Token expired or forbidden — clear credentials and redirect to login
           await _clearStorageAndLogout();
           throw Exception('Session expired. Please log in again.');
@@ -1248,6 +1292,8 @@ class ApiService {
           throw PaymentRequiredException('Payment Required: $errorMessage');
         case 404:
           throw Exception('Not Found: $errorMessage');
+        case 403:
+          throw Exception('Access Denied (403): You do not have permission for this action.');
         case 500:
           throw Exception('Server Error: $errorMessage');
         default:
@@ -1267,3 +1313,4 @@ class ApiService {
     navigatorKey.currentState?.pushNamedAndRemoveUntil('/login', (_) => false);
   }
 }
+

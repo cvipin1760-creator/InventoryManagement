@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 
 class AuditTasksScreen extends StatefulWidget {
+  const AuditTasksScreen({super.key});
+
   @override
   _AuditTasksScreenState createState() => _AuditTasksScreenState();
 }

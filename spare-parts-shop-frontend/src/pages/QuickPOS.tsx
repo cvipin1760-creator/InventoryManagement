@@ -8,6 +8,8 @@ export default function QuickPOS() {
   const [cart, setCart] = useState<any[]>([]);
   const [search, setSearch] = useState('');
   const [customerSearch, setCustomerSearch] = useState('');
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [loyaltyDiscount, setLoyaltyDiscount] = useState(0);
   const [isListening, setIsListening] = useState(false);
   const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -98,13 +100,37 @@ export default function QuickPOS() {
 
   const handleSaveBill = async () => {
      if(cart.length === 0) return alert('Cart is empty!');
+     
+     const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+     const totalDiscount = cart.reduce((sum, item) => sum + (item.discount || 0), 0);
+     
+     if (totalAmount > 0 && totalDiscount > 0) {
+        const discountPercent = (totalDiscount / totalAmount) * 100;
+        if (discountPercent > 10) {
+          try {
+            const { approvalApi } = await import('../api/approvalApi');
+            await approvalApi.requestApproval('HIGH_DISCOUNT', {
+               discount: totalDiscount, 
+               totalAmount, 
+               discountPercent: discountPercent.toFixed(2),
+            });
+            alert('Discount is too high. A manager approval request has been sent.');
+            return;
+          } catch (e) {
+            console.error('Failed to request approval', e);
+            alert('Failed to request manager approval');
+            return;
+          }
+        }
+     }
+
+     const finalDiscount = totalDiscount + loyaltyDiscount;
+
      try {
        await api.createBill({
          // @ts-ignore
-         customerId: null, // Should resolve guest customer
+         customerId: selectedCustomer?.id || null, 
          paymentMode: 'FULL',
-         paymentStatus: 'COMPLETED',
-         billingType: 'Quick POS',
          items: cart.map(c => ({
            productId: c.product.id,
            quantity: c.qty,
@@ -113,11 +139,14 @@ export default function QuickPOS() {
            discount: c.discount,
            gstPercent: c.gst
          })),
-         overallDiscount: 0,
+         overallDiscount: loyaltyDiscount,
          taxAmount: cart.reduce((sum, item) => sum + (((item.price * item.qty) - (item.discount || 0)) * (item.gst || 0) / 100), 0)
        });
        alert('Bill Saved Successfully');
        setCart([]);
+       setSelectedCustomer(null);
+       setLoyaltyDiscount(0);
+       setCustomerSearch('');
      } catch (err) {
        console.error(err);
        alert('Failed to save bill');
@@ -175,6 +204,38 @@ export default function QuickPOS() {
     recognition.start();
   };
 
+  const handleCustomerSearch = async () => {
+    if (!customerSearch) return;
+    try {
+      const res = await api.searchCustomers(customerSearch);
+      if (res && res.length > 0) {
+        setSelectedCustomer(res[0]);
+      } else {
+        alert('Customer not found');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Failed to search customer');
+    }
+  };
+
+  const handleRedeemLoyalty = async () => {
+    if (!selectedCustomer) return;
+    if ((selectedCustomer.loyaltyPoints || 0) < 10) {
+       return alert('Minimum 10 points required to redeem.');
+    }
+    try {
+      await api.redeemPoints(selectedCustomer.id, selectedCustomer.loyaltyPoints || 0);
+      setLoyaltyDiscount(selectedCustomer.loyaltyPoints || 0);
+      alert(`Redeemed ${selectedCustomer.loyaltyPoints} points for ₹${selectedCustomer.loyaltyPoints} discount!`);
+      // Update local state to reflect redemption
+      setSelectedCustomer({...selectedCustomer, loyaltyPoints: 0});
+    } catch (e) {
+      console.error(e);
+      alert('Failed to redeem points');
+    }
+  };
+
   const filteredProducts = products.filter(p => 
     p.name.toLowerCase().includes(search.toLowerCase()) || 
     (p.partNumber && p.partNumber.toLowerCase().includes(search.toLowerCase()))
@@ -183,7 +244,7 @@ export default function QuickPOS() {
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
   const totalDiscount = cart.reduce((sum, item) => sum + Number(item.discount || 0), 0);
   const totalGst = cart.reduce((sum, item) => sum + (((item.price * item.qty) - (item.discount || 0)) * (item.gst || 0) / 100), 0);
-  const total = subtotal - totalDiscount + totalGst;
+  const total = subtotal - totalDiscount - loyaltyDiscount + totalGst;
 
   return (
     <div className="quickpos-container">
@@ -201,16 +262,33 @@ export default function QuickPOS() {
       <div className="quickpos-layout">
         {/* Left Side: Cart */}
         <div className="quickpos-cart-panel">
-          <div className="cart-customer-section">
+          <div className="cart-customer-section" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             <input 
               ref={customerInputRef}
               type="text" 
-              placeholder="Search Customer (F2)" 
+              placeholder="Search Phone (F2)" 
               className="pos-input" 
               value={customerSearch}
               onChange={e => setCustomerSearch(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleCustomerSearch()}
             />
-            <button className="pos-btn outline">+ Add</button>
+            <button className="pos-btn outline" onClick={handleCustomerSearch}>Find</button>
+            
+            {selectedCustomer && (
+              <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f0f9ff', padding: '8px', borderRadius: '4px', marginTop: '4px' }}>
+                <span style={{ fontSize: '0.9rem', color: '#0369a1', fontWeight: 'bold' }}>
+                  {selectedCustomer.name} (Pts: {selectedCustomer.loyaltyPoints || 0})
+                </span>
+                {(selectedCustomer.loyaltyPoints || 0) >= 10 && loyaltyDiscount === 0 && (
+                  <button onClick={handleRedeemLoyalty} style={{ background: '#0284c7', color: 'white', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem' }}>
+                    Redeem
+                  </button>
+                )}
+                {loyaltyDiscount > 0 && (
+                  <span style={{ fontSize: '0.8rem', color: 'green' }}>-₹{loyaltyDiscount} Applied</span>
+                )}
+              </div>
+            )}
           </div>
           
           <div className="cart-table-container">

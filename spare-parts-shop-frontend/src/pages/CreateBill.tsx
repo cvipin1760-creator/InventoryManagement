@@ -45,6 +45,31 @@ export default function CreateBill() {
   const navigate = useNavigate()
   const config = useAppSelector(selectConfiguration)
   
+  const [shiftChecking, setShiftChecking] = useState(true)
+  const [hasShift, setHasShift] = useState(false)
+
+  useEffect(() => {
+    // Only check shift if billing module is active (assumed true if we are here)
+    import('../api/shiftApi').then(({ shiftApi }) => {
+      shiftApi.getCurrentShift()
+        .then(() => setHasShift(true))
+        .catch(() => setHasShift(false))
+        .finally(() => setShiftChecking(false))
+    })
+  }, [])
+
+  if (shiftChecking) return <div className="create-bill-container" style={{ padding: '2rem' }}>Checking Register Shift...</div>
+
+  if (!hasShift) {
+    return (
+      <div className="create-bill-container" style={{ padding: '2rem' }}>
+        <h2>Register Closed</h2>
+        <p>You must open a shift before you can start billing.</p>
+        <button className="btn btn-primary" onClick={() => navigate('/shifts')}>Go to Shift Management</button>
+      </div>
+    )
+  }
+
   if (config?.billingType === 'Quick POS') {
     return <QuickPOS />
   }
@@ -329,6 +354,31 @@ export default function CreateBill() {
           warrantyTerms: itemWarranty?.warrantyTerms || ''
         }
       })
+
+      // Check manager approval for discount > 10%
+      const totalAmount = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      if (totalAmount > 0 && discount > 0) {
+        const discountPercent = (discount / totalAmount) * 100;
+        if (discountPercent > 10) {
+          try {
+            const { approvalApi } = await import('../api/approvalApi');
+            await approvalApi.requestApproval('HIGH_DISCOUNT', {
+               discount, 
+               totalAmount, 
+               discountPercent: discountPercent.toFixed(2),
+               customerId
+            });
+            alert('Discount is too high. A manager approval request has been sent.');
+            setLoading(false);
+            return;
+          } catch (e) {
+            console.error('Failed to request approval', e);
+            alert('Failed to request manager approval');
+            setLoading(false);
+            return;
+          }
+        }
+      }
 
       // Optimistic navigation
       api.createBill({

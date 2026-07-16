@@ -23,11 +23,18 @@ import Analytics from './pages/Analytics';
 import SendNotifications from './pages/SendNotifications';
 import Notifications from './pages/Notifications';
 import BillTemplates from './pages/BillTemplates';
+import AppStore from './pages/AppStore';
+import FeatureRequestsAdmin from './pages/superadmin/FeatureRequestsAdmin';
+import FeatureLockedModal from './components/FeatureLockedModal';
 import Subscriptions from './pages/Subscriptions';
 import FeaturePermissions from './pages/FeaturePermissions';
 import SubscriptionBilling from './pages/SubscriptionBilling';
 import StockTransfers from './pages/StockTransfers';
 import Branches from './pages/Branches';
+import ShiftManagement from './pages/ShiftManagement';
+import QueueDashboard from './pages/QueueDashboard';
+import ManagerApprovals from './pages/ManagerApprovals';
+import SelfCheckout from './pages/SelfCheckout';
 import PredictiveAnalytics from './pages/PredictiveAnalytics';
 import CustomerProducts from './pages/CustomerProducts';
 import CustomerBills from './pages/CustomerBills';
@@ -90,7 +97,10 @@ const App = () => {
     <Routes>
       {/* Public Routes */}
       <Route path="/login" element={<Login />} />
+        <Route path="/app-store" element={<ProtectedRoute><Layout><AppStore /></Layout></ProtectedRoute>} />
+        <Route path="/feature-requests" element={<RoleGuard allowedRoles={['SUPER_ADMIN']}><Layout><FeatureRequestsAdmin /></Layout></RoleGuard>} />
       <Route path="/register" element={<Register />} />
+      <Route path="/kiosk" element={<SelfCheckout />} />
       
       {/* Public B2B Portal Routes */}
       <Route path="/b2b/:businessId/login" element={<B2bLogin />} />
@@ -213,6 +223,23 @@ const App = () => {
             <EditBill />
           </RoleGuard>
         } />
+        
+        {/* Enterprise Quick POS Routes */}
+        <Route path="shifts" element={
+          <RoleGuard allowedRoles={['ADMIN', 'EMPLOYEE']} requiredPermission="bills">
+            <ShiftManagement />
+          </RoleGuard>
+        } />
+        <Route path="queue-dashboard" element={
+          <RoleGuard allowedRoles={['ADMIN', 'EMPLOYEE']} requiredPermission="bills">
+            <QueueDashboard />
+          </RoleGuard>
+        } />
+        <Route path="approvals" element={
+          <RoleGuard allowedRoles={['ADMIN']}>
+            <ManagerApprovals />
+          </RoleGuard>
+        } />
         <Route path="purchases" element={
           <RoleGuard allowedRoles={['ADMIN', 'EMPLOYEE']} requiredPermission="purchases">
             <Purchases />
@@ -321,3 +348,6 @@ const App = () => {
 };
 
 export default App;
+
+
+

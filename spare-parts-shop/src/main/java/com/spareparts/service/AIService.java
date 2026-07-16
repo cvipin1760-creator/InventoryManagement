@@ -20,7 +20,7 @@ public class AIService {
     @Value("${gemini.api.key:}")
     private String geminiApiKey;
     
-    @Value("${gemini.api.url:https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent}")
+    @Value("${gemini.api.url=https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent}")
     private String geminiApiUrl;
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();

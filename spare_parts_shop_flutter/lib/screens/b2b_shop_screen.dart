@@ -3,6 +3,8 @@ import '../services/api_service.dart';
 import '../models/product.dart';
 
 class B2BShopScreen extends StatefulWidget {
+  const B2BShopScreen({super.key});
+
   @override
   _B2BShopScreenState createState() => _B2BShopScreenState();
 }

@@ -17,10 +17,18 @@ public class DataSeeder implements CommandLineRunner {
     @Autowired
     private BusinessTemplateRepository businessTemplateRepository;
 
+    @Autowired
+    private com.spareparts.repository.ModuleDefinitionRepository moduleDefinitionRepository;
+
+    @Autowired
+    private com.spareparts.repository.SubscriptionPlanRepository subscriptionPlanRepository;
+
     @Override
     public void run(String... args) throws Exception {
         seedBillingTypes();
         seedBusinessTemplates();
+        seedSubscriptionPlans();
+        seedEnterpriseModules();
     }
 
     private void seedBillingTypes() {

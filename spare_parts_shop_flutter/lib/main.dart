@@ -28,6 +28,26 @@ import 'package:stock_pilot/screens/notifications_screen.dart';
 import 'package:stock_pilot/screens/subscription_billing_screen.dart';
 import 'package:stock_pilot/screens/reports_screen.dart';
 import 'package:stock_pilot/screens/marketing_screen.dart';
+import 'package:stock_pilot/screens/role_management_screen.dart';
+import 'package:stock_pilot/screens/feature_permissions_screen.dart';
+import 'package:stock_pilot/screens/payment_settings_screen.dart';
+import 'package:stock_pilot/screens/customer_products_screen.dart';
+import 'package:stock_pilot/screens/support_tickets_screen.dart';
+import 'package:stock_pilot/screens/support_screen.dart';
+import 'package:stock_pilot/screens/audit_tasks_screen.dart';
+import 'package:stock_pilot/screens/b2b_shop_screen.dart';
+import 'package:stock_pilot/screens/purchase_orders_screen.dart';
+import 'package:stock_pilot/screens/users_screen.dart';
+import 'package:stock_pilot/screens/super_admin/subscriptions_screen.dart';
+import 'package:stock_pilot/screens/super_admin/super_reports_screen.dart';
+import 'package:stock_pilot/screens/super_admin/admin_management_screen.dart';
+import 'package:stock_pilot/screens/quick_pos_screen.dart';
+import 'package:stock_pilot/screens/shift_screen.dart';
+import 'package:stock_pilot/screens/queue_dashboard_screen.dart';
+import 'package:stock_pilot/screens/manager_approvals_screen.dart';
+import 'package:stock_pilot/screens/self_checkout_screen.dart';
+import 'package:stock_pilot/screens/printer_settings_screen.dart';
+import 'package:stock_pilot/screens/emis_screen.dart';
 import 'package:stock_pilot/screens/warranties_screen.dart';
 import 'package:stock_pilot/screens/customer_emi_screen.dart';
 import 'package:stock_pilot/screens/send_notifications_screen.dart';
@@ -105,6 +125,27 @@ class MyApp extends StatelessWidget {
               '/send-notifications': (context) => const SendNotificationsScreen(),
               '/customer-dashboard': (context) => const CustomerDashboardScreen(),
               '/customer-purchases': (context) => const CustomerPurchasesScreen(),
+                '/quick-pos': (context) => const QuickPosScreen(),
+                '/emis': (context) => const EmisScreen(),
+                '/role-management': (context) => const RoleManagementScreen(),
+                '/feature-permissions': (context) => const FeaturePermissionsScreen(),
+                '/payment-settings': (context) => const PaymentSettingsScreen(),
+                '/customer-products': (context) => const CustomerProductsScreen(),
+                '/support-tickets': (context) => const SupportTicketsScreen(),
+                '/support': (context) => const SupportScreen(),
+                '/audit-tasks': (context) => const AuditTasksScreen(),
+                '/b2b-shop': (context) => const B2BShopScreen(),
+                '/purchase-orders': (context) => const PurchaseOrdersScreen(),
+                '/subscription-billing': (context) => const BillingScreen(),
+                '/users': (context) => const UsersScreen(),
+                '/printer-settings': (context) => const PrinterSettingsScreen(),
+                '/shift-management': (context) => const ShiftScreen(),
+                '/queue-dashboard': (context) => const QueueDashboardScreen(),
+                '/manager-approvals': (context) => const ManagerApprovalsScreen(),
+                '/self-checkout': (context) => const SelfCheckoutScreen(),
+                '/superadmin/subscriptions': (context) => const SubscriptionsScreen(),
+                '/superadmin/reports': (context) => const SuperReportsScreen(),
+                '/superadmin/admins': (context) => const AdminManagementScreen(),
             },
           );
         },
