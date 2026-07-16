@@ -46,6 +46,14 @@ public class BusinessService {
         business.setContactNumber(businessDetails.getContactNumber());
         business.setEmail(businessDetails.getEmail());
         business.setBusinessType(businessDetails.getBusinessType());
+        business.setCity(businessDetails.getCity());
+        business.setState(businessDetails.getState());
+        business.setPincode(businessDetails.getPincode());
+        business.setWebsite(businessDetails.getWebsite());
+        business.setUpiId(businessDetails.getUpiId());
+        business.setBankAccountInfo(businessDetails.getBankAccountInfo());
+        business.setTermsAndConditions(businessDetails.getTermsAndConditions());
+        business.setSignatureText(businessDetails.getSignatureText());
         return businessRepository.save(business);
     }
 

@@ -6,6 +6,12 @@ import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.properties.TextAlignment;
+import com.itextpdf.layout.properties.UnitValue;
+import com.itextpdf.layout.borders.Border;
+import com.itextpdf.layout.borders.SolidBorder;
+import com.itextpdf.layout.element.Cell;
+import com.itextpdf.barcodes.BarcodeQRCode;
+import com.itextpdf.kernel.colors.ColorConstants;
 import com.spareparts.dto.BillItemRequest;
 import com.spareparts.dto.BillRequest;
 import com.spareparts.dto.DashboardStats;
@@ -472,64 +478,179 @@ public class BillService {
     
     public byte[] generateInvoicePDF(Long billId) {
         Bill bill = getBillById(billId);
+        Business business = bill.getBusiness();
         
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             PdfWriter writer = new PdfWriter(baos);
             PdfDocument pdfDoc = new PdfDocument(writer);
             Document document = new Document(pdfDoc);
             
-            document.add(new Paragraph("StockPilot")
-                    .setFontSize(20)
+            // Header
+            String bName = business != null && business.getBusinessName() != null ? business.getBusinessName() : "StockPilot";
+            document.add(new Paragraph(bName)
+                    .setFontSize(22)
                     .setBold()
                     .setTextAlignment(TextAlignment.CENTER));
-            document.add(new Paragraph("Shop Address: Kalamboli")
-                    .setTextAlignment(TextAlignment.CENTER));
-            document.add(new Paragraph("Phone: +91-9967015781")
-                    .setTextAlignment(TextAlignment.CENTER));
-            document.add(new Paragraph("\n"));
             
-            document.add(new Paragraph("Invoice Number: " + bill.getInvoiceNumber()).setBold());
-            document.add(new Paragraph("Date: " + bill.getBillDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))));
-            document.add(new Paragraph("\n"));
-            
-            document.add(new Paragraph("Customer Details:").setBold());
-            document.add(new Paragraph("Name: " + bill.getCustomer().getName()));
-            document.add(new Paragraph("Phone: " + bill.getCustomer().getPhone()));
-            document.add(new Paragraph("Address: " + (bill.getCustomer().getAddress() != null ? bill.getCustomer().getAddress() : "N/A")));
-            document.add(new Paragraph("\n"));
-            
-            float[] columnWidths = {4, 2, 2, 2, 2, 2};
-            Table table = new Table(columnWidths);
-            table.addHeaderCell("Product");
-            table.addHeaderCell("Qty");
-            table.addHeaderCell("Price");
-            table.addHeaderCell("Disc.");
-            table.addHeaderCell("GST %");
-            table.addHeaderCell("Total");
-            
-            for (BillItem item : bill.getItems()) {
-                table.addCell(item.getProduct().getName());
-                table.addCell(String.valueOf(item.getQuantity()));
-                table.addCell(String.format("₹%.2f", item.getPrice()));
-                table.addCell(String.format("₹%.2f", item.getDiscount()));
-                table.addCell(String.format("%.1f%%", item.getGstPercent()));
-                table.addCell(String.format("₹%.2f", item.getItemTotal()));
+            if (business != null) {
+                String addressStr = business.getAddress() != null ? business.getAddress() : "";
+                if (business.getCity() != null) addressStr += ", " + business.getCity();
+                if (business.getState() != null) addressStr += ", " + business.getState();
+                if (business.getPincode() != null) addressStr += " - " + business.getPincode();
+                if (!addressStr.isEmpty()) {
+                    document.add(new Paragraph(addressStr).setTextAlignment(TextAlignment.CENTER).setFontSize(10));
+                }
+                
+                String contactStr = "";
+                if (business.getContactNumber() != null) contactStr += "Phone: " + business.getContactNumber() + " | ";
+                if (business.getEmail() != null) contactStr += "Email: " + business.getEmail() + " | ";
+                if (business.getWebsite() != null) contactStr += "Web: " + business.getWebsite();
+                if (contactStr.endsWith(" | ")) contactStr = contactStr.substring(0, contactStr.length() - 3);
+                if (!contactStr.isEmpty()) {
+                    document.add(new Paragraph(contactStr).setTextAlignment(TextAlignment.CENTER).setFontSize(10));
+                }
+                
+                if (business.getGstNumber() != null) {
+                    document.add(new Paragraph("GSTIN: " + business.getGstNumber()).setTextAlignment(TextAlignment.CENTER).setFontSize(10).setBold());
+                }
             }
             
+            document.add(new Paragraph("\n"));
+            
+            // Invoice Meta & Customer
+            float[] topColWidths = {1, 1};
+            Table topTable = new Table(UnitValue.createPercentArray(topColWidths)).useAllAvailableWidth();
+            
+            Cell metaCell = new Cell().setBorder(Border.NO_BORDER);
+            metaCell.add(new Paragraph("INVOICE").setBold().setFontSize(14));
+            metaCell.add(new Paragraph("Invoice No: " + bill.getInvoiceNumber()));
+            metaCell.add(new Paragraph("Date: " + bill.getBillDate().format(DateTimeFormatter.ofPattern("dd-MMM-yyyy HH:mm"))));
+            if (bill.getPaymentMode() != null) {
+                metaCell.add(new Paragraph("Payment Mode: " + bill.getPaymentMode()));
+            }
+            
+            Cell custCell = new Cell().setBorder(Border.NO_BORDER).setTextAlignment(TextAlignment.RIGHT);
+            custCell.add(new Paragraph("Billed To:").setBold().setFontSize(11));
+            custCell.add(new Paragraph(bill.getCustomer().getName()).setBold());
+            custCell.add(new Paragraph("Phone: " + bill.getCustomer().getPhone()));
+            if (bill.getCustomer().getAddress() != null && !bill.getCustomer().getAddress().isEmpty()) {
+                custCell.add(new Paragraph(bill.getCustomer().getAddress()));
+            }
+            if (bill.getCustomer().getEmail() != null && !bill.getCustomer().getEmail().isEmpty()) {
+                custCell.add(new Paragraph("Email: " + bill.getCustomer().getEmail()));
+            }
+            
+            topTable.addCell(metaCell);
+            topTable.addCell(custCell);
+            document.add(topTable);
+            document.add(new Paragraph("\n"));
+            
+            // Products Table
+            boolean isGst = "GST".equalsIgnoreCase(bill.getGstType()) || "INCLUDED".equalsIgnoreCase(bill.getGstType()) || "EXCLUDED".equalsIgnoreCase(bill.getGstType());
+            
+            float[] columnWidths;
+            if (isGst) {
+                columnWidths = new float[]{3, 2, 2, 1, 2, 2, 2, 2};
+            } else {
+                columnWidths = new float[]{4, 2, 2, 1, 2, 2, 2};
+            }
+            
+            Table table = new Table(UnitValue.createPercentArray(columnWidths)).useAllAvailableWidth();
+            table.addHeaderCell(new Cell().add(new Paragraph("Product").setBold()));
+            table.addHeaderCell(new Cell().add(new Paragraph("SKU/Serial").setBold()));
+            table.addHeaderCell(new Cell().add(new Paragraph("Rate").setBold()).setTextAlignment(TextAlignment.RIGHT));
+            table.addHeaderCell(new Cell().add(new Paragraph("Qty").setBold()).setTextAlignment(TextAlignment.CENTER));
+            table.addHeaderCell(new Cell().add(new Paragraph("Discount").setBold()).setTextAlignment(TextAlignment.RIGHT));
+            if (isGst) {
+                table.addHeaderCell(new Cell().add(new Paragraph("GST %").setBold()).setTextAlignment(TextAlignment.RIGHT));
+                table.addHeaderCell(new Cell().add(new Paragraph("GST Amt").setBold()).setTextAlignment(TextAlignment.RIGHT));
+            }
+            table.addHeaderCell(new Cell().add(new Paragraph("Total").setBold()).setTextAlignment(TextAlignment.RIGHT));
+            
+            for (BillItem item : bill.getItems()) {
+                table.addCell(new Cell().add(new Paragraph(item.getProduct().getName())));
+                
+                String skuSerial = item.getProduct().getPartNumber();
+                if (item.getSerialNumber() != null && !item.getSerialNumber().isEmpty()) {
+                    skuSerial += "\nSN: " + item.getSerialNumber();
+                }
+                table.addCell(new Cell().add(new Paragraph(skuSerial).setFontSize(9)));
+                
+                table.addCell(new Cell().add(new Paragraph(String.format("₹%.2f", item.getPrice()))).setTextAlignment(TextAlignment.RIGHT));
+                table.addCell(new Cell().add(new Paragraph(String.valueOf(item.getQuantity()))).setTextAlignment(TextAlignment.CENTER));
+                table.addCell(new Cell().add(new Paragraph(String.format("₹%.2f", item.getDiscount()))).setTextAlignment(TextAlignment.RIGHT));
+                
+                if (isGst) {
+                    table.addCell(new Cell().add(new Paragraph(String.format("%.1f%%", item.getGstPercent()))).setTextAlignment(TextAlignment.RIGHT));
+                    double gstAmt = item.getItemTotal() - (item.getPrice() * item.getQuantity() - item.getDiscount());
+                    table.addCell(new Cell().add(new Paragraph(String.format("₹%.2f", gstAmt))).setTextAlignment(TextAlignment.RIGHT));
+                }
+                table.addCell(new Cell().add(new Paragraph(String.format("₹%.2f", item.getItemTotal()))).setTextAlignment(TextAlignment.RIGHT));
+            }
             document.add(table);
             document.add(new Paragraph("\n"));
             
+            // Totals
+            float[] totColWidths = {7, 3};
+            Table totTable = new Table(UnitValue.createPercentArray(totColWidths)).useAllAvailableWidth();
+            
+            Cell emptyCell = new Cell().setBorder(Border.NO_BORDER);
+            
+            Cell totalsCell = new Cell().setBorder(Border.NO_BORDER);
             double totalLineDiscount = bill.getItems().stream().mapToDouble(BillItem::getDiscount).sum();
             double totalDiscount = totalLineDiscount + bill.getDiscount();
             double grossTotal = bill.getSubtotal() + totalLineDiscount;
-
-            document.add(new Paragraph("Gross Total: ₹" + String.format("%.2f", grossTotal)));
-            document.add(new Paragraph("Total Discount: ₹" + String.format("%.2f", totalDiscount)));
-            document.add(new Paragraph("GST Amount: ₹" + String.format("%.2f", bill.getGstAmount())));
-            document.add(new Paragraph("Final Amount: ₹" + String.format("%.2f", bill.getFinalAmount())).setBold().setFontSize(14));
+            
+            totalsCell.add(new Paragraph("Gross Total: ₹" + String.format("%.2f", grossTotal)).setTextAlignment(TextAlignment.RIGHT));
+            totalsCell.add(new Paragraph("Total Discount: ₹" + String.format("%.2f", totalDiscount)).setTextAlignment(TextAlignment.RIGHT));
+            if (isGst) {
+                totalsCell.add(new Paragraph("Total GST: ₹" + String.format("%.2f", bill.getGstAmount())).setTextAlignment(TextAlignment.RIGHT));
+            }
+            totalsCell.add(new Paragraph("Grand Total: ₹" + String.format("%.2f", bill.getFinalAmount())).setBold().setFontSize(14).setTextAlignment(TextAlignment.RIGHT));
+            
+            totTable.addCell(emptyCell);
+            totTable.addCell(totalsCell);
+            document.add(totTable);
             document.add(new Paragraph("\n"));
-            document.add(new Paragraph("GST Type: " + bill.getGstType()));
-            document.add(new Paragraph("\n\nThank you for your business!").setTextAlignment(TextAlignment.CENTER));
+            
+            // EMI / Warranty
+            if (bill.getEmis() != null && !bill.getEmis().isEmpty()) {
+                document.add(new Paragraph("EMI Details").setBold().setFontSize(12));
+                EMI emi = bill.getEmis().get(0);
+                document.add(new Paragraph("Down Payment: ₹" + emi.getDownPayment() + " | Loan Amount: ₹" + emi.getLoanAmount() + " | Months: " + emi.getTotalEmis() + " | Monthly EMI: ₹" + emi.getEmiAmount()));
+                document.add(new Paragraph("\n"));
+            }
+            
+            if (bill.getWarranties() != null && !bill.getWarranties().isEmpty()) {
+                document.add(new Paragraph("Warranty Details").setBold().setFontSize(12));
+                for (Warranty w : bill.getWarranties()) {
+                    document.add(new Paragraph(w.getProduct().getName() + " - " + w.getWarrantyType() + " (" + w.getWarrantyPeriodMonths() + " Months). Valid till: " + w.getWarrantyEndDate().format(DateTimeFormatter.ofPattern("dd-MMM-yyyy"))).setFontSize(9));
+                }
+                document.add(new Paragraph("\n"));
+            }
+            
+            // Footer
+            if (business != null && business.getBankAccountInfo() != null && !business.getBankAccountInfo().isEmpty()) {
+                document.add(new Paragraph("Bank Details").setBold().setFontSize(10));
+                document.add(new Paragraph(business.getBankAccountInfo()).setFontSize(9));
+                document.add(new Paragraph("\n"));
+            }
+            
+            if (business != null && business.getTermsAndConditions() != null && !business.getTermsAndConditions().isEmpty()) {
+                document.add(new Paragraph("Terms & Conditions").setBold().setFontSize(10));
+                document.add(new Paragraph(business.getTermsAndConditions()).setFontSize(8));
+                document.add(new Paragraph("\n"));
+            }
+            
+            // Signature
+            document.add(new Paragraph("\n\n"));
+            if (business != null && business.getSignatureText() != null && !business.getSignatureText().isEmpty()) {
+                document.add(new Paragraph(business.getSignatureText()).setTextAlignment(TextAlignment.RIGHT).setBold());
+            } else {
+                document.add(new Paragraph("Authorized Signatory").setTextAlignment(TextAlignment.RIGHT).setBold());
+            }
+            
+            document.add(new Paragraph("Thank you for your business!").setTextAlignment(TextAlignment.CENTER).setItalic());
             
             document.close();
             return baos.toByteArray();

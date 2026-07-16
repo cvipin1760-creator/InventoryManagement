@@ -38,4 +38,19 @@ public class BusinessController {
             return ResponseEntity.status(404).build();
         }
     }
+
+    @PutMapping
+    public ResponseEntity<Business> updateCurrentBusiness(@RequestBody Business businessDetails, Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        User user = userRepository.findByUsername(principal.getName()).orElse(null);
+        if (user == null || user.getBusiness() == null) {
+            return ResponseEntity.status(404).build();
+        }
+
+        Business updatedBusiness = businessService.updateBusiness(user.getBusiness().getId(), businessDetails);
+        return ResponseEntity.ok(updatedBusiness);
+    }
 }

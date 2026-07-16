@@ -592,4 +592,20 @@ public class AuthService {
 
         return userRepository.save(user);
     }
+    
+    private java.util.List<java.util.Map<String, Object>> parseModulesSafely(com.fasterxml.jackson.databind.ObjectMapper mapper, String modulesStr, String defaultModules) {
+        try {
+            if (modulesStr == null || modulesStr.trim().isEmpty()) {
+                return mapper.readValue(defaultModules, new com.fasterxml.jackson.core.type.TypeReference<java.util.List<java.util.Map<String, Object>>>(){});
+            }
+            return mapper.readValue(modulesStr, new com.fasterxml.jackson.core.type.TypeReference<java.util.List<java.util.Map<String, Object>>>(){});
+        } catch (Exception e) {
+            System.err.println("Error parsing modules json: " + modulesStr);
+            try {
+                return mapper.readValue(defaultModules, new com.fasterxml.jackson.core.type.TypeReference<java.util.List<java.util.Map<String, Object>>>(){});
+            } catch (Exception ex) {
+                return new java.util.ArrayList<>();
+            }
+        }
+    }
 }

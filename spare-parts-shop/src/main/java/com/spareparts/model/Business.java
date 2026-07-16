@@ -35,6 +35,23 @@ public class Business {
 
     @Column(name = "logo_path")
     private String logoPath;
+    
+    private String city;
+    private String state;
+    private String pincode;
+    private String website;
+    
+    @Column(name = "upi_id")
+    private String upiId;
+    
+    @Column(name = "bank_account_info", columnDefinition = "TEXT")
+    private String bankAccountInfo;
+    
+    @Column(name = "terms_and_conditions", columnDefinition = "TEXT")
+    private String termsAndConditions;
+    
+    @Column(name = "signature_text")
+    private String signatureText;
 
     // Subscription fields
     @Column(nullable = false, columnDefinition = "varchar(255) default 'TRIAL'")
