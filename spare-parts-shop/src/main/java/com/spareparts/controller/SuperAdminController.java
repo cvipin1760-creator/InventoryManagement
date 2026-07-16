@@ -73,7 +73,7 @@ public class SuperAdminController {
         config.setCurrency(request.getCurrency() != null ? request.getCurrency() : "INR");
         config.setTimezone(request.getTimezone() != null ? request.getTimezone() : "Asia/Kolkata");
         config.setFinancialYear(request.getFinancialYear() != null ? request.getFinancialYear() : "April-March");
-        config.setModulesJson(request.getModulesJson() != null ? request.getModulesJson() : "[{\"key\":\"inventory\", \"enabled\":true}, {\"key\":\"billing\", \"enabled\":true}]");
+        config.setModulesJson(request.getModulesJson() != null ? request.getModulesJson() : "[{\"key\":\"inventory\", \"enabled\":true}, {\"key\":\"billing\", \"enabled\":true}, {\"key\":\"emi\", \"enabled\":true}, {\"key\":\"warranty\", \"enabled\":true}, {\"key\":\"reports\", \"enabled\":true}, {\"key\":\"customers\", \"enabled\":true}, {\"key\":\"products\", \"enabled\":true}, {\"key\":\"purchases\", \"enabled\":true}, {\"key\":\"employees\", \"enabled\":true}]");
         config.setPermissionsJson(request.getPermissionsJson() != null ? request.getPermissionsJson() : "[]");
         config.setInvoiceSettingsJson(request.getInvoiceSettingsJson() != null ? request.getInvoiceSettingsJson() : "{}");
         config.setDashboardSettingsJson(request.getDashboardSettingsJson() != null ? request.getDashboardSettingsJson() : "{}");
