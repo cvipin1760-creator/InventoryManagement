@@ -281,12 +281,12 @@ const App = () => {
           </RoleGuard>
         } />
         <Route path="warranties" element={
-          <RoleGuard allowedRoles={['CUSTOMER', 'ADMIN', 'EMPLOYEE']}>
+          <RoleGuard allowedRoles={['CUSTOMER', 'ADMIN', 'EMPLOYEE']} requiredPermission="warranty">
             <Warranties />
           </RoleGuard>
         } />
         <Route path="emis" element={
-          <RoleGuard allowedRoles={['ADMIN', 'EMPLOYEE']}>
+          <RoleGuard allowedRoles={['ADMIN', 'EMPLOYEE']} requiredPermission="emi">
             <Emis />
           </RoleGuard>
         } />

@@ -24,6 +24,7 @@ export interface LoginResponse {
   branchId?: number;
   mustChangePassword?: boolean;
   configuration?: any;
+  permissions?: string[];
   token?: string;
   message: string;
 }
