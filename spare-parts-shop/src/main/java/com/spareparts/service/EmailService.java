@@ -33,4 +33,28 @@ public class EmailService {
     public String generateOtp() {
         return String.format("%06d", new Random().nextInt(1000000));
     }
+
+    public void sendCustomerWelcomeEmail(String to, String customerId, String tempPassword) {
+        // Fallback: log to console so user can see it during development
+        System.out.println("----------------------------------------");
+        System.out.println("Welcome Email for " + to);
+        System.out.println("Customer ID: " + customerId);
+        System.out.println("Temporary Password: " + tempPassword);
+        System.out.println("----------------------------------------");
+
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(to);
+            message.setSubject("Welcome to Your Customer Portal");
+            message.setText("Welcome! Your customer profile has been created.\n\n" +
+                    "You can log in to your Customer Portal to view your invoices, EMI details, and warranty status.\n\n" +
+                    "Your Login Credentials:\n" +
+                    "Customer ID: " + customerId + "\n" +
+                    "Password: " + tempPassword + "\n\n" +
+                    "Please log in and change your password as soon as possible.");
+            mailSender.send(message);
+        } catch (Exception e) {
+            System.err.println("Email failed to send, but credentials are visible above in logs: " + e.getMessage());
+        }
+    }
 }

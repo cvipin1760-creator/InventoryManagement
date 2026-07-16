@@ -33,6 +33,9 @@ public class CustomerService {
     @Autowired
     private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
     
+    @Autowired
+    private EmailService emailService;
+    
     @Cacheable(value = "customers", key = "'' + T(com.spareparts.config.TenantContext).getBusinessId() + '-' + T(com.spareparts.config.BranchContext).getBranchId()")
     public List<Customer> getAllCustomers() {
         Long businessId = com.spareparts.config.TenantContext.getBusinessId();
@@ -98,6 +101,14 @@ public class CustomerService {
             userRepository.save(user);
         } catch(Exception e) {
             // Log or handle duplicate phone/email in user table if needed
+        }
+        
+        // Populate the unencrypted password so the controller can return it in the JSON response
+        savedCustomer.setTempPlainPassword(tempPassword);
+        
+        // Send welcome email if customer provided an email address
+        if (savedCustomer.getEmail() != null && !savedCustomer.getEmail().trim().isEmpty()) {
+            emailService.sendCustomerWelcomeEmail(savedCustomer.getEmail(), customerId, tempPassword);
         }
 
         // Ideally send email/SMS with credentials here (tempPassword)

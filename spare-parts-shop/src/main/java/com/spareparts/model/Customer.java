@@ -55,6 +55,9 @@ public class Customer implements BelongsToBusiness {
     @JsonIgnore
     private String password;
     
+    @Transient
+    private String tempPlainPassword;
+    
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 }
