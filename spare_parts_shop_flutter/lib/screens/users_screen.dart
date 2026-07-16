@@ -239,6 +239,7 @@ class _UsersScreenState extends State<UsersScreen> {
                               ),
                               const SizedBox(height: 12),
                               DropdownButtonFormField<String>(
+                                isExpanded: true,
                                 value: _selectedRole,
                                 decoration: const InputDecoration(
                                   labelText: 'Role',
@@ -374,3 +375,4 @@ class _UsersScreenState extends State<UsersScreen> {
     );
   }
 }
+

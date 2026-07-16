@@ -106,6 +106,7 @@ class _StockTransfersScreenState extends State<StockTransfersScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     DropdownButtonFormField<dynamic>(
+                      isExpanded: true,
                       value: selectedSourceBranch,
                       decoration: const InputDecoration(labelText: 'Source Branch'),
                       items: branches.map((b) => DropdownMenuItem(
@@ -126,6 +127,7 @@ class _StockTransfersScreenState extends State<StockTransfersScreen> {
                     ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<dynamic>(
+                      isExpanded: true,
                       value: selectedDestBranch,
                       decoration: const InputDecoration(labelText: 'Destination Branch'),
                       items: branches.where((b) => b['id'] != selectedSourceBranch?['id']).map((b) => DropdownMenuItem(
@@ -137,6 +139,7 @@ class _StockTransfersScreenState extends State<StockTransfersScreen> {
                     ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<Product>(
+                      isExpanded: true,
                       value: selectedProduct,
                       decoration: const InputDecoration(labelText: 'Product'),
                       items: products.map((p) => DropdownMenuItem(
@@ -334,3 +337,4 @@ class _StockTransfersScreenState extends State<StockTransfersScreen> {
     );
   }
 }
+

@@ -55,6 +55,7 @@ class _StaffScreenState extends State<StaffScreen> {
                 if (staff == null)
                   TextField(controller: passwordController, decoration: const InputDecoration(labelText: 'Password'), obscureText: true),
                 DropdownButtonFormField<String>(
+                  isExpanded: true,
                   value: role,
                   decoration: const InputDecoration(labelText: 'Role'),
                   items: ['STAFF', 'MANAGER'].map((r) => DropdownMenuItem(value: r, child: Text(r))).toList(),
@@ -187,3 +188,4 @@ class _StaffScreenState extends State<StaffScreen> {
     );
   }
 }
+

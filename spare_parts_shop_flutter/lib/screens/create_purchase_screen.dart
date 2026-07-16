@@ -289,6 +289,7 @@ class _CreatePurchaseScreenState extends State<CreatePurchaseScreen> {
             child: Column(
               children: [
                 DropdownButtonFormField<Supplier>(
+                  isExpanded: true,
                   value: _selectedSupplier,
                   decoration: InputDecoration(
                     labelText: 'Select Supplier',
@@ -322,6 +323,7 @@ class _CreatePurchaseScreenState extends State<CreatePurchaseScreen> {
                   children: [
                     Expanded(
                       child: DropdownButtonFormField<String>(
+                        isExpanded: true,
                         value: _gstType,
                         decoration: InputDecoration(
                           labelText: 'GST Type',
@@ -752,3 +754,4 @@ class PurchaseItem {
     this.discount = 0,
   });
 }
+

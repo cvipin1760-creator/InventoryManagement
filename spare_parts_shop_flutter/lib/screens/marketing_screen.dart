@@ -140,6 +140,7 @@ class _MarketingScreenState extends State<MarketingScreen> with SingleTickerProv
             const Text('Compose Campaign', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
+             isExpanded: true,
               isExpanded: true,
               value: _audience,
               decoration: InputDecoration(
@@ -214,3 +215,4 @@ class _MarketingScreenState extends State<MarketingScreen> with SingleTickerProv
     );
   }
 }
+

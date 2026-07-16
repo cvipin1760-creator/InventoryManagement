@@ -354,6 +354,7 @@ class _EditBillScreenState extends State<EditBillScreen> {
                           const Text('Customer Details', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                           const SizedBox(height: 16),
                           DropdownButtonFormField<Customer>(
+                            isExpanded: true,
                             initialValue: _selectedCustomer,
                             decoration: const InputDecoration(
                               labelText: 'Select Customer',
@@ -437,6 +438,7 @@ class _EditBillScreenState extends State<EditBillScreen> {
                           const Text('Bill Details', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                           const SizedBox(height: 16),
                           DropdownButtonFormField<String>(
+                            isExpanded: true,
                             initialValue: _gstType,
                             decoration: const InputDecoration(
                               labelText: 'GST Type',
@@ -754,3 +756,4 @@ class _EditBillScreenState extends State<EditBillScreen> {
     );
   }
 }
+
