@@ -26,6 +26,7 @@ const CustomerLogin = () => {
           username: response.username,
           role: response.role as any,
           businessId: response.businessId,
+          permissions: response.permissions,
           configuration: response.configuration,
         },
         token: response.token,

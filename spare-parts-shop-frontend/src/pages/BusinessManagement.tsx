@@ -197,23 +197,35 @@ const BusinessManagement: React.FC = () => {
     setSelectedBusiness(business);
     try {
       const data = await fetchFeatures(business.id);
+      let parsedModules: any[] = [];
+      try {
+        parsedModules = data.modulesJson ? JSON.parse(data.modulesJson) : [];
+      } catch (e) {
+        parsedModules = [];
+      }
+      
+      const getModuleState = (key: string) => {
+        const mod = parsedModules.find((m: any) => m.key === key);
+        return mod ? mod.enabled : false;
+      };
+
       setFeatureData({
-        inventoryEnabled: data.inventoryEnabled || false,
-        billingEnabled: data.billingEnabled || false,
-        warrantyEnabled: data.warrantyEnabled || false,
-        emiEnabled: data.emiEnabled || false,
-        gstEnabled: data.gstEnabled || false,
-        customerPortalEnabled: data.customerPortalEnabled || false,
-        reportsEnabled: data.reportsEnabled || false,
-        whatsappNotificationsEnabled: data.whatsappNotificationsEnabled || false,
-        smsNotificationsEnabled: data.smsNotificationsEnabled || false,
-        multiUserSupportEnabled: data.multiUserSupportEnabled || false,
-        employeeManagementEnabled: data.employeeManagementEnabled || false,
-        multiBranchEnabled: data.multiBranchEnabled || false,
-        webSocketsEnabled: data.webSocketsEnabled || false,
-        aiAnalyticsEnabled: data.aiAnalyticsEnabled || false,
-        accountingExportEnabled: data.accountingExportEnabled || false,
-        marketingEnabled: data.marketingEnabled || false,
+        inventoryEnabled: getModuleState('inventory'),
+        billingEnabled: getModuleState('billing'),
+        warrantyEnabled: getModuleState('warranty'),
+        emiEnabled: getModuleState('emi'),
+        gstEnabled: getModuleState('gst'),
+        customerPortalEnabled: getModuleState('customerPortal'),
+        reportsEnabled: getModuleState('reports'),
+        whatsappNotificationsEnabled: getModuleState('whatsappNotifications'),
+        smsNotificationsEnabled: getModuleState('smsNotifications'),
+        multiUserSupportEnabled: getModuleState('multiUserSupport'),
+        employeeManagementEnabled: getModuleState('employeeManagement'),
+        multiBranchEnabled: getModuleState('multiBranch'),
+        webSocketsEnabled: getModuleState('webSockets'),
+        aiAnalyticsEnabled: getModuleState('aiAnalytics'),
+        accountingExportEnabled: getModuleState('accountingExport'),
+        marketingEnabled: getModuleState('marketing'),
       });
       setOpenFeatureDialog(true);
     } catch (err) {
@@ -227,7 +239,28 @@ const BusinessManagement: React.FC = () => {
 
   const handleSaveFeatures = () => {
     if (selectedBusiness) {
-      updateFeaturesMutation.mutate({ id: selectedBusiness.id, data: featureData });
+      const modulesArray = [
+        { key: 'inventory', enabled: featureData.inventoryEnabled },
+        { key: 'billing', enabled: featureData.billingEnabled },
+        { key: 'warranty', enabled: featureData.warrantyEnabled },
+        { key: 'emi', enabled: featureData.emiEnabled },
+        { key: 'gst', enabled: featureData.gstEnabled },
+        { key: 'customerPortal', enabled: featureData.customerPortalEnabled },
+        { key: 'reports', enabled: featureData.reportsEnabled },
+        { key: 'whatsappNotifications', enabled: featureData.whatsappNotificationsEnabled },
+        { key: 'smsNotifications', enabled: featureData.smsNotificationsEnabled },
+        { key: 'multiUserSupport', enabled: featureData.multiUserSupportEnabled },
+        { key: 'employeeManagement', enabled: featureData.employeeManagementEnabled },
+        { key: 'multiBranch', enabled: featureData.multiBranchEnabled },
+        { key: 'webSockets', enabled: featureData.webSocketsEnabled },
+        { key: 'aiAnalytics', enabled: featureData.aiAnalyticsEnabled },
+        { key: 'accountingExport', enabled: featureData.accountingExportEnabled },
+        { key: 'marketing', enabled: featureData.marketingEnabled },
+      ];
+      updateFeaturesMutation.mutate({ 
+        id: selectedBusiness.id, 
+        data: { modulesJson: JSON.stringify(modulesArray) } as any
+      });
     }
   };
 
