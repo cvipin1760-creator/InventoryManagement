@@ -1,4 +1,4 @@
-package com.spareparts.Config;
+package com.spareparts.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;

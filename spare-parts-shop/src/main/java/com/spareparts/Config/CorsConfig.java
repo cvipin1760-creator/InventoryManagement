@@ -1,5 +1,5 @@
 
-package com.spareparts.Config;
+package com.spareparts.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

@@ -11,6 +11,19 @@ import '../models/bill.dart';
 import '../models/purchase.dart';
 import '../models/payment.dart';
 import '../models/customer_balance.dart';
+import 'dart:convert';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:stock_pilot/core/constants/app_constants.dart';
+import '../models/customer.dart';
+import '../models/supplier.dart';
+import '../models/product.dart';
+import '../models/bill.dart';
+import '../models/purchase.dart';
+import '../models/payment.dart';
+import '../models/customer_balance.dart';
 import '../models/dashboard_stats.dart';
 import '../models/admin_dashboard_response.dart';
 import '../models/detailed_analytics_response.dart';
@@ -19,6 +32,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'sqlite_service.dart';
 import 'secure_storage_service.dart';
 import '../core/exceptions/payment_required_exception.dart';
+import '../core/exceptions/feature_locked_exception.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart' show FlutterSecureStorage;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/navigator_key.dart';
@@ -1293,13 +1307,6 @@ class ApiService {
         case 404:
           throw Exception('Not Found: $errorMessage');
         case 403:
-          throw Exception('Access Denied (403): You do not have permission for this action.');
-        case 500:
-          throw Exception('Server Error: $errorMessage');
-        default:
-          throw Exception(errorMessage);
-      }
-    }
   }
   Future<void> _clearStorageAndLogout() async {
     try {

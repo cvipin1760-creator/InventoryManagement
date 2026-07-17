@@ -46,6 +46,7 @@ import 'package:stock_pilot/screens/shift_screen.dart';
 import 'package:stock_pilot/screens/queue_dashboard_screen.dart';
 import 'package:stock_pilot/screens/manager_approvals_screen.dart';
 import 'package:stock_pilot/screens/self_checkout_screen.dart';
+import 'package:stock_pilot/screens/app_store_screen.dart';
 import 'package:stock_pilot/screens/printer_settings_screen.dart';
 import 'package:stock_pilot/screens/emis_screen.dart';
 import 'package:stock_pilot/screens/warranties_screen.dart';
@@ -146,6 +147,7 @@ class MyApp extends StatelessWidget {
                 '/superadmin/subscriptions': (context) => const SubscriptionsScreen(),
                 '/superadmin/reports': (context) => const SuperReportsScreen(),
                 '/superadmin/admins': (context) => const AdminManagementScreen(),
+                '/app-store': (context) => const AppStoreScreen(),
             },
           );
         },

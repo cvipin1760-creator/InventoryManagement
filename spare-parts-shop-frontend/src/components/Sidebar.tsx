@@ -95,6 +95,8 @@ const Sidebar = ({
       items.push({ label: 'Analytics', path: '/analytics', icon: <Activity size={20} /> });
       items.push({ label: 'Support', path: '/support', icon: <Shield size={20} /> });
       items.push({ label: 'Audit Logs', path: '/audit-logs', icon: <History size={20} /> });
+      items.push({ label: 'Feature Requests', path: '/feature-requests', icon: <Zap size={20} /> });
+      items.push({ label: 'App Store', path: '/app-store', icon: <Target size={20} /> });
       items.push({ label: 'Settings', path: '/settings', icon: <Settings size={20} /> });
     } else if (userRole === 'ADMIN') {
       items.push({ label: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> });
@@ -134,6 +136,7 @@ const Sidebar = ({
       items.push({ label: 'Support Tickets', path: '/support-tickets', icon: <MessageSquare size={20} /> });
       items.push({ label: 'Employees', path: '/users', icon: <Users size={20} /> });
       items.push({ label: 'Roles', path: '/roles', icon: <Shield size={20} /> });
+      items.push({ label: 'App Store', path: '/app-store', icon: <Target size={20} /> });
       items.push({ label: 'Settings', path: '/settings', icon: <Settings size={20} /> });
     } else if (userRole === 'EMPLOYEE') {
       const perms = user?.permissions || [];
@@ -306,11 +309,7 @@ const Sidebar = ({
                 </Link>
               </ListItem>
             ))}
-                  <ListItem button component={Link} to="/app-store" selected={location.pathname === '/app-store'}>
-          <ListItemIcon sx={{ color: 'white' }}><AppsIcon /></ListItemIcon>
-          <ListItemText primary="App Store" />
-        </ListItem>
-      </List>
+          </List>
         </Box>
 
         {/* Bottom Section - User Profile */}

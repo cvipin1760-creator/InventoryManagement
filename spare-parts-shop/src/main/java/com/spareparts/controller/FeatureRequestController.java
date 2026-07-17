@@ -41,4 +41,10 @@ public class FeatureRequestController {
         featureRequestService.approveRequest(id, trialDays);
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/{id}/reject")
+    public ResponseEntity<Void> rejectRequest(@PathVariable Long id) {
+        featureRequestService.rejectRequest(id);
+        return ResponseEntity.ok().build();
+    }
 }

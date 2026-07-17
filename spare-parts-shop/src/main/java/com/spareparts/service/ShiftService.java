@@ -1,12 +1,14 @@
 package com.spareparts.service;
 
+import com.spareparts.model.Business;
 import com.spareparts.model.CashDrawerTransaction;
 import com.spareparts.model.Shift;
 import com.spareparts.model.User;
+import com.spareparts.repository.BusinessRepository;
 import com.spareparts.repository.CashDrawerTransactionRepository;
 import com.spareparts.repository.ShiftRepository;
 import com.spareparts.repository.UserRepository;
-import com.spareparts.security.TenantContext;
+import com.spareparts.config.TenantContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,8 +28,11 @@ public class ShiftService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private BusinessRepository businessRepository;
+
     public Shift startShift(Long userId, Double openingBalance, String notes) {
-        Long businessId = TenantContext.getCurrentBusinessId();
+        Long businessId = TenantContext.getBusinessId();
         
         Optional<Shift> existingOpenShift = shiftRepository.findByUserIdAndBusinessIdAndStatus(userId, businessId, "OPEN");
         if (existingOpenShift.isPresent()) {
@@ -37,9 +42,11 @@ public class ShiftService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        Business business = businessRepository.findById(businessId).orElseThrow();
+
         Shift shift = new Shift();
         shift.setUser(user);
-        shift.setBusinessId(businessId);
+        shift.setBusiness(business);
         shift.setOpeningBalance(openingBalance);
         shift.setStatus("OPEN");
         shift.setStartTime(LocalDateTime.now());
@@ -50,7 +57,7 @@ public class ShiftService {
         if (openingBalance > 0) {
             CashDrawerTransaction txn = new CashDrawerTransaction();
             txn.setShift(shift);
-            txn.setBusinessId(businessId);
+            txn.setBusiness(business);
             txn.setAmount(openingBalance);
             txn.setType("ADD");
             txn.setReason("Opening Balance");
@@ -93,7 +100,7 @@ public class ShiftService {
     }
 
     public Optional<Shift> getCurrentShift(Long userId) {
-        Long businessId = TenantContext.getCurrentBusinessId();
+        Long businessId = TenantContext.getBusinessId();
         return shiftRepository.findByUserIdAndBusinessIdAndStatus(userId, businessId, "OPEN");
     }
 
@@ -107,7 +114,7 @@ public class ShiftService {
 
         CashDrawerTransaction txn = new CashDrawerTransaction();
         txn.setShift(shift);
-        txn.setBusinessId(shift.getBusinessId());
+        txn.setBusiness(shift.getBusiness() != null ? shift.getBusiness() : null);
         txn.setAmount(amount);
         txn.setType(type); // ADD or REMOVE
         txn.setReason(reason);
@@ -117,6 +124,6 @@ public class ShiftService {
     }
 
     public List<Shift> getAllShifts() {
-        return shiftRepository.findByBusinessIdOrderByStartTimeDesc(TenantContext.getCurrentBusinessId());
+        return shiftRepository.findByBusinessIdOrderByStartTimeDesc(TenantContext.getBusinessId());
     }
 }

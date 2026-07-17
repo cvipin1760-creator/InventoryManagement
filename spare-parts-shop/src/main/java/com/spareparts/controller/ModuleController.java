@@ -31,4 +31,10 @@ public class ModuleController {
         }
         return ResponseEntity.ok(businessModuleRepository.findByBusinessId(businessId));
     }
+
+    @GetMapping("/all-installed")
+    public ResponseEntity<List<BusinessModule>> getAllInstalledModules() {
+        // Super admin endpoint - returns all installed modules across all businesses
+        return ResponseEntity.ok(businessModuleRepository.findAll());
+    }
 }

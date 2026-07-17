@@ -101,4 +101,73 @@ public class DataSeeder implements CommandLineRunner {
             businessTemplateRepository.save(quickPosTemplate);
         }
     }
+
+    private void seedSubscriptionPlans() {
+        if (subscriptionPlanRepository.findByName("Basic").isEmpty()) {
+            com.spareparts.model.SubscriptionPlan basic = new com.spareparts.model.SubscriptionPlan();
+            basic.setName("Basic");
+            basic.setDescription("Essential features for small businesses");
+            basic.setMonthlyPrice(new java.math.BigDecimal("999"));
+            basic.setYearlyPrice(new java.math.BigDecimal("9999"));
+            basic.setMaxInvoices(500);
+            basic.setMaxUsers(3);
+            basic.setMaxBranches(1);
+            basic.setIsActive(true);
+            basic.setIsPopular(false);
+            subscriptionPlanRepository.save(basic);
+        }
+
+        if (subscriptionPlanRepository.findByName("Premium").isEmpty()) {
+            com.spareparts.model.SubscriptionPlan premium = new com.spareparts.model.SubscriptionPlan();
+            premium.setName("Premium");
+            premium.setDescription("Advanced features for growing businesses");
+            premium.setMonthlyPrice(new java.math.BigDecimal("2499"));
+            premium.setYearlyPrice(new java.math.BigDecimal("24999"));
+            premium.setMaxInvoices(5000);
+            premium.setMaxUsers(10);
+            premium.setMaxBranches(3);
+            premium.setIsActive(true);
+            premium.setIsPopular(true);
+            subscriptionPlanRepository.save(premium);
+        }
+
+        if (subscriptionPlanRepository.findByName("Enterprise").isEmpty()) {
+            com.spareparts.model.SubscriptionPlan enterprise = new com.spareparts.model.SubscriptionPlan();
+            enterprise.setName("Enterprise");
+            enterprise.setDescription("Unlimited access for large enterprises");
+            enterprise.setMonthlyPrice(new java.math.BigDecimal("4999"));
+            enterprise.setYearlyPrice(new java.math.BigDecimal("49999"));
+            enterprise.setMaxInvoices(-1);
+            enterprise.setMaxUsers(-1);
+            enterprise.setMaxBranches(-1);
+            enterprise.setIsActive(true);
+            enterprise.setIsPopular(false);
+            subscriptionPlanRepository.save(enterprise);
+        }
+    }
+
+    private void seedEnterpriseModules() {
+        String[][] modules = {
+            {"inventory", "Inventory Management", "Track stock, products and categories", "CORE", "0"},
+            {"billing", "Billing & Invoicing", "Create GST/POS invoices", "CORE", "0"},
+            {"emi", "EMI Management", "Manage customer EMI payments", "FINANCE", "199"},
+            {"warranty", "Warranty Tracking", "Track product warranties", "SALES", "149"},
+            {"multiBranch", "Multi-Branch", "Manage multiple store locations", "ENTERPRISE", "499"},
+            {"stockTransfer", "Stock Transfer", "Transfer stock between branches", "ENTERPRISE", "299"},
+            {"accounting", "Accounting Export", "Export to Tally/QuickBooks", "FINANCE", "249"},
+        };
+
+        for (String[] m : modules) {
+            if (moduleDefinitionRepository.findByCode(m[0]).isEmpty()) {
+                com.spareparts.model.ModuleDefinition mod = new com.spareparts.model.ModuleDefinition();
+                mod.setCode(m[0]);
+                mod.setName(m[1]);
+                mod.setDescription(m[2]);
+                mod.setCategory(m[3]);
+                mod.setMonthlyPrice(Double.parseDouble(m[4]));
+                mod.setIsCore("0".equals(m[4]));
+                moduleDefinitionRepository.save(mod);
+            }
+        }
+    }
 }

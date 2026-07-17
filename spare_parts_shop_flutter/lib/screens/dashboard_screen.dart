@@ -251,6 +251,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
               onTap: () => Navigator.pop(context),
             ),
             ListTile(
+              leading: const Icon(Icons.storefront, color: Colors.blue),
+              title: const Text('App Store (Modules)'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/app-store');
+              },
+            ),
+            ListTile(
               leading: const Icon(Icons.point_of_sale),
               title: const Text('Quick POS'),
               onTap: () {

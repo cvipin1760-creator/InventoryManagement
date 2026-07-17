@@ -51,4 +51,11 @@ public class FeatureRequestService {
             }
         }
     }
+
+    public void rejectRequest(Long requestId) {
+        featureRequestRepository.findById(requestId).ifPresent(req -> {
+            req.setStatus("REJECTED");
+            featureRequestRepository.save(req);
+        });
+    }
 }

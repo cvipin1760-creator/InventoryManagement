@@ -1,4 +1,4 @@
-package com.spareparts.Config;
+package com.spareparts.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;

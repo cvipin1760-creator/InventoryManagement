@@ -1,10 +1,12 @@
 package com.spareparts.service;
 
+import com.spareparts.model.Business;
 import com.spareparts.model.ManagerApprovalRequest;
 import com.spareparts.model.User;
 import com.spareparts.repository.ApprovalRequestRepository;
+import com.spareparts.repository.BusinessRepository;
 import com.spareparts.repository.UserRepository;
-import com.spareparts.security.TenantContext;
+import com.spareparts.config.TenantContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,12 +22,19 @@ public class ApprovalService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private BusinessRepository businessRepository;
+
     public ManagerApprovalRequest createRequest(Long requestedById, String actionType, String detailsJson) {
+        Long businessId = TenantContext.getBusinessId();
+
         User requester = userRepository.findById(requestedById)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        Business business = businessRepository.findById(businessId).orElseThrow();
+
         ManagerApprovalRequest request = new ManagerApprovalRequest();
-        request.setBusinessId(TenantContext.getCurrentBusinessId());
+        request.setBusiness(business);
         request.setRequestedBy(requester);
         request.setActionType(actionType);
         request.setDetailsJson(detailsJson);
@@ -37,12 +46,12 @@ public class ApprovalService {
 
     public List<ManagerApprovalRequest> getPendingRequests() {
         return approvalRequestRepository.findByBusinessIdAndStatusOrderByRequestedAtDesc(
-                TenantContext.getCurrentBusinessId(), "PENDING");
+                TenantContext.getBusinessId(), "PENDING");
     }
 
     public ManagerApprovalRequest resolveRequest(Long requestId, Long approverId, boolean approved) {
         ManagerApprovalRequest request = approvalRequestRepository.findByIdAndBusinessId(
-                requestId, TenantContext.getCurrentBusinessId())
+                requestId, TenantContext.getBusinessId())
                 .orElseThrow(() -> new RuntimeException("Request not found"));
 
         User approver = userRepository.findById(approverId)
@@ -60,7 +69,7 @@ public class ApprovalService {
     
     // Polling endpoint for cashiers to check if their request was approved
     public ManagerApprovalRequest checkStatus(Long requestId) {
-        return approvalRequestRepository.findByIdAndBusinessId(requestId, TenantContext.getCurrentBusinessId())
+        return approvalRequestRepository.findByIdAndBusinessId(requestId, TenantContext.getBusinessId())
                 .orElseThrow(() -> new RuntimeException("Request not found"));
     }
 }

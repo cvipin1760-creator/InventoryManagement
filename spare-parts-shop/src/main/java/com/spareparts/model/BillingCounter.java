@@ -1,18 +1,22 @@
 package com.spareparts.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 @Data
 @Entity
 @Table(name = "billing_counters")
-@EqualsAndHashCode(callSuper = true)
-public class BillingCounter extends BelongsToBusiness {
+public class BillingCounter implements BelongsToBusiness {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "business_id")
+    @JsonIgnore
+    private Business business;
 
     @Column(nullable = false)
     private String name; // e.g. "Counter 1"
