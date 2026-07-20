@@ -113,7 +113,23 @@ public class BillService {
         Business business = businessRepository.findById(businessId)
                 .orElseThrow(() -> new com.spareparts.exception.TenantAccessException("Business not found"));
 
-        Customer customer = customerService.getCustomerById(request.getCustomerId());
+        Customer customer = null;
+        if (request.getCustomerId() == null) {
+            if (request.getCustomerName() != null && !request.getCustomerName().isBlank()) {
+                // Try to find a walk-in customer or create one on the fly
+                // For simplicity, create a quick customer record
+                Customer newCustomer = new Customer();
+                newCustomer.setName(request.getCustomerName());
+                newCustomer.setPhone("0000000000"); // Dummy phone
+                newCustomer.setEmail("walkin_" + System.currentTimeMillis() + "@example.com"); // Dummy email
+                newCustomer.setLoyaltyPoints(0);
+                customer = customerService.createCustomer(newCustomer);
+            } else {
+                throw new IllegalArgumentException("Customer ID or Customer Name is required to create a bill.");
+            }
+        } else {
+            customer = customerService.getCustomerById(request.getCustomerId());
+        }
         
         Bill bill = new Bill();
         bill.setBusiness(business);

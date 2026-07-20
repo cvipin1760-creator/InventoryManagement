@@ -298,6 +298,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Navigator.pushNamed(context, '/products');
               },
             ),
+            ListTile(
+              leading: const Icon(Icons.qr_code_2),
+              title: const Text('Barcode & Labels'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/barcode-dashboard');
+              },
+            ),
             if (!isSuperAdmin && authProvider.hasModule('emi'))
               ListTile(
                 leading: const Icon(Icons.account_balance_wallet_outlined),

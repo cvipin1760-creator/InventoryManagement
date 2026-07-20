@@ -10,6 +10,7 @@ import java.util.List;
 @AllArgsConstructor
 public class BillRequest {
     private Long customerId;
+    private String customerName;
     private List<BillItemRequest> items;
     private Double discount;
     private String gstType;

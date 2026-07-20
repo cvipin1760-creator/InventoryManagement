@@ -41,6 +41,18 @@ public class Product implements BelongsToBusiness {
     @Column(name = "part_number")
     private String partNumber;
     
+    @Column(name = "sku")
+    private String sku;
+    
+    @Column(name = "barcode")
+    private String barcode;
+    
+    @Column(name = "barcode_type")
+    private String barcodeType = "CODE128"; // Default barcode format
+    
+    @Column(name = "internal_code")
+    private String internalCode;
+    
     @Column(name = "cost_price")
     private Double costPrice = 0.0;
     

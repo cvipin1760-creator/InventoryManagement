@@ -17,6 +17,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     
     Optional<Product> findByPartNumber(String partNumber);
     
+    Optional<Product> findByIdAndBusinessId(Long id, Long businessId);
+    
+    List<Product> findByBusinessId(Long businessId);
+    
     @Query("SELECT p FROM Product p WHERE p.business.id = :businessId AND (:branchId IS NULL OR p.branch.id = :branchId)")
     Page<Product> findByBusinessId(@Param("businessId") Long businessId, @Param("branchId") Long branchId, Pageable pageable);
     

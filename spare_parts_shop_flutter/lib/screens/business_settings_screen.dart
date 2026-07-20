@@ -147,6 +147,31 @@ class _BusinessSettingsScreenState extends State<BusinessSettingsScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                const Text('Artificial Intelligence', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                                const Divider(height: 32),
+                                ListTile(
+                                  leading: const Icon(Icons.smart_toy, color: Colors.blue),
+                                  title: const Text('OpenRouter AI Settings'),
+                                  subtitle: const Text('Configure your preferred AI model & API key'),
+                                  trailing: const Icon(Icons.chevron_right),
+                                  onTap: () {
+                                    Navigator.pushNamed(context, '/ai-settings');
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      const SizedBox(height: 20),
+                      if (_business != null)
+                        Card(
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          child: Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
                                 const Text('Subscription & Billing', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                                 const Divider(height: 32),
                                 ListTile(

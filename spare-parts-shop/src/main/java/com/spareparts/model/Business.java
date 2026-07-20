@@ -53,6 +53,13 @@ public class Business {
     @Column(name = "signature_text")
     private String signatureText;
 
+    // AI / OpenRouter Settings
+    @Column(name = "open_router_api_key")
+    private String openRouterApiKey;
+
+    @Column(name = "open_router_model")
+    private String openRouterModel = "openai/gpt-4o";
+
     // Subscription fields
     @Column(nullable = false, columnDefinition = "varchar(255) default 'TRIAL'")
     private String subscriptionStatus = "TRIAL"; // TRIAL, ACTIVE, EXPIRED, CANCELED

@@ -155,6 +155,7 @@ public class DataSeeder implements CommandLineRunner {
             {"multiBranch", "Multi-Branch", "Manage multiple store locations", "ENTERPRISE", "499"},
             {"stockTransfer", "Stock Transfer", "Transfer stock between branches", "ENTERPRISE", "299"},
             {"accounting", "Accounting Export", "Export to Tally/QuickBooks", "FINANCE", "249"},
+            {"barcode_management", "Barcode & Labels", "Generate, customize, and print barcode labels", "INVENTORY", "149"},
         };
 
         for (String[] m : modules) {

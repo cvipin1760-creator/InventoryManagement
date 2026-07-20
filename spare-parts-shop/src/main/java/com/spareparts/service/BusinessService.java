@@ -54,6 +54,14 @@ public class BusinessService {
         business.setBankAccountInfo(businessDetails.getBankAccountInfo());
         business.setTermsAndConditions(businessDetails.getTermsAndConditions());
         business.setSignatureText(businessDetails.getSignatureText());
+        
+        if (businessDetails.getOpenRouterApiKey() != null) {
+            business.setOpenRouterApiKey(businessDetails.getOpenRouterApiKey());
+        }
+        if (businessDetails.getOpenRouterModel() != null) {
+            business.setOpenRouterModel(businessDetails.getOpenRouterModel());
+        }
+        
         return businessRepository.save(business);
     }
 

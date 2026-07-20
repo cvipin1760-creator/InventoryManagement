@@ -11,6 +11,10 @@ class Product {
   final String? createdAt;
   final String? updatedAt;
   final int? warrantyDays;
+  final String? sku;
+  final String? barcode;
+  final String? barcodeType;
+  final String? internalCode;
 
   Product({
     required this.id,
@@ -25,6 +29,10 @@ class Product {
     this.createdAt,
     this.updatedAt,
     this.warrantyDays,
+    this.sku,
+    this.barcode,
+    this.barcodeType,
+    this.internalCode,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
@@ -41,6 +49,10 @@ class Product {
       createdAt: json['createdAt']?.toString(),
       updatedAt: json['updatedAt']?.toString(),
       warrantyDays: (json['warrantyDays'] as num?)?.toInt(),
+      sku: json['sku']?.toString(),
+      barcode: json['barcode']?.toString(),
+      barcodeType: json['barcodeType']?.toString(),
+      internalCode: json['internalCode']?.toString(),
     );
   }
 
@@ -58,6 +70,10 @@ class Product {
       'createdAt': createdAt,
       'updatedAt': updatedAt,
       'warrantyDays': warrantyDays,
+      'sku': sku,
+      'barcode': barcode,
+      'barcodeType': barcodeType,
+      'internalCode': internalCode,
     };
   }
 }

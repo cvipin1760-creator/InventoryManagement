@@ -11,19 +11,7 @@ import '../models/bill.dart';
 import '../models/purchase.dart';
 import '../models/payment.dart';
 import '../models/customer_balance.dart';
-import 'dart:convert';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:http/http.dart' as http;
-import 'package:image_picker/image_picker.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:stock_pilot/core/constants/app_constants.dart';
-import '../models/customer.dart';
-import '../models/supplier.dart';
-import '../models/product.dart';
-import '../models/bill.dart';
-import '../models/purchase.dart';
-import '../models/payment.dart';
-import '../models/customer_balance.dart';
+
 import '../models/dashboard_stats.dart';
 import '../models/admin_dashboard_response.dart';
 import '../models/detailed_analytics_response.dart';
@@ -1212,6 +1200,49 @@ class ApiService {
     return jsonDecode(res.body);
   }
 
+  // --- Barcode & Label Management ---
+  Future<List<dynamic>> getBarcodeTemplates() async {
+    final res = await _get(Uri.parse('$baseUrl/barcode/templates'), headers: await _getHeaders());
+    return jsonDecode(res.body);
+  }
+
+  Future<dynamic> saveBarcodeTemplate(Map<String, dynamic> template) async {
+    final res = await _post(
+      Uri.parse('$baseUrl/barcode/templates'),
+      headers: await _getHeaders(),
+      body: jsonEncode(template),
+    );
+    return jsonDecode(res.body);
+  }
+
+  Future<Product> generateBarcodeForProduct(int productId) async {
+    final res = await _post(Uri.parse('$baseUrl/barcode/generate/$productId'), headers: await _getHeaders());
+    return Product.fromJson(jsonDecode(res.body));
+  }
+
+  Future<Map<String, dynamic>> generateMissingBarcodes() async {
+    final res = await _post(Uri.parse('$baseUrl/barcode/generate-bulk'), headers: await _getHeaders());
+    return jsonDecode(res.body);
+  }
+
+  Future<void> recordBarcodePrint(int productId, int copies, String templateUsed) async {
+    await _post(
+      Uri.parse('$baseUrl/barcode/print'),
+      headers: await _getHeaders(),
+      body: jsonEncode({
+        'productId': productId,
+        'copies': copies,
+        'templateUsed': templateUsed,
+      }),
+    );
+  }
+
+  Future<List<dynamic>> getBarcodeHistory({int page = 0, int size = 20}) async {
+    final res = await _get(Uri.parse('$baseUrl/barcode/history?page=$page&size=$size'), headers: await _getHeaders());
+    final data = jsonDecode(res.body);
+    return data is Map && data.containsKey('content') ? data['content'] : data;
+  }
+
   Future<http.Response> _get(Uri url, {Map<String, String>? headers}) async {
     return _request('GET', url, headers: headers);
   }
@@ -1307,17 +1338,31 @@ class ApiService {
         case 404:
           throw Exception('Not Found: $errorMessage');
         case 403:
+          try {
+            final Map<String, dynamic> errorBody = jsonDecode(response.body);
+            if (errorBody['moduleCode'] != null) {
+              throw FeatureLockedException(
+                errorBody['message'] ?? 'This feature is locked.',
+                errorBody['moduleCode'],
+              );
+            }
+          } catch (_) {}
+          throw Exception('Forbidden: $errorMessage');
+        case 500:
+          throw Exception('Internal Server Error: $errorMessage');
+        default:
+          throw Exception(errorMessage);
+      }
+    }
   }
+
   Future<void> _clearStorageAndLogout() async {
     try {
       const storage = FlutterSecureStorage();
-      // Clear ALL secure storage keys (legacy and accounts-based)
       await storage.deleteAll();
       final prefs = await SharedPreferences.getInstance();
       await prefs.clear();
     } catch (_) {}
-    // Navigate to login from anywhere in the app
     navigatorKey.currentState?.pushNamedAndRemoveUntil('/login', (_) => false);
   }
 }
-

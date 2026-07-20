@@ -47,6 +47,9 @@ import 'package:stock_pilot/screens/queue_dashboard_screen.dart';
 import 'package:stock_pilot/screens/manager_approvals_screen.dart';
 import 'package:stock_pilot/screens/self_checkout_screen.dart';
 import 'package:stock_pilot/screens/app_store_screen.dart';
+import 'package:stock_pilot/screens/barcode_dashboard_screen.dart';
+import 'package:stock_pilot/screens/barcode_print_screen.dart';
+import 'package:stock_pilot/screens/ai_settings_screen.dart';
 import 'package:stock_pilot/screens/printer_settings_screen.dart';
 import 'package:stock_pilot/screens/emis_screen.dart';
 import 'package:stock_pilot/screens/warranties_screen.dart';
@@ -144,6 +147,9 @@ class MyApp extends StatelessWidget {
                 '/queue-dashboard': (context) => const QueueDashboardScreen(),
                 '/manager-approvals': (context) => const ManagerApprovalsScreen(),
                 '/self-checkout': (context) => const SelfCheckoutScreen(),
+                '/barcode-dashboard': (context) => const BarcodeDashboardScreen(),
+                '/barcode-print': (context) => const BarcodePrintScreen(),
+                '/ai-settings': (context) => const AiSettingsScreen(),
                 '/superadmin/subscriptions': (context) => const SubscriptionsScreen(),
                 '/superadmin/reports': (context) => const SuperReportsScreen(),
                 '/superadmin/admins': (context) => const AdminManagementScreen(),
